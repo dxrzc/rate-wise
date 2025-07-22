@@ -9,8 +9,9 @@ import { configValidationSchema } from './schemas/config-validation.schema';
         ConfigModule.forRoot({
             expandVariables: true,
             validationSchema: configValidationSchema,
+            validatePredefined: true,
             validationOptions: {
-                // allowUnknown: false,
+                allowUnknown: true,
                 abortEarly: true,
             },
         }),
