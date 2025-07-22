@@ -31,6 +31,8 @@ process.on('unhandledRejection', async () => {
 async function bootstrap() {
     process.env.NEST_DEBUG = 'true';
     app = await NestFactory.create(AppModule);
+    // TODO: cleaning, read: https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown
+    if (process.env.NODE_ENV === 'development') app.enableShutdownHooks();
     await app.listen(process.env.PORT ?? 3000);
 }
 
