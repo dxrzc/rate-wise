@@ -1,0 +1,29 @@
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class User extends BaseEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id!: string;
+
+    @Column({ type: 'varchar', unique: true, length: 30 })
+    username!: string;
+
+    @Column({ type: 'varchar', unique: true, length: 45 })
+    email!: string;
+
+    @Column({ type: 'varchar', length: 60 })
+    password!: string;
+
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.USER,
+    })
+    role!: string;
+
+    @Column('integer', { default: 0 })
+    reputationScore!: number;
+
+    // TODO: one to many (items)
+}
