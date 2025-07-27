@@ -1,9 +1,9 @@
 import { BaseModel } from 'src/common/models/base.model';
-import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: 'User model' })
 export class UserModel extends BaseModel {
-    @Field(() => String)
+    @Field(() => ID)
     id!: string;
 
     @Field(() => String)
