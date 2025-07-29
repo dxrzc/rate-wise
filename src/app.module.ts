@@ -2,7 +2,7 @@ import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ItemsModule } from './items/items.module';
+import { UsersModule } from './users/users.module';
 import { Item } from './items/entities/item.entity';
 import { User } from './users/entities/user.entity';
 import { AppConfigModule } from './config/app-config.module';
@@ -23,7 +23,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
                 autoLoadEntities: false,
                 retryAttempts: 3,
                 retryDelay: 1000,
-                synchronize: true,
+                synchronize: true, //!
             }),
         }),
         GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -35,7 +35,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
             ),
             plugins: [ApolloServerPluginLandingPageLocalDefault()],
         }),
-        ItemsModule,
+        UsersModule,
     ],
 })
 export class AppModule {}
