@@ -2,7 +2,7 @@ import { UserRole } from 'src/common/enums/user-role.enum';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('account')
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
