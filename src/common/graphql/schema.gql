@@ -1,0 +1,34 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""User model"""
+type UserModel {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  id: ID!
+  username: String!
+  email: String!
+  role: String!
+  reputationScore: Float!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Query {
+  findUserById(user_id: ID!): UserModel!
+  users: [UserModel!]!
+}
+
+type Mutation {
+  createUser(user_data: CreateUserInput!): UserModel!
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  password: String!
+}
