@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { UsersModule } from './users/users.module';
-import { Item } from './items/entities/item.entity';
 import { User } from './users/entities/user.entity';
 import { AppConfigModule } from './config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -18,7 +17,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
             inject: [DatabaseConfigService],
             useFactory: (dbConfigService: DatabaseConfigService) => ({
                 type: 'postgres',
-                entities: [User, Item],
+                entities: [User],
                 url: dbConfigService.uri,
                 autoLoadEntities: false,
                 retryAttempts: 3,
