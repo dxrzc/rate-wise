@@ -39,7 +39,8 @@ export class UsersService {
             User,
             IUserDbRecord
         >(this.userRepository, limit, decodedCursor);
-        if (!rawData || !nextCursor) return { data: [], nextCursor: undefined };
+        if (rawData.length === 0 || !nextCursor)
+            return { data: [], nextCursor: undefined };
         // transform data
         return { data: rawData.map(transformRawDbData), nextCursor };
     }
