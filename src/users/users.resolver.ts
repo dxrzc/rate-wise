@@ -2,6 +2,9 @@ import { UsersService } from './users.service';
 import { UserModel } from './models/user.model';
 import { CreateUserInput } from './dtos/input/create-user.input';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { ICursorPagination } from 'src/common/interfaces/cursor-pagination.interface';
+import { UserPagination } from './models/user-pagination.model';
 
 @Resolver(() => UserModel)
 export class UsersResolver {
@@ -14,9 +17,11 @@ export class UsersResolver {
         return await this.userService.findOneById(id);
     }
 
-    @Query(() => [UserModel], { name: 'users' })
-    async findAll(): Promise<UserModel[]> {
-        return await this.userService.findAll();
+    @Query(() => UserPagination, { name: 'users' })
+    async findAll(
+        @Args() paginationArgs: PaginationArgs,
+    ): Promise<ICursorPagination<UserModel>> {
+        return await this.userService.findAll(paginationArgs);
     }
 
     @Mutation(() => UserModel, { name: 'createUser' })
