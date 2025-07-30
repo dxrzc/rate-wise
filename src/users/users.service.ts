@@ -9,15 +9,14 @@ import { User } from './entities/user.entity';
 import { UserModel } from './models/user.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserInput } from './dtos/input/create-user.input';
-import { transformRawDbData } from './logic/transform-raw-db-data';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
-import { IDecodedCursor } from 'src/common/interfaces/decoded-cursor.interface';
-import { ICursorPagination } from 'src/common/interfaces/cursor-pagination.interface';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { createCursorPagination } from 'src/common/functions/pagination/create-cursor-pagination';
+import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
+import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
+import { transformUserRawDbData } from './logic/transform-raw-db-data';
 
 @Injectable()
 export class UsersService {
@@ -26,23 +25,29 @@ export class UsersService {
         private readonly userRepository: Repository<User>,
     ) {}
 
-    // TODO: page info
-    async findAll(
-        paginationArgs: PaginationArgs,
-    ): Promise<ICursorPagination<UserModel>> {
-        const limit = paginationArgs.limit;
-        // cursor is optional
-        let decodedCursor: IDecodedCursor | undefined = undefined;
-        if (paginationArgs.cursor)
-            decodedCursor = decodeCursor(paginationArgs.cursor);
-        const { rawData, nextCursor } = await createCursorPagination<
-            User,
-            IUserDbRecord
-        >(this.userRepository, limit, decodedCursor);
-        if (rawData.length === 0 || !nextCursor)
-            return { data: [], nextCursor: undefined };
-        // transform data
-        return { data: rawData.map(transformRawDbData), nextCursor };
+    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<UserModel>> {
+        const limit = pagArgs.limit;
+        const decodedCursor = pagArgs.cursor
+            ? decodeCursor(pagArgs.cursor)
+            : undefined;
+        // fetches limit + 1 records so we can detect whether there’s a next page
+        const edges = await createPaginationEdges<UserModel, IUserDbRecord>(
+            this.userRepository,
+            limit,
+            transformUserRawDbData,
+            decodedCursor,
+        );
+        const hasNextPage = edges.length > limit;
+        if (hasNextPage) edges.pop();
+        const totalCount = await this.userRepository
+            .createQueryBuilder()
+            .getCount();
+        return {
+            edges,
+            nodes: edges.map((edge) => edge.node),
+            totalCount,
+            hasNextPage,
+        };
     }
 
     async findOneById(id: string): Promise<UserModel> {
