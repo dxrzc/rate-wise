@@ -23,7 +23,7 @@ export class User extends BaseEntity {
     })
     role!: string;
 
-    @Column('integer', { default: 0 })
+    @Column('integer', { default: 0, name: 'reputation_score' })
     reputationScore!: number;
 
     // TODO: one to many (items)
