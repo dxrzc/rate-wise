@@ -1,12 +1,9 @@
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { BaseEntity } from 'src/common/entites/base.entity';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 
 @Entity('account')
 export class User extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
     @Column({ type: 'varchar', unique: true, length: 30 })
     username!: string;
 
