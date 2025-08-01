@@ -4,9 +4,9 @@
 
 """User model"""
 type UserModel {
+  id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  id: ID!
   username: String!
   email: String!
   role: String!
@@ -18,9 +18,21 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type UserModelEdge {
+  cursor: String!
+  node: UserModel!
+}
+
+type UserPaginationModel {
+  edges: [UserModelEdge!]
+  nodes: [UserModel!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
   findUserById(user_id: ID!): UserModel!
-  users: [UserModel!]!
+  users(cursor: String, limit: Int!): UserPaginationModel!
 }
 
 type Mutation {
