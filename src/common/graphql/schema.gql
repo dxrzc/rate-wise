@@ -4,9 +4,9 @@
 
 """User model"""
 type UserModel {
+  id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  id: ID!
   username: String!
   email: String!
   role: String!
