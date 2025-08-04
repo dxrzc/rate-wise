@@ -60,7 +60,7 @@ export class ItemsService {
 
     async createOne(item: CreateItemInput) {
         try {
-            await this.itemRepository.save(item);
+            return await this.itemRepository.save(item);
         } catch (error) {
             if (isDuplicatedKeyError(error))
                 throw new BadRequestException('User already exists');
