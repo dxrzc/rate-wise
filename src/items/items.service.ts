@@ -25,7 +25,7 @@ export class ItemsService {
         private readonly itemRepository: Repository<Item>,
     ) {}
 
-    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
+    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
         const limit = pagArgs.limit;
         const decodedCursor = pagArgs.cursor
             ? decodeCursor(pagArgs.cursor)
@@ -52,10 +52,10 @@ export class ItemsService {
     async findOneById(id: string): Promise<ItemModel> {
         if (!validUUID(id))
             throw new BadRequestException('Id is not a valid UUID');
-        const userFound = await this.itemRepository.findOneBy({ id });
-        if (!userFound)
+        const itemFound = await this.itemRepository.findOneBy({ id });
+        if (!itemFound)
             throw new NotFoundException(`User with id ${id} not found`);
-        return userFound;
+        return itemFound;
     }
 
     async createOne(item: CreateItemInput) {
