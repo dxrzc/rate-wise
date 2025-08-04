@@ -1,5 +1,6 @@
+import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Item extends BaseEntity {
@@ -25,4 +26,8 @@ export class Item extends BaseEntity {
 
     @Column('integer', { name: 'review_count', default: 0 })
     reviewCount!: number;
+
+    @ManyToOne(() => User, (user) => user.items)
+    @JoinColumn({ name: 'user_id' })
+    user!: User;
 }
