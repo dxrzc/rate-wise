@@ -12,5 +12,6 @@ export function rawRecordToItemEntity(rawRecord: IItemDbRecord): Item {
         tags: rawRecord.tags,
         averageRating: rawRecord.average_rating,
         reviewCount: rawRecord.review_count,
+        user: rawRecord.user,
     };
 }
