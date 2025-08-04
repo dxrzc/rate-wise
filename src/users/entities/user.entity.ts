@@ -1,6 +1,7 @@
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { BaseEntity } from 'src/common/entites/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { Item } from 'src/items/entities/item.entity';
 
 @Entity('account')
 export class User extends BaseEntity {
@@ -23,5 +24,6 @@ export class User extends BaseEntity {
     @Column('integer', { default: 0, name: 'reputation_score' })
     reputationScore!: number;
 
-    // TODO: one to many (items)
+    @OneToMany(() => Item, (item) => item.user)
+    items?: Item[];
 }

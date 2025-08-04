@@ -1,7 +1,6 @@
-export interface IUserDbRecord {
-    created_at: Date;
-    updated_at: Date;
-    id: string;
+import { IBaseRawDbRecord } from 'src/common/interfaces/base-raw-db-record.interface';
+
+export interface IUserDbRecord extends IBaseRawDbRecord {
     username: string;
     email: string;
     password: string;

@@ -1,7 +1,7 @@
 import { User } from '../entities/user.entity';
 import { IUserDbRecord } from '../interfaces/user-db-record.interface';
 
-export function transformUserRawDbData(rawData: IUserDbRecord): User {
+export function rawRecordTouserEntity(rawData: IUserDbRecord): User {
     return {
         createdAt: rawData.created_at,
         reputationScore: rawData.reputation_score,

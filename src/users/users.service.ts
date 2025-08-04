@@ -13,10 +13,10 @@ import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
+import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-import { transformUserRawDbData } from './logic/transform-raw-db-data';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +34,7 @@ export class UsersService {
         const edges = await createPaginationEdges<UserModel, IUserDbRecord>(
             this.userRepository,
             limit,
-            transformUserRawDbData,
+            rawRecordTouserEntity,
             decodedCursor,
         );
         const hasNextPage = edges.length > limit;
