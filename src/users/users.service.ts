@@ -16,7 +16,7 @@ import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-import { transformUserRawDbData } from './logic/transform-raw-db-data';
+import { rawRecordTouserEntity } from './logic/raw-record-to-user-entity';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +34,7 @@ export class UsersService {
         const edges = await createPaginationEdges<UserModel, IUserDbRecord>(
             this.userRepository,
             limit,
-            transformUserRawDbData,
+            rawRecordTouserEntity,
             decodedCursor,
         );
         const hasNextPage = edges.length > limit;

@@ -30,17 +30,51 @@ type UserPaginationModel {
   hasNextPage: Boolean!
 }
 
+"""Item model"""
+type ItemModel {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  title: String!
+  description: String!
+  category: String!
+  tags: [String!]!
+  averageRating: Float!
+  reviewCount: Int!
+}
+
+type ItemModelEdge {
+  cursor: String!
+  node: ItemModel!
+}
+
+type ItemPaginationModel {
+  edges: [ItemModelEdge!]
+  nodes: [ItemModel!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
   findUserById(user_id: ID!): UserModel!
-  users(cursor: String, limit: Int!): UserPaginationModel!
+  users(cursor: String, limit: Int!): ItemPaginationModel!
+  findItemById(item_id: ID!): ItemModel!
 }
 
 type Mutation {
   createUser(user_data: CreateUserInput!): UserModel!
+  createItem(item_data: CreateItemInput!): ItemModel!
 }
 
 input CreateUserInput {
   username: String!
   email: String!
   password: String!
+}
+
+input CreateItemInput {
+  title: String!
+  description: String!
+  category: String!
+  tags: [String!]!
 }
