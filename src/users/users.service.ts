@@ -13,10 +13,10 @@ import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
+import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-import { rawRecordTouserEntity } from './logic/raw-record-to-user-entity';
 
 @Injectable()
 export class UsersService {
