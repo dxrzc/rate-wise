@@ -23,7 +23,9 @@ export class ItemsResolver {
     }
 
     @Mutation(() => ItemModel, { name: 'createItem' })
-    async createOne(@Args('item_data') item: CreateItemInput) {
+    async createOne(
+        @Args('item_data') item: CreateItemInput,
+    ): Promise<ItemModel> {
         return await this.itemsService.createOne(item);
     }
 
