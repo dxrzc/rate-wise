@@ -1,5 +1,8 @@
-import * as session from 'express-session';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { createClient } from 'redis';
+import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { Injectable } from '@nestjs/common';
 import { Environment } from 'src/common/enum/environment.enum';
@@ -16,14 +19,9 @@ export class SessionMiddlewareFactory {
     ) {}
 
     async create() {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const redisClient = createClient({ url: this.redisConfig.uri });
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         await redisClient.connect();
-
-        // Initialize store.
         const redisStore = new RedisStore({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             client: redisClient,
             prefix: 'myapp:',
         });
@@ -34,15 +32,14 @@ export class SessionMiddlewareFactory {
             saveUninitialized: false,
             secret: this.sessionConfig.cookieSecret,
             unset: 'destroy',
+            rolling: true,
             cookie: {
                 httpOnly: true,
+                maxAge: this.sessionConfig.cookieMaxAge,
                 secure:
                     this.serverConfig.environment === Environment.PRODUCTION,
-                maxAge: this.sessionConfig.cookieMaxAge,
             },
-            rolling: true,
         });
-
         return middleware;
     }
 }
