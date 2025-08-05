@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { UsersModule } from './users/users.module';
 import { ItemsModule } from './items/items.module';
@@ -38,6 +39,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
         }),
         UsersModule,
         ItemsModule,
+        AuthModule,
     ],
 })
 export class AppModule {}

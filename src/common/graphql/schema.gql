@@ -62,14 +62,9 @@ type Query {
 }
 
 type Mutation {
-  createUser(user_data: CreateUserInput!): UserModel!
   createItem(item_data: CreateItemInput!): ItemModel!
-}
-
-input CreateUserInput {
-  username: String!
-  email: String!
-  password: String!
+  signUp(user_data: SignUpInput!): UserModel!
+  signIn(credentials: SignInInput!): UserModel!
 }
 
 input CreateItemInput {
@@ -77,4 +72,15 @@ input CreateItemInput {
   description: String!
   category: String!
   tags: [String!]!
+}
+
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
 }
