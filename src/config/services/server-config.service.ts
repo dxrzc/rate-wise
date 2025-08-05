@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { IServerConfig } from '../interface/service-config.interface';
 import { Injectable } from '@nestjs/common';
+import { Environment } from 'src/common/enum/environment.enum';
 
 @Injectable()
 export class ServerConfigService {
@@ -8,7 +9,7 @@ export class ServerConfigService {
         private readonly configService: ConfigService<IServerConfig, true>,
     ) {}
 
-    get environment(): string {
+    get environment(): Environment {
         return this.configService.get('NODE_ENV');
     }
 
