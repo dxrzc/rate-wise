@@ -3,7 +3,7 @@ import { UserModel } from './models/user.model';
 import { Args, ID, Query, Resolver } from '@nestjs/graphql';
 import { UserPaginationModel } from './models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
-import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
+import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 
 @Resolver(() => UserModel)
 export class UsersResolver {

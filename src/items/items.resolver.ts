@@ -4,7 +4,7 @@ import { ItemPaginationModel } from './models/pagination.model';
 import { CreateItemInput } from './dtos/input/create-item.input';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
+import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 
 @Resolver(() => ItemModel)
 export class ItemsResolver {
