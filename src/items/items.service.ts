@@ -8,14 +8,14 @@ import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dtos/input/create-item.input';
+import { IItemDbRecord } from './interfaces/item-db-record.interface';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { rawRecordToItemEntity } from './functions/raw-record-to-item-entity';
-import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-import { IItemDbRecord } from './interfaces/item-db-record.interface';
+import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 
 @Injectable()
 export class ItemsService {

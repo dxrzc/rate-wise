@@ -1,4 +1,4 @@
-import { IBaseRawDbRecord } from 'src/common/interfaces/base-raw-db-record.interface';
+import { IBaseRawDbRecord } from 'src/common/interfaces/database/base-raw-db-record.interface';
 
 export interface IUserDbRecord extends IBaseRawDbRecord {
     username: string;

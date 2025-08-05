@@ -1,6 +1,6 @@
 import { ObjectLiteral, Repository } from 'typeorm';
-import { IDecodedCursor } from 'src/common/interfaces/decoded-cursor.interface';
-import { IEdgeType } from 'src/common/interfaces/edge-type.interface';
+import { IDecodedCursor } from 'src/common/interfaces/pagination/decoded-cursor.interface';
+import { IEdgeType } from 'src/common/interfaces/pagination/edge-type.interface';
 import { encodeCursor } from './encode-cursor';
 
 /**
