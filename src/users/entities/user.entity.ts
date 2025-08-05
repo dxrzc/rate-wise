@@ -1,7 +1,7 @@
-import { UserRole } from 'src/common/enums/user-role.enum';
-import { BaseEntity } from 'src/common/entites/base.entity';
+import { UserRole } from '../enum/user-role.enum';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { Item } from 'src/items/entities/item.entity';
+import { BaseEntity } from 'src/common/entites/base.entity';
 
 @Entity('account')
 export class User extends BaseEntity {
