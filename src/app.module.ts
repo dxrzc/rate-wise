@@ -9,7 +9,7 @@ import { Item } from './items/entities/item.entity';
 import { User } from './users/entities/user.entity';
 import { AppConfigModule } from './config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { DatabaseConfigService } from './config/services/postgres-db.config.service';
+import { DatabaseConfigService } from './config/services/database-config.service';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 @Module({
