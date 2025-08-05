@@ -13,6 +13,7 @@ services:
 
   redis-db:
     image: redis:8.0-alpine
+    restart: always
     volumes:
       - redis:/data
     ports:
