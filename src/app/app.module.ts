@@ -1,18 +1,20 @@
 import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
 import { GraphQLModule } from '@nestjs/graphql';
-import { UsersModule } from './users/users.module';
-import { ItemsModule } from './items/items.module';
-import { Item } from './items/entities/item.entity';
-import { User } from './users/entities/user.entity';
-import { AppConfigModule } from './config/app-config.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { UsersModule } from 'src/users/users.module';
+import { ItemsModule } from 'src/items/items.module';
+import { User } from 'src/users/entities/user.entity';
+import { Item } from 'src/items/entities/item.entity';
+import { AppConfigModule } from 'src/config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { DatabaseConfigService } from './config/services/database-config.service';
+import { DatabaseConfigService } from 'src/config/services/database-config.service';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 
 @Module({
+    providers: [SessionMiddlewareFactory],
     imports: [
         AppConfigModule,
         TypeOrmModule.forRootAsync({
