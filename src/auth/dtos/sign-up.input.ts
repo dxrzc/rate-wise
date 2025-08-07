@@ -1,4 +1,5 @@
 import {
+    MAX_EMAIL_LENGTH,
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
     USERNAME_MAX_LENGTH,
@@ -17,6 +18,7 @@ export class SignUpInput {
 
     @IsString()
     @IsEmail()
+    @MaxLength(MAX_EMAIL_LENGTH)
     @Field(() => String)
     email!: string;
 
