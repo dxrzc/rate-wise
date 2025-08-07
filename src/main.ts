@@ -13,7 +13,7 @@ async function bootstrap() {
             forbidNonWhitelisted: true,
         }),
     );
-    app.use(await app.get(SessionMiddlewareFactory).create());
+    app.use(app.get(SessionMiddlewareFactory).create());
     await app.listen(serverConfig.port);
 
     // TODO: NestJS logger
