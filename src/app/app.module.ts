@@ -4,19 +4,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
+import { RedisModule } from 'src/redis/redis.module';
 import { ItemsModule } from 'src/items/items.module';
 import { User } from 'src/users/entities/user.entity';
 import { Item } from 'src/items/entities/item.entity';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { RedisConfigService } from 'src/config/services/redis-config.service';
+import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { DatabaseConfigService } from 'src/config/services/database-config.service';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 
 @Module({
     providers: [SessionMiddlewareFactory],
     imports: [
-        AppConfigModule,
+        AppConfigModule, // TODO: remove since its global
         TypeOrmModule.forRootAsync({
             imports: [AppConfigModule],
             inject: [DatabaseConfigService],
@@ -38,6 +40,12 @@ import { SessionMiddlewareFactory } from './middlewares/session.middleware.facto
                 'src/common/graphql/schema.gql',
             ),
             plugins: [ApolloServerPluginLandingPageLocalDefault()],
+        }),
+        RedisModule.forRootAsync({
+            inject: [RedisConfigService],
+            useFactory: (redisConfigService: RedisConfigService) => ({
+                uri: redisConfigService.uri,
+            }),
         }),
         UsersModule,
         ItemsModule,
