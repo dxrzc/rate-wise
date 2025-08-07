@@ -18,7 +18,6 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 @Module({
     providers: [SessionMiddlewareFactory],
     imports: [
-        AppConfigModule, // TODO: remove since its global
         TypeOrmModule.forRootAsync({
             imports: [AppConfigModule],
             inject: [DatabaseConfigService],
