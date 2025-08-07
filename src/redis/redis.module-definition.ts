@@ -3,9 +3,14 @@ import { IRedisModuleOptions } from './interfaces/redis-module-options.interface
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } =
     new ConfigurableModuleBuilder<IRedisModuleOptions>()
-        .setExtras({}, (definition) => ({
-            ...definition,
-            global: true, // always global
-        }))
+        .setExtras(
+            {
+                isGlobal: true,
+            },
+            (definition, extras) => ({
+                ...definition,
+                global: extras.isGlobal,
+            }),
+        )
         .setClassMethodName('forRoot')
         .build();

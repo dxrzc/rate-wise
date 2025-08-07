@@ -41,6 +41,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
             plugins: [ApolloServerPluginLandingPageLocalDefault()],
         }),
         RedisModule.forRootAsync({
+            isGlobal: true,
             inject: [RedisConfigService],
             useFactory: (redisConfigService: RedisConfigService) => ({
                 uri: redisConfigService.uri,
