@@ -1,14 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { createClient } from 'redis';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { Injectable } from '@nestjs/common';
 import { Environment } from 'src/common/enum/environment.enum';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
-import { SessionConfigService } from 'src/config/services/session-config.service';
 import { ServerConfigService } from 'src/config/services/server-config.service';
+import { SessionConfigService } from 'src/config/services/session-config.service';
 
 @Injectable()
 export class SessionMiddlewareFactory {
