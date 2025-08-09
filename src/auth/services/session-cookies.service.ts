@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { RedisService } from 'src/redis/redis.service';
+import { regenerateCookie } from '../functions/regenerate-cookie';
 import { makeSessionsIndexKey } from '../functions/make-sessions-index-key';
 import { ISessionData } from 'src/common/interfaces/cookies/session-data.interface';
-import { regenerateCookie } from '../functions/regenerate-cookie';
 import { makeUserSessionRelationKey } from '../functions/make-user-session-relation-key';
 
 @Injectable()
-export class SessionCookiesService {
+export class SessionsService {
     constructor(private readonly redisService: RedisService) {}
 
     private async createSessionUserRelation(userId: string, sessionId: string) {
@@ -15,6 +15,10 @@ export class SessionCookiesService {
             makeUserSessionRelationKey(sessionId),
             userId,
         );
+    }
+
+    async activeSessions(userId: string): Promise<number> {
+        return await this.redisService.getSetSize(makeSessionsIndexKey(userId));
     }
 
     async newSession(req: Request & { session: ISessionData }, userId: string) {

@@ -2,16 +2,18 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { SignUpInput } from './dtos/sign-up.input';
 import { SignInInput } from './dtos/sign-in.input';
+import { BadRequestException } from '@nestjs/common';
 import { UserModel } from 'src/users/models/user.model';
+import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { SessionsService } from './services/session-cookies.service';
 import { ISessionData } from 'src/common/interfaces/cookies/session-data.interface';
-import { SessionCookiesService } from './services/session-cookies.service';
 
 @Resolver()
 export class AuthResolver {
     constructor(
         private readonly authService: AuthService,
-        private readonly sessionCookiesService: SessionCookiesService,
+        private readonly sessionService: SessionsService,
     ) {}
 
     @Mutation(() => UserModel, { name: 'signUp' })
@@ -20,7 +22,7 @@ export class AuthResolver {
         @Context('req') req: Request & { session: ISessionData },
     ): Promise<UserModel> {
         const signedUp = await this.authService.signUp(user);
-        await this.sessionCookiesService.newSession(req, signedUp.id);
+        await this.sessionService.newSession(req, signedUp.id);
         return signedUp;
     }
 
@@ -30,7 +32,13 @@ export class AuthResolver {
         @Context('req') req: Request & { session: ISessionData },
     ): Promise<UserModel> {
         const signedIn = await this.authService.signIn(credentials);
-        await this.sessionCookiesService.newSession(req, signedIn.id);
+        const userId = signedIn.id;
+        const activeSessions = await this.sessionService.activeSessions(userId);
+        console.log({ activeSessions });
+        if (activeSessions === 3) {
+            throw new BadRequestException(MAX_SESSIONS_ERROR);
+        }
+        await this.sessionService.newSession(req, userId);
         return signedIn;
     }
 }
