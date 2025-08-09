@@ -7,6 +7,7 @@ export const configValidationSchema = Joi.object({
     REDIS_URI: Joi.string().uri().required(),
     COOKIE_SECRET: Joi.string().required(),
     COOKIE_MAX_AGE: Joi.number().integer().positive().required(),
+    MAX_USER_SESSIONS: Joi.number().integer().positive().required(),
     NODE_ENV: Joi.string()
         .valid(Environment.DEVELOPMENT, Environment.PRODUCTION)
         .required(),

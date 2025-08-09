@@ -8,12 +8,14 @@ import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { SessionsService } from './services/session-cookies.service';
 import { ISessionData } from 'src/common/interfaces/cookies/session-data.interface';
+import { SessionConfigService } from 'src/config/services/session-config.service';
 
 @Resolver()
 export class AuthResolver {
     constructor(
         private readonly authService: AuthService,
         private readonly sessionService: SessionsService,
+        private readonly sessionConfig: SessionConfigService,
     ) {}
 
     @Mutation(() => UserModel, { name: 'signUp' })
@@ -34,8 +36,7 @@ export class AuthResolver {
         const signedIn = await this.authService.signIn(credentials);
         const userId = signedIn.id;
         const activeSessions = await this.sessionService.activeSessions(userId);
-        console.log({ activeSessions });
-        if (activeSessions === 3) {
+        if (activeSessions === this.sessionConfig.maxUserSessions) {
             throw new BadRequestException(MAX_SESSIONS_ERROR);
         }
         await this.sessionService.newSession(req, userId);

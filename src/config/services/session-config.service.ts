@@ -18,4 +18,8 @@ export class SessionConfigService {
     get cookieMaxAge(): number {
         return this.configService.get('COOKIE_MAX_AGE');
     }
+
+    get maxUserSessions(): number {
+        return this.configService.get('MAX_USER_SESSIONS');
+    }
 }
