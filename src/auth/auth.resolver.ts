@@ -8,7 +8,7 @@ import { RequestContext } from './types/request-context.type';
 import { Public } from 'src/common/decorators/public.decorator';
 import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { SessionsService } from './services/session-cookies.service';
+import { SessionsService } from './services/session.service';
 import { SessionConfigService } from 'src/config/services/session-config.service';
 
 @Resolver()
