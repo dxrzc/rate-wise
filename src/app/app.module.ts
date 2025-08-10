@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AuthModule } from 'src/auth/auth.module';
@@ -8,6 +9,7 @@ import { RedisModule } from 'src/redis/redis.module';
 import { ItemsModule } from 'src/items/items.module';
 import { User } from 'src/users/entities/user.entity';
 import { Item } from 'src/items/entities/item.entity';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
@@ -16,7 +18,13 @@ import { DatabaseConfigService } from 'src/config/services/database-config.servi
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 @Module({
-    providers: [SessionMiddlewareFactory],
+    providers: [
+        SessionMiddlewareFactory,
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
+    ],
     imports: [
         TypeOrmModule.forRootAsync({
             imports: [AppConfigModule],
