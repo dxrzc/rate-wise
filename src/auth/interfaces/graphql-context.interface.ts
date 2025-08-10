@@ -1,3 +1,5 @@
+import { RequestContext } from '../types/request-context.type';
+
 export interface IGraphQLContext {
-    req: Request & { session: { userId: string } };
+    req: RequestContext;
 }

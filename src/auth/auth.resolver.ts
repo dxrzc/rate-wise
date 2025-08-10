@@ -4,11 +4,11 @@ import { SignUpInput } from './dtos/sign-up.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { BadRequestException } from '@nestjs/common';
 import { UserModel } from 'src/users/models/user.model';
+import { RequestContext } from './types/request-context.type';
 import { Public } from 'src/common/decorators/public.decorator';
 import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { SessionsService } from './services/session-cookies.service';
-import { ISessionData } from 'src/common/interfaces/cookies/session-data.interface';
 import { SessionConfigService } from 'src/config/services/session-config.service';
 
 @Resolver()
@@ -23,7 +23,7 @@ export class AuthResolver {
     @Mutation(() => UserModel, { name: 'signUp' })
     async signUp(
         @Args('user_data') user: SignUpInput,
-        @Context('req') req: Request & { session: ISessionData },
+        @Context('req') req: RequestContext,
     ): Promise<UserModel> {
         const signedUp = await this.authService.signUp(user);
         await this.sessionService.newSession(req, signedUp.id);
@@ -34,7 +34,7 @@ export class AuthResolver {
     @Mutation(() => UserModel, { name: 'signIn' })
     async signIn(
         @Args('credentials') credentials: SignInInput,
-        @Context('req') req: Request & { session: ISessionData },
+        @Context('req') req: RequestContext,
     ): Promise<UserModel> {
         const signedIn = await this.authService.signIn(credentials);
         const userId = signedIn.id;
