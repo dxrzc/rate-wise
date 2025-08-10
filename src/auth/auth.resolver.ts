@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignUpInput } from './dtos/sign-up.input';
 import { SignInInput } from './dtos/sign-in.input';
@@ -44,5 +44,15 @@ export class AuthResolver {
         }
         await this.sessionService.newSession(req, userId);
         return signedIn;
+    }
+
+    @Mutation(() => Boolean, { name: 'signOut' })
+    async signOut(
+        @Context('req') req: RequestContext,
+        @Context('res') res: Response,
+    ): Promise<boolean> {
+        await this.sessionService.deleteSession(req);
+        res.clearCookie('connect.sid', { path: '/' });
+        return true;
     }
 }

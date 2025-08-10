@@ -65,6 +65,7 @@ type Mutation {
   createItem(item_data: CreateItemInput!): ItemModel!
   signUp(user_data: SignUpInput!): UserModel!
   signIn(credentials: SignInInput!): UserModel!
+  signOut: Boolean!
 }
 
 input CreateItemInput {
