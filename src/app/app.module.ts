@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { Request, Response } from 'express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AuthModule } from 'src/auth/auth.module';
@@ -47,6 +48,10 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
                 'src/common/graphql/schema.gql',
             ),
             plugins: [ApolloServerPluginLandingPageLocalDefault()],
+            context: (context: { req: Request; res: Response }) => ({
+                req: context.req,
+                res: context.res,
+            }),
         }),
         RedisModule.forRootAsync({
             isGlobal: true,
