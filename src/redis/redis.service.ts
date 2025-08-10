@@ -55,6 +55,10 @@ export class RedisService {
         await this.redisClient.sAdd(key, member);
     }
 
+    async setMembers(key: string): Promise<string[]> {
+        return await this.redisClient.sMembers(key);
+    }
+
     async getSetSize(key: string): Promise<number> {
         return await this.redisClient.sCard(key);
     }

@@ -18,6 +18,13 @@ export class AuthService {
         return bcrypt.compareSync(password, hash);
     }
 
+    async reAuthenticate(userId: string, password: string): Promise<void> {
+        const user = await this.userService.findOneByIdOrThrow(userId);
+        const passwordMatches = this.passwordMatches(user.password, password);
+        if (!passwordMatches)
+            throw new BadRequestException('Invalid credentials');
+    }
+
     async signUp(signUpInput: SignUpInput): Promise<User> {
         signUpInput.password = this.hashPassword(signUpInput.password);
         const user = await this.userService.createOne(signUpInput);

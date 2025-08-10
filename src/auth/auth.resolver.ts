@@ -4,12 +4,13 @@ import { SignUpInput } from './dtos/sign-up.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { BadRequestException } from '@nestjs/common';
 import { UserModel } from 'src/users/models/user.model';
+import { SessionsService } from './services/session.service';
 import { RequestContext } from './types/request-context.type';
 import { Public } from 'src/common/decorators/public.decorator';
 import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { SessionsService } from './services/session.service';
 import { SessionConfigService } from 'src/config/services/session-config.service';
+import { ReAuthenticationInput } from './dtos/re-authentication.input';
 
 @Resolver()
 export class AuthResolver {
@@ -18,6 +19,10 @@ export class AuthResolver {
         private readonly sessionService: SessionsService,
         private readonly sessionConfig: SessionConfigService,
     ) {}
+
+    private clearCookie(res: Response) {
+        res.clearCookie('connect.sid', { path: '/' });
+    }
 
     @Public()
     @Mutation(() => UserModel, { name: 'signUp' })
@@ -52,7 +57,22 @@ export class AuthResolver {
         @Context('res') res: Response,
     ): Promise<boolean> {
         await this.sessionService.deleteSession(req);
-        res.clearCookie('connect.sid', { path: '/' });
+        this.clearCookie(res);
         return true;
     }
+
+    @Mutation(() => Boolean, { name: 'signOutAll' })
+    async signOutAll(
+        @Args('password') input: ReAuthenticationInput,
+        @Context('req') req: RequestContext,
+        @Context('res') res: Response,
+    ): Promise<boolean> {
+        const userId = req.session.userId;
+        await this.authService.reAuthenticate(userId, input.password);
+        await this.sessionService.deleteAllSessions(req.session.userId);
+        this.clearCookie(res);
+        return true;
+    }
+
+    // TODO: send user data downstream from AuthGuard
 }
