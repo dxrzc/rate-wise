@@ -9,6 +9,10 @@ export const configValidationSchema = Joi.object({
     COOKIE_MAX_AGE: Joi.number().integer().positive().required(),
     MAX_USER_SESSIONS: Joi.number().integer().positive().required(),
     NODE_ENV: Joi.string()
-        .valid(Environment.DEVELOPMENT, Environment.PRODUCTION)
+        .valid(
+            Environment.DEVELOPMENT,
+            Environment.PRODUCTION,
+            Environment.INTEGRATION,
+        )
         .required(),
 });
