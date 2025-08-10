@@ -4,6 +4,7 @@ import { SignUpInput } from './dtos/sign-up.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { BadRequestException } from '@nestjs/common';
 import { UserModel } from 'src/users/models/user.model';
+import { Public } from 'src/common/decorators/public.decorator';
 import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { SessionsService } from './services/session-cookies.service';
@@ -18,6 +19,7 @@ export class AuthResolver {
         private readonly sessionConfig: SessionConfigService,
     ) {}
 
+    @Public()
     @Mutation(() => UserModel, { name: 'signUp' })
     async signUp(
         @Args('user_data') user: SignUpInput,
@@ -28,6 +30,7 @@ export class AuthResolver {
         return signedUp;
     }
 
+    @Public()
     @Mutation(() => UserModel, { name: 'signIn' })
     async signIn(
         @Args('credentials') credentials: SignInInput,
