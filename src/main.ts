@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ServerConfigService } from './config/services/server-config.service';
-import { SessionMiddlewareFactory } from './app/middlewares/session.middleware.factory';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -13,7 +12,6 @@ async function bootstrap() {
             forbidNonWhitelisted: true,
         }),
     );
-    app.use(app.get(SessionMiddlewareFactory).create());
     await app.listen(serverConfig.port);
 
     // TODO: NestJS logger

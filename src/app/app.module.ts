@@ -1,5 +1,4 @@
 import { join } from 'path';
-import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,6 +12,7 @@ import { Item } from 'src/items/entities/item.entity';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { DatabaseConfigService } from 'src/config/services/database-config.service';
@@ -65,4 +65,12 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
         AuthModule,
     ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    constructor(
+        private readonly sessionMiddlewareFactory: SessionMiddlewareFactory,
+    ) {}
+
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(this.sessionMiddlewareFactory.create()).forRoutes('*');
+    }
+}
