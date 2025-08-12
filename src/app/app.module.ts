@@ -1,8 +1,14 @@
 import { join } from 'path';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
+import {
+    MiddlewareConsumer,
+    Module,
+    NestModule,
+    ValidationPipe,
+} from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
 import { RedisModule } from 'src/redis/redis.module';
@@ -12,7 +18,6 @@ import { Item } from 'src/items/entities/item.entity';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { DatabaseConfigService } from 'src/config/services/database-config.service';
@@ -24,6 +29,13 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
         {
             provide: APP_GUARD,
             useClass: AuthGuard,
+        },
+        {
+            provide: APP_PIPE,
+            useValue: new ValidationPipe({
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
         },
     ],
     imports: [
