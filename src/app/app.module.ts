@@ -41,8 +41,8 @@ import { AppConfigModule } from 'src/config/app-config.module';
         },
     ],
     imports: [
+        AppConfigModule,
         TypeOrmModule.forRootAsync({
-            imports: [AppConfigModule],
             inject: [DatabaseConfigService],
             useFactory: (dbConfigService: DatabaseConfigService) => ({
                 type: 'postgres',
