@@ -91,8 +91,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
         }),
         ConditionalModule.registerWhen(
             SeedModule,
-            (env: NodeJS.ProcessEnv) =>
-                env.NODE_ENV === Environment.DEVELOPMENT,
+            (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.PRODUCTION,
         ),
         UsersModule,
         ItemsModule,
