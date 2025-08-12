@@ -4,14 +4,20 @@ import { removeSessionFromUserIndex } from 'src/auth/functions/delete-key-from-s
 
 @Injectable()
 export class RedisSuscriber {
+    private suscriber: RedisClientType | undefined;
+
     async suscribe(redisClient: RedisClientType) {
-        const suscriber = redisClient.duplicate();
-        await suscriber.connect();
+        this.suscriber = redisClient.duplicate();
+        await this.suscriber.connect();
         const listener = async (key: string) =>
             await removeSessionFromUserIndex(redisClient, key);
         await Promise.all([
-            suscriber.subscribe('__keyevent@0__:del', listener),
-            suscriber.subscribe('__keyevent@0__:expired', listener),
+            this.suscriber.subscribe('__keyevent@0__:del', listener),
+            this.suscriber.subscribe('__keyevent@0__:expired', listener),
         ]);
+    }
+
+    disconnect() {
+        if (this.suscriber) this.suscriber.destroy();
     }
 }

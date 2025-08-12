@@ -26,6 +26,11 @@ export class RedisService {
         await this.redisSuscriber.suscribe(this.redisClient);
     }
 
+    disconnect() {
+        this.redisClient.destroy();
+        this.redisSuscriber.disconnect();
+    }
+
     get client() {
         return this.redisClient;
     }
