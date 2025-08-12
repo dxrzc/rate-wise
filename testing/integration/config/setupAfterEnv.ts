@@ -1,13 +1,20 @@
-import { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
+import { App } from 'supertest/types';
+import { expect } from '@jest/globals';
 import { AppModule } from 'src/app/app.module';
 import { testKit } from '../utils/test-kit.util';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
+import { Test, TestingModule } from '@nestjs/testing';
 import { RedisService } from 'src/redis/redis.service';
+import { toFailWith } from './custom-matchers/to-fail-with';
+import { UserSeedService } from 'src/seed/services/user-seed.service';
 
 let nestApp: INestApplication<App>;
+
+expect.extend({
+    toFailWith,
+});
 
 beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -15,6 +22,7 @@ beforeAll(async () => {
     }).compile();
     nestApp = moduleFixture.createNestApplication();
     testKit.app = nestApp;
+    testKit.userSeed = nestApp.get(UserSeedService);
     await nestApp.init();
 });
 
