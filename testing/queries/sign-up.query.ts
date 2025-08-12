@@ -1,6 +1,6 @@
 export const signUpQuery = `
-mutation SignUp($userData: SignUpInput!) {
-  signUp(user_data: $userData) {
+mutation SignUp($input: SignUpInput!) {
+  signUp(user_data: $input) {
     id
     createdAt
     updatedAt
