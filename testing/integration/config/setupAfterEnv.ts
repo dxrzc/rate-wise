@@ -14,7 +14,6 @@ beforeAll(async () => {
         imports: [AppModule],
     }).compile();
     nestApp = moduleFixture.createNestApplication();
-    // TODO: setup application (global middlewares, pipes, etc.)
     testKit.app = nestApp;
     await nestApp.init();
 });
@@ -23,6 +22,7 @@ afterAll(async () => {
     if (nestApp) {
         const dataSource = nestApp.get<DataSource>(getDataSourceToken());
         const redisService = nestApp.get<RedisService>(RedisService);
+        await dataSource.dropDatabase();
         await dataSource.destroy();
         redisService.disconnect();
         await nestApp.close();
