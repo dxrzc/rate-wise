@@ -8,6 +8,7 @@ export const configValidationSchema = Joi.object({
     COOKIE_SECRET: Joi.string().required(),
     COOKIE_MAX_AGE: Joi.number().integer().positive().required(),
     MAX_USER_SESSIONS: Joi.number().integer().positive().required(),
+    SESSION_COOKIE_NAME: Joi.string().required(),
     NODE_ENV: Joi.string()
         .valid(
             Environment.DEVELOPMENT,

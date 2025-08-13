@@ -16,6 +16,7 @@ export class SessionMiddlewareFactory {
 
     create() {
         const middleware = session({
+            name: this.sessionConfig.sessionCookieName,
             resave: false,
             saveUninitialized: false,
             secret: this.sessionConfig.cookieSecret,
