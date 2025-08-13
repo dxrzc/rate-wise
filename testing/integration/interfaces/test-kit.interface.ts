@@ -1,8 +1,10 @@
+import { App } from 'supertest/types';
 import { INestApplication } from '@nestjs/common';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
-import { App } from 'supertest/types';
+import { SessionConfigService } from 'src/config/services/session-config.service';
 
 export interface ITestKit {
     app: INestApplication<App>;
     userSeed: UserSeedService;
+    sessionConfig: SessionConfigService;
 }

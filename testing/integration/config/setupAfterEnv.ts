@@ -10,6 +10,7 @@ import { RedisService } from 'src/redis/redis.service';
 import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
+import { SessionConfigService } from 'src/config/services/session-config.service';
 
 let nestApp: INestApplication<App>;
 
@@ -25,6 +26,7 @@ beforeAll(async () => {
     nestApp = moduleFixture.createNestApplication();
     testKit.app = nestApp;
     testKit.userSeed = nestApp.get(UserSeedService);
+    testKit.sessionConfig = nestApp.get(SessionConfigService);
     await nestApp.init();
 });
 
