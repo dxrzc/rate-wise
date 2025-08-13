@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { USER_ALREADY_EXISTS } from './messages/user.messages';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
@@ -75,7 +76,7 @@ export class UsersService {
             return await this.userRepository.save(user);
         } catch (error) {
             if (isDuplicatedKeyError(error))
-                throw new BadRequestException('User already exists');
+                throw new BadRequestException(USER_ALREADY_EXISTS);
             throw new InternalServerErrorException(error);
         }
     }

@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as request from 'supertest';
+import { faker } from '@faker-js/faker/.';
 import { Code } from '@integration/enum/code.enum';
 import { signUpQuery } from '@queries/sign-up.query';
 import { testKit } from '@integration/utils/test-kit.util';
 import { createQuery } from '@integration/utils/create-query.util';
+import { USER_ALREADY_EXISTS } from 'src/users/messages/user.messages';
+import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
-        test('return BAD REQUEST', async () => {
+        test('should return BAD REQUEST and USER_ALREADY_EXISTS', async () => {
             const username = testKit.userSeed.username;
             await request(testKit.app.getHttpServer())
                 .post('/graphql')
@@ -17,7 +21,6 @@ describe('signUp', () => {
                         password: testKit.userSeed.password,
                     }),
                 );
-            // create another user with the same username
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
                 .send(
@@ -27,8 +30,80 @@ describe('signUp', () => {
                         password: testKit.userSeed.password,
                     }),
                 );
-            // TODO: abstract error messages
-            expect(res).toFailWith(Code.BAD_REQUEST, 'My nepe already exists');
+            expect(res).toFailWith(Code.BAD_REQUEST, USER_ALREADY_EXISTS);
+        });
+    });
+
+    describe('Email already exists', () => {
+        test('should return BAD REQUEST and USER_ALREADY_EXISTS', async () => {
+            const email = testKit.userSeed.email;
+            await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(
+                    createQuery(signUpQuery, {
+                        email,
+                        username: testKit.userSeed.username,
+                        password: testKit.userSeed.password,
+                    }),
+                );
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(
+                    createQuery(signUpQuery, {
+                        email,
+                        username: testKit.userSeed.username,
+                        password: testKit.userSeed.password,
+                    }),
+                );
+            expect(res).toFailWith(Code.BAD_REQUEST, USER_ALREADY_EXISTS);
+        });
+    });
+
+    test('created user should contain the expected values in db', async () => {
+        const user = testKit.userSeed.signUpInput;
+        const res = await request(testKit.app.getHttpServer())
+            .post('/graphql')
+            .send(createQuery(signUpQuery, user));
+        expect(res).notToFail();
+        const userId = res.body.data.signUp.id as string;
+        const userDB = await testKit.userRepos.findOneBy({ id: userId });
+        expect(userDB).not.toBeNull();
+        expect(userDB!.role).toBe('user');
+        expect(userDB!.reputationScore).toBe(0);
+        expect(userDB!.email).toBe(user.email);
+        expect(userDB!.username).toBe(user.username);
+        expect(userDB!.password).not.toBe(user.password); // hashed
+        expect(userDB!.createdAt).toBeDefined();
+        expect(userDB!.updatedAt).toBeDefined();
+    });
+
+    describe('Password exceeds the max password length (wiring test)', () => {
+        test('should return BAD REQUEST and..', async () => {
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(
+                    createQuery(signUpQuery, {
+                        ...testKit.userSeed.signUpInput,
+                        password: faker.internet.password({
+                            length: PASSWORD_MAX_LENGTH + 1,
+                        }),
+                    }),
+                );
+            expect(res).toFailWith(Code.BAD_REQUEST, 'Bad Request Exception');
+        });
+    });
+
+    describe('Successful sign-up', () => {
+        test('should set a session cookie', async () => {
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
+            expect(res).notToFail();
+            const cookieName = testKit.sessionConfig.sessionCookieName;
+            const cookies = res.headers['set-cookie'] as unknown as string[];
+            expect(cookies).toBeDefined();
+            const sess = cookies.find((c) => c.startsWith(cookieName));
+            expect(sess).toBeDefined();
         });
     });
 });

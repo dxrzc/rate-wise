@@ -11,6 +11,7 @@ import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { SessionConfigService } from 'src/config/services/session-config.service';
+import { User } from 'src/users/entities/user.entity';
 
 let nestApp: INestApplication<App>;
 
@@ -24,9 +25,11 @@ beforeAll(async () => {
         imports: [AppModule],
     }).compile();
     nestApp = moduleFixture.createNestApplication();
+    const dataSource = nestApp.get(DataSource);
     testKit.app = nestApp;
     testKit.userSeed = nestApp.get(UserSeedService);
     testKit.sessionConfig = nestApp.get(SessionConfigService);
+    testKit.userRepos = dataSource.getRepository(User);
     await nestApp.init();
 });
 
