@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import * as request from 'supertest';
-import { faker } from '@faker-js/faker/.';
-import { Code } from '@integration/enum/code.enum';
-import { signUpQuery } from '@queries/sign-up.query';
-import { testKit } from '@integration/utils/test-kit.util';
-import { createQuery } from '@integration/utils/create-query.util';
 import { USER_ALREADY_EXISTS } from 'src/users/messages/user.messages';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
+import { createQuery } from '@integration/utils/create-query.util';
+import { testKit } from '@integration/utils/test-kit.util';
+import { signUpQuery } from '@queries/sign-up.query';
+import { Code } from '@integration/enum/code.enum';
+import { faker } from '@faker-js/faker/.';
+import * as request from 'supertest';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
@@ -99,11 +99,7 @@ describe('signUp', () => {
                 .post('/graphql')
                 .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
             expect(res).notToFail();
-            const cookieName = testKit.sessionConfig.sessionCookieName;
-            const cookies = res.headers['set-cookie'] as unknown as string[];
-            expect(cookies).toBeDefined();
-            const sess = cookies.find((c) => c.startsWith(cookieName));
-            expect(sess).toBeDefined();
+            expect(res).toContainCookie(testKit.sessConfig.cookieName);
         });
     });
 });
