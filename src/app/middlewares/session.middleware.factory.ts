@@ -1,10 +1,10 @@
+import { SessionConfigService } from 'src/config/services/session-config.service';
+import { ServerConfigService } from 'src/config/services/server-config.service';
+import { Environment } from 'src/common/enum/environment.enum';
+import { RedisService } from 'src/redis/redis.service';
+import { Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
-import { Injectable } from '@nestjs/common';
-import { Environment } from 'src/common/enum/environment.enum';
-import { ServerConfigService } from 'src/config/services/server-config.service';
-import { SessionConfigService } from 'src/config/services/session-config.service';
-import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class SessionMiddlewareFactory {
@@ -16,7 +16,7 @@ export class SessionMiddlewareFactory {
 
     create() {
         const middleware = session({
-            name: this.sessionConfig.sessionCookieName,
+            name: this.sessionConfig.cookieName,
             resave: false,
             saveUninitialized: false,
             secret: this.sessionConfig.cookieSecret,

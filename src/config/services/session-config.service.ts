@@ -11,7 +11,7 @@ export class SessionConfigService {
         >,
     ) {}
 
-    get sessionCookieName(): string {
+    get cookieName(): string {
         return this.configService.get('SESSION_COOKIE_NAME');
     }
 
