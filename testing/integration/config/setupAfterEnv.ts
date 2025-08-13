@@ -6,16 +6,18 @@ import { testKit } from '../utils/test-kit.util';
 import { INestApplication } from '@nestjs/common';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { User } from 'src/users/entities/user.entity';
 import { RedisService } from 'src/redis/redis.service';
 import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
+import { toContainCookie } from './custom-matchers/to-contain-cookie';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { SessionConfigService } from 'src/config/services/session-config.service';
-import { User } from 'src/users/entities/user.entity';
 
 let nestApp: INestApplication<App>;
 
 expect.extend({
+    toContainCookie,
     toFailWith,
     notToFail,
 });
