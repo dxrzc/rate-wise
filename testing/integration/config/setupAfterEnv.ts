@@ -7,6 +7,7 @@ import { INestApplication } from '@nestjs/common';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisService } from 'src/redis/redis.service';
+import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 
@@ -14,6 +15,7 @@ let nestApp: INestApplication<App>;
 
 expect.extend({
     toFailWith,
+    notToFail,
 });
 
 beforeAll(async () => {
