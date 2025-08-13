@@ -8,6 +8,6 @@ import { SessionConfigService } from 'src/config/services/session-config.service
 export interface ITestKit {
     app: INestApplication<App>;
     userSeed: UserSeedService;
-    sessionConfig: SessionConfigService;
+    sessConfig: SessionConfigService;
     userRepos: Repository<User>;
 }

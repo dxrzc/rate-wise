@@ -30,7 +30,7 @@ beforeAll(async () => {
     const dataSource = nestApp.get(DataSource);
     testKit.app = nestApp;
     testKit.userSeed = nestApp.get(UserSeedService);
-    testKit.sessionConfig = nestApp.get(SessionConfigService);
+    testKit.sessConfig = nestApp.get(SessionConfigService);
     testKit.userRepos = dataSource.getRepository(User);
     await nestApp.init();
 });
