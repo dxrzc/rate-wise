@@ -33,7 +33,6 @@ export class SessionsService {
     async deleteAllSessions(userId: string): Promise<void> {
         const indexKey = makeSessionsIndexKey(userId);
         const sessionsIds = await this.redisService.setMembers(indexKey);
-        console.log({ sessionsIds });
         const deletions = sessionsIds.map((sId) =>
             this.redisService.delete(`session:${sId}`),
         );
