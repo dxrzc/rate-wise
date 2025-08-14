@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "docker:int": "docker compose -p rate-wise-int --env-file .env.int up -d",
+    "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
+    "docker:int": "docker compose -p rate-wise-int --env-file .env.int --profile int up -d",
     "test:int": "npm run docker:int && NODE_ENV=integration node node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts"
   },
   "dependencies": {
