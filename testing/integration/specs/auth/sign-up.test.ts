@@ -78,7 +78,7 @@ describe('signUp', () => {
     });
 
     describe('Password exceeds the max password length (wiring test)', () => {
-        test('should return BAD REQUEST and..', async () => {
+        test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
                 .send(
