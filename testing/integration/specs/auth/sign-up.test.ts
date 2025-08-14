@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { makeUserSessionRelationKey } from 'src/auth/functions/make-user-session-relation-key';
+import { makeSessionsIndexKey } from 'src/auth/functions/make-sessions-index-key';
+import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
+import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { USER_ALREADY_EXISTS } from 'src/users/messages/user.messages';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { createQuery } from '@integration/utils/create-query.util';
@@ -10,7 +14,7 @@ import * as request from 'supertest';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
-        test('should return BAD REQUEST and USER_ALREADY_EXISTS', async () => {
+        test('should return BAD REQUEST and USER_ALREADY_EXISTS message ', async () => {
             const username = testKit.userSeed.username;
             await request(testKit.app.getHttpServer())
                 .post('/graphql')
@@ -35,7 +39,7 @@ describe('signUp', () => {
     });
 
     describe('Email already exists', () => {
-        test('should return BAD REQUEST and USER_ALREADY_EXISTS', async () => {
+        test('should return BAD REQUEST and USER_ALREADY_EXISTS message', async () => {
             const email = testKit.userSeed.email;
             await request(testKit.app.getHttpServer())
                 .post('/graphql')
@@ -100,6 +104,28 @@ describe('signUp', () => {
                 .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
             expect(res).notToFail();
             expect(res).toContainCookie(testKit.sessConfig.cookieName);
+        });
+
+        test('should create user-sessions index redis set', async () => {
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
+            expect(res).notToFail();
+            const key = makeSessionsIndexKey(res.body.data.signUp.id as string);
+            const sessSet = await testKit.redisService.setMembers(key);
+            expect(sessSet.length).toBe(1);
+            expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
+        });
+
+        test('should create session-user relation record in redis', async () => {
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
+            expect(res).notToFail();
+            const sid = getSidFromCookie(getSessionCookie(res));
+            const key = makeUserSessionRelationKey(sid);
+            const sessionOwner = await testKit.redisService.get(key);
+            expect(sessionOwner).toBe(res.body.data.signUp.id);
         });
     });
 });
