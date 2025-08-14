@@ -32,6 +32,7 @@ beforeAll(async () => {
     testKit.userSeed = nestApp.get(UserSeedService);
     testKit.sessConfig = nestApp.get(SessionConfigService);
     testKit.userRepos = dataSource.getRepository(User);
+    testKit.redisService = nestApp.get(RedisService);
     await nestApp.init();
 });
 
