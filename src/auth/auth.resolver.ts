@@ -7,7 +7,7 @@ import { UserModel } from 'src/users/models/user.model';
 import { SessionsService } from './services/session.service';
 import { RequestContext } from './types/request-context.type';
 import { Public } from 'src/common/decorators/public.decorator';
-import { MAX_SESSIONS_ERROR } from './constants/errors.constants';
+import { MAX_SESSIONS_REACHED } from './constants/errors.constants';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { SessionConfigService } from 'src/config/services/session-config.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
@@ -45,7 +45,7 @@ export class AuthResolver {
         const userId = signedIn.id;
         const activeSessions = await this.sessionService.activeSessions(userId);
         if (activeSessions === this.sessionConfig.maxUserSessions) {
-            throw new BadRequestException(MAX_SESSIONS_ERROR);
+            throw new BadRequestException(MAX_SESSIONS_REACHED);
         }
         await this.sessionService.newSession(req, userId);
         return signedIn;

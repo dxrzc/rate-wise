@@ -4,6 +4,7 @@ import { SignInInput } from './dtos/sign-in.input';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { INVALID_CREDENTIALS } from './constants/errors.constants';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +23,7 @@ export class AuthService {
         const user = await this.userService.findOneByIdOrThrow(userId);
         const passwordMatches = this.passwordMatches(user.password, password);
         if (!passwordMatches)
-            throw new BadRequestException('Invalid credentials');
+            throw new BadRequestException(INVALID_CREDENTIALS);
     }
 
     async signUp(signUpInput: SignUpInput): Promise<User> {
@@ -34,7 +35,7 @@ export class AuthService {
     async signIn(credentials: SignInInput): Promise<User> {
         const user = await this.userService.findOneByEmail(credentials.email);
         if (!user || !this.passwordMatches(user.password, credentials.password))
-            throw new BadRequestException('Invalid credentials');
+            throw new BadRequestException(INVALID_CREDENTIALS);
         return user;
     }
 }
