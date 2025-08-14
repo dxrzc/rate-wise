@@ -27,23 +27,19 @@ beforeAll(async () => {
         imports: [AppModule],
     }).compile();
     nestApp = moduleFixture.createNestApplication();
+    await nestApp.init();
     const dataSource = nestApp.get(DataSource);
     testKit.app = nestApp;
     testKit.userSeed = nestApp.get(UserSeedService);
     testKit.sessConfig = nestApp.get(SessionConfigService);
     testKit.userRepos = dataSource.getRepository(User);
     testKit.redisService = nestApp.get(RedisService);
-    await nestApp.init();
 });
 
 afterAll(async () => {
     if (nestApp) {
         const dataSource = nestApp.get<DataSource>(getDataSourceToken());
         const redisService = nestApp.get<RedisService>(RedisService);
-        await Promise.all([
-            dataSource.dropDatabase(),
-            redisService['redisClient'].FLUSHDB(),
-        ]);
         await dataSource.destroy();
         redisService.disconnect();
         await nestApp.close();
