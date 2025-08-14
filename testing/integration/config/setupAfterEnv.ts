@@ -40,7 +40,10 @@ afterAll(async () => {
     if (nestApp) {
         const dataSource = nestApp.get<DataSource>(getDataSourceToken());
         const redisService = nestApp.get<RedisService>(RedisService);
-        await dataSource.dropDatabase();
+        await Promise.all([
+            dataSource.dropDatabase(),
+            redisService['redisClient'].FLUSHDB(),
+        ]);
         await dataSource.destroy();
         redisService.disconnect();
         await nestApp.close();
