@@ -3,6 +3,9 @@ import type { Config } from 'jest';
 const config: Config = {
     rootDir: process.cwd(), // workidr
 
+    globalSetup: '<rootDir>/testing/integration/config/global-setup.ts',
+    globalTeardown: '<rootDir>/testing/integration/config/global-teardown.ts',
+
     // setup
     setupFilesAfterEnv: [
         '<rootDir>/testing/integration/config/setupAfterEnv.ts',
@@ -30,7 +33,7 @@ const config: Config = {
     preset: 'ts-jest',
     testEnvironment: 'jest-environment-node',
 
-    maxWorkers: '50%',
+    // maxWorkers: '50%',
 };
 
 export default config;
