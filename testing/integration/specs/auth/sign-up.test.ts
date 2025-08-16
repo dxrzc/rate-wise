@@ -11,6 +11,7 @@ import { signUpQuery } from '@queries/sign-up.query';
 import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import * as request from 'supertest';
+import { createUser } from '@integration/utils/create-user.util';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
@@ -126,6 +127,27 @@ describe('signUp', () => {
             const key = makeUserSessionRelationKey(sid);
             const sessionOwner = await testKit.redisService.get(key);
             expect(sessionOwner).toBe(res.body.data.signUp.id);
+        });
+    });
+
+    describe('Session cookie is provided', () => {
+        describe('SignUp success', () => {
+            test('old session should be removed from redis store (session rotation)', async () => {
+                //  old session
+                const { sessionCookie } = await createUser();
+                const oldSid = getSidFromCookie(sessionCookie);
+                // new session (by signing up)
+                await request(testKit.app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', sessionCookie)
+                    .send(
+                        createQuery(signUpQuery, testKit.userSeed.signUpInput),
+                    );
+                // old session was deleted
+                await expect(
+                    testKit.redisService.get(`session:${oldSid}`),
+                ).resolves.toBeNull();
+            });
         });
     });
 });

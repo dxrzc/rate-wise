@@ -142,4 +142,25 @@ describe('signIn', () => {
             expect(res).toFailWith(Code.BAD_REQUEST, MAX_SESSIONS_REACHED);
         });
     });
+
+    describe('Session cookie is provided', () => {
+        describe('SignIn success', () => {
+            test('old session should be removed from redis store (session rotation)', async () => {
+                const { sessionCookie, email, password } = await createUser();
+                const oldSid = getSidFromCookie(sessionCookie);
+                await request(testKit.app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', sessionCookie)
+                    .send(
+                        createQuery(signInQuery, {
+                            email,
+                            password,
+                        }),
+                    );
+                await expect(
+                    testKit.redisService.get(`session:${oldSid}`),
+                ).resolves.toBeNull();
+            });
+        });
+    });
 });
