@@ -5,13 +5,17 @@ import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { INVALID_CREDENTIALS } from './constants/errors.constants';
+import { ServerConfigService } from 'src/config/services/server-config.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly userService: UsersService) {}
+    constructor(
+        private readonly userService: UsersService,
+        private readonly serverConfig: ServerConfigService,
+    ) {}
 
     private hashPassword(password: string): string {
-        const salt = bcrypt.genSaltSync(10);
+        const salt = bcrypt.genSaltSync(this.serverConfig.bcryptSaltRounds);
         return bcrypt.hashSync(password, salt);
     }
 
