@@ -15,7 +15,7 @@ import { Test } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-describe('First unit test', () => {
+describe('AuthService', () => {
     const serverConfig: Pick<ServerConfigService, 'bcryptSaltRounds'> = {
         bcryptSaltRounds: 1,
     };
