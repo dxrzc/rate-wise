@@ -17,6 +17,7 @@ import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
+import { USER_NOT_FOUND } from './constants/errors.constants';
 
 @Injectable()
 export class UsersService {
@@ -51,11 +52,9 @@ export class UsersService {
     }
 
     async findOneByIdOrThrow(id: string): Promise<User> {
-        if (!validUUID(id))
-            throw new BadRequestException('Id is not a valid UUID');
+        if (!validUUID(id)) throw new NotFoundException(USER_NOT_FOUND);
         const userFound = await this.userRepository.findOneBy({ id });
-        if (!userFound)
-            throw new NotFoundException(`User with id ${id} not found`);
+        if (!userFound) throw new NotFoundException(USER_NOT_FOUND);
         return userFound;
     }
 
