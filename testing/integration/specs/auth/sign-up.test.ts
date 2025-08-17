@@ -125,7 +125,7 @@ describe('signUp', () => {
             });
         });
 
-        test.only('user password can not be queried from the response data', async () => {
+        test('user password can not be queried from the response data', async () => {
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
                 .send(
