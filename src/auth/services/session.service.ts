@@ -17,7 +17,7 @@ import { Injectable } from '@nestjs/common';
     This helps us to limit the max sessions granted per user.
     When a session is deleted (the one created by express-session)    
     we need to remove that session from the user-sessions index. 
-    The redis-suscriber will only get the redis-key, that is, the session-id
+    The redis-subscriber will only get the redis-key, that is, the session-id
     but not the user-id, thus, the set can not be found.
 
     In order to solve this problem an extra record is created
