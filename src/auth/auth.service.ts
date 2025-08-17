@@ -32,16 +32,6 @@ export class AuthService {
         return bcrypt.compareSync(password, hash);
     }
 
-    private async reAuthenticate(
-        userId: string,
-        password: string,
-    ): Promise<void> {
-        const user = await this.userService.findOneByIdOrThrow(userId);
-        const passwordMatches = this.passwordMatches(user.password, password);
-        if (!passwordMatches)
-            throw new BadRequestException(INVALID_CREDENTIALS);
-    }
-
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
         signUpInput.password = this.hashPassword(signUpInput.password);
         const user = await this.userService.createOne(signUpInput);
@@ -71,7 +61,13 @@ export class AuthService {
         auth: ReAuthenticationInput,
         userId: string,
     ): Promise<void> {
-        await this.reAuthenticate(userId, auth.password);
+        const user = await this.userService.findOneByIdOrThrow(userId);
+        const passwordMatches = this.passwordMatches(
+            user.password,
+            auth.password,
+        );
+        if (!passwordMatches)
+            throw new BadRequestException(INVALID_CREDENTIALS);
         await this.sessionService.deleteAllSessions(userId);
     }
 }
