@@ -18,6 +18,68 @@ import {
 
 describe('signIn', () => {
     describe('Successful sign-in', () => {
+        test('data should match the user data in database', async () => {
+            // sign up
+            const { email, password, id } = await createUser();
+            // sign in
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(
+                    createQuery(signInQuery, {
+                        password,
+                        email,
+                    }),
+                );
+            expect(res).notToFail();
+            // find user in db
+            const userDb = await testKit.userRepos.findOneBy({
+                id,
+            });
+            expect(userDb).not.toBeNull();
+            // data should match
+            expect(res.body.data.signIn).toStrictEqual({
+                username: userDb?.username,
+                reputationScore: userDb?.reputationScore,
+                createdAt: userDb?.createdAt.toISOString(),
+                updatedAt: userDb?.updatedAt.toISOString(),
+                email: userDb?.email,
+                role: userDb?.role,
+                id: userDb?.id,
+            });
+        });
+
+        test('user password can not be queried from the response data', async () => {
+            // sign up
+            const { email, password } = await createUser();
+            // sign in
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(
+                    createQuery(
+                        `mutation SignIn($input: SignInInput!) {
+                          signIn(credentials: $input) {
+                            id
+                            createdAt
+                            updatedAt
+                            username
+                            email
+                            role
+                            reputationScore
+                            password
+                          }
+                        }`,
+                        {
+                            password,
+                            email,
+                        },
+                    ),
+                );
+            expect(res).toFailWith(
+                Code.GRAPHQL_VALIDATION_FAILED,
+                'Cannot query field "password" on type "UserModel".',
+            );
+        });
+
         test('should set a session cookie', async () => {
             const { email, password } = await createUser();
             const res = await request(testKit.app.getHttpServer())
