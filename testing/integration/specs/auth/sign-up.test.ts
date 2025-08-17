@@ -12,6 +12,7 @@ import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import * as request from 'supertest';
 import { createUser } from '@integration/utils/create-user.util';
+import { UserModel } from 'src/users/models/user.model';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
@@ -99,6 +100,58 @@ describe('signUp', () => {
     });
 
     describe('Successful sign-up', () => {
+        test('response data should match the created user in database', async () => {
+            // create user
+            const user = testKit.userSeed.signUpInput;
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(createQuery(signUpQuery, user));
+            expect(res).notToFail();
+            const responseData = res.body.data.signUp as UserModel;
+            // user in db
+            const userDb = await testKit.userRepos.findOneBy({
+                id: responseData.id,
+            });
+            expect(userDb).not.toBeNull();
+            // data should match
+            expect(responseData).toStrictEqual({
+                username: userDb?.username,
+                reputationScore: userDb?.reputationScore,
+                createdAt: userDb?.createdAt.toISOString(),
+                updatedAt: userDb?.updatedAt.toISOString(),
+                email: userDb?.email,
+                role: userDb?.role,
+                id: userDb?.id,
+            });
+        });
+
+        test.only('user password can not be queried from the response data', async () => {
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(
+                    createQuery(
+                        `mutation SignUp($input: SignUpInput!) {
+                          signUp(user_data: $input) {
+                            id
+                            createdAt
+                            updatedAt
+                            username
+                            email
+                            role
+                            reputationScore
+                            password
+                          }
+                        }`,
+                        testKit.userSeed.signUpInput,
+                    ),
+                );
+            console.log(res.body);
+            expect(res).toFailWith(
+                Code.GRAPHQL_VALIDATION_FAILED,
+                'Cannot query field "password" on type "UserModel".',
+            );
+        });
+
         test('should set a session cookie', async () => {
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
