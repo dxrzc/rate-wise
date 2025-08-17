@@ -3,7 +3,7 @@ import { RedisClientType } from '@redis/client';
 import { removeSessionFromUserIndex } from 'src/auth/functions/delete-key-from-set';
 
 @Injectable()
-export class RedisSuscriber {
+export class RedisSubscriber {
     private suscriber: RedisClientType | undefined;
 
     async suscribe(redisClient: RedisClientType) {

@@ -1,7 +1,7 @@
 import { createClient } from 'redis';
 import { RedisClientType } from '@redis/client';
 import { Inject, Injectable } from '@nestjs/common';
-import { RedisSuscriber } from './suscribers/redis.suscriber';
+import { RedisSubscriber } from './suscribers/redis.subscriber';
 import { MODULE_OPTIONS_TOKEN } from './redis.module-definition';
 import { rethrowIfFails } from 'src/common/functions/error/rethrow-if-fails';
 import { IRedisModuleOptions } from './interfaces/redis-module-options.interface';
@@ -14,7 +14,7 @@ export class RedisService {
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly redisOpts: IRedisModuleOptions,
-        private readonly redisSuscriber: RedisSuscriber,
+        private readonly redisSuscriber: RedisSubscriber,
     ) {
         this.redisClient = createClient({ url: redisOpts.uri });
         rethrowIfFails(this.connect());
