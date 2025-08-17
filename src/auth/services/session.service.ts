@@ -30,7 +30,7 @@ import { Injectable } from '@nestjs/common';
     the session from the index and delete the sess_user record.   
 */
 @Injectable()
-export class SessionsService {
+export class SessionService {
     constructor(private readonly redisService: RedisService) {}
 
     // creates a session-user relation to track down sessions and their respective owners
