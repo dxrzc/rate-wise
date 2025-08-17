@@ -145,7 +145,6 @@ describe('signUp', () => {
                         testKit.userSeed.signUpInput,
                     ),
                 );
-            console.log(res.body);
             expect(res).toFailWith(
                 Code.GRAPHQL_VALIDATION_FAILED,
                 'Cannot query field "password" on type "UserModel".',
