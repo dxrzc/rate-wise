@@ -24,7 +24,7 @@ export class SessionMiddlewareFactory {
             rolling: true,
             cookie: {
                 httpOnly: true,
-                maxAge: this.sessionConfig.cookieMaxAge,
+                maxAge: this.sessionConfig.cookieMaxAgeMs,
                 secure:
                     this.serverConfig.environment === Environment.PRODUCTION,
             },
