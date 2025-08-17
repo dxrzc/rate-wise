@@ -159,6 +159,17 @@ describe('signUp', () => {
             expect(res).toContainCookie(testKit.sessConfig.cookieName);
         });
 
+        test('should store session cookie in redis', async () => {
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
+            expect(res).notToFail();
+            const sid = getSidFromCookie(getSessionCookie(res));
+            await expect(
+                testKit.redisService.get(`session:${sid}`),
+            ).resolves.not.toBeNull();
+        });
+
         test('should create user-sessions index redis set', async () => {
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
