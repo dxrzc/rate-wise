@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { USER_ALREADY_EXISTS } from './messages/user.messages';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
@@ -16,6 +17,7 @@ import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
+import { USER_NOT_FOUND } from './constants/errors.constants';
 
 @Injectable()
 export class UsersService {
@@ -50,11 +52,9 @@ export class UsersService {
     }
 
     async findOneByIdOrThrow(id: string): Promise<User> {
-        if (!validUUID(id))
-            throw new BadRequestException('Id is not a valid UUID');
+        if (!validUUID(id)) throw new NotFoundException(USER_NOT_FOUND);
         const userFound = await this.userRepository.findOneBy({ id });
-        if (!userFound)
-            throw new NotFoundException(`User with id ${id} not found`);
+        if (!userFound) throw new NotFoundException(USER_NOT_FOUND);
         return userFound;
     }
 
@@ -75,7 +75,7 @@ export class UsersService {
             return await this.userRepository.save(user);
         } catch (error) {
             if (isDuplicatedKeyError(error))
-                throw new BadRequestException('User already exists');
+                throw new BadRequestException(USER_ALREADY_EXISTS);
             throw new InternalServerErrorException(error);
         }
     }

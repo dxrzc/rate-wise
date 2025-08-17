@@ -11,12 +11,16 @@ export class SessionConfigService {
         >,
     ) {}
 
+    get cookieName(): string {
+        return this.configService.get('SESSION_COOKIE_NAME');
+    }
+
     get cookieSecret(): string {
         return this.configService.get('COOKIE_SECRET');
     }
 
-    get cookieMaxAge(): number {
-        return this.configService.get('COOKIE_MAX_AGE');
+    get cookieMaxAgeMs(): number {
+        return this.configService.get('COOKIE_MAX_AGE_MS');
     }
 
     get maxUserSessions(): number {

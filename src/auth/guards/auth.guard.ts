@@ -1,9 +1,15 @@
-import { Reflector } from '@nestjs/core';
-import { GqlExecutionContext } from '@nestjs/graphql';
-import { UsersService } from 'src/users/users.service';
-import { Public } from 'src/common/decorators/public.decorator';
 import { IGraphQLContext } from '../interfaces/graphql-context.interface';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { AUTHENTICATION_REQUIRED } from '../constants/errors.constants';
+import { Public } from 'src/common/decorators/public.decorator';
+import { UsersService } from 'src/users/users.service';
+import { GqlExecutionContext } from '@nestjs/graphql';
+import { Reflector } from '@nestjs/core';
+import {
+    CanActivate,
+    ExecutionContext,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -22,7 +28,7 @@ export class AuthGuard implements CanActivate {
         const reqContext = graphQLContext.getContext<IGraphQLContext>();
         const session = reqContext.req.session;
         if (!session || !session.userId) {
-            return false;
+            throw new UnauthorizedException(AUTHENTICATION_REQUIRED);
         }
 
         const userInSession = session.userId;

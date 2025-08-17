@@ -9,6 +9,10 @@ export class ServerConfigService {
         private readonly configService: ConfigService<IServerConfig, true>,
     ) {}
 
+    get bcryptSaltRounds(): number {
+        return this.configService.get('BCRYPT_SALT_ROUNDS');
+    }
+
     get environment(): Environment {
         return this.configService.get('NODE_ENV');
     }

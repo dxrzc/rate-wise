@@ -62,6 +62,7 @@ type Query {
 }
 
 type Mutation {
+  seedUsers(quantity: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
   signUp(user_data: SignUpInput!): UserModel!
   signIn(credentials: SignInInput!): UserModel!

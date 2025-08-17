@@ -1,12 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import { RedisService } from 'src/redis/redis.service';
-import { RequestContext } from '../types/request-context.type';
-import { promisify } from 'src/common/functions/utils/promisify.util';
-import { makeSessionsIndexKey } from '../functions/make-sessions-index-key';
 import { makeUserSessionRelationKey } from '../functions/make-user-session-relation-key';
+import { makeSessionsIndexKey } from '../functions/make-sessions-index-key';
+import { promisify } from 'src/common/functions/utils/promisify.util';
+import { RequestContext } from '../types/request-context.type';
+import { RedisService } from 'src/redis/redis.service';
+import { Injectable } from '@nestjs/common';
 
+/*
+    Every time a session is granted is added to a redis set like this.
+            ______________________________________
+            |                    |               |
+            |                    | <session_1>   |
+            |   index:<user_id>  | <session_2>   |
+            |                    | <session_3>   |
+            |____________________|_______________|        
+
+    This helps us to limit the max sessions granted per user.
+    When a session is deleted (the one created by express-session)    
+    we need to remove that session from the user-sessions index. 
+    The redis-subscriber will only get the redis-key, that is, the session-id
+    but not the user-id, thus, the set can not be found.
+
+    In order to solve this problem an extra record is created
+            __________________________________________________
+            |                             |                  |
+            |    sess_user:<session_id>   |    <user_id>     | 
+            |_____________________________|__________________| 
+
+    When a session expires or is deleted, the redis subscriber is in charge of deleting 
+    the session from the index and delete the sess_user record.   
+*/
 @Injectable()
-export class SessionsService {
+export class SessionService {
     constructor(private readonly redisService: RedisService) {}
 
     // creates a session-user relation to track down sessions and their respective owners
@@ -33,7 +57,6 @@ export class SessionsService {
     async deleteAllSessions(userId: string): Promise<void> {
         const indexKey = makeSessionsIndexKey(userId);
         const sessionsIds = await this.redisService.setMembers(indexKey);
-        console.log({ sessionsIds });
         const deletions = sessionsIds.map((sId) =>
             this.redisService.delete(`session:${sId}`),
         );
