@@ -12,10 +12,11 @@ export class WinstonConfigService implements WinstonModuleOptionsFactory {
     constructor(private readonly serverConfig: ServerConfigService) {}
 
     createWinstonModuleOptions(): WinstonModuleOptions {
+        const environment = this.serverConfig.environment;
         return {
             transports: [
-                consoleTransportFactory(),
-                fileSystemTransportFactory(this.serverConfig.environment),
+                consoleTransportFactory(environment),
+                fileSystemTransportFactory(environment),
             ],
         };
     }

@@ -7,6 +7,7 @@ export function fileSystemTransportFactory(env: Environment) {
     const folder = env === Environment.PRODUCTION ? prodFolder : devFolder;
 
     return new winston.transports.File({
+        silent: env === Environment.INTEGRATION,
         level: 'info', // No debug messages in fs
         filename: `${folder}/http-messages.log`,
         format: winston.format.combine(
