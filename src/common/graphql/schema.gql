@@ -9,7 +9,7 @@ type UserModel {
   updatedAt: DateTime!
   username: String!
   email: String!
-  role: String!
+  role: UserRole!
   reputationScore: Float!
 }
 
@@ -17,6 +17,18 @@ type UserModel {
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+"""Available roles for a user."""
+enum UserRole {
+  """Regular user with basic permissions."""
+  USER
+
+  """User with moderation capabilities."""
+  MODERATOR
+
+  """Administrator with full access."""
+  ADMIN
+}
 
 type UserModelEdge {
   cursor: String!

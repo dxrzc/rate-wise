@@ -1,7 +1,7 @@
-import { UserRole } from '../enum/user-role.enum';
-import { Column, Entity, OneToMany } from 'typeorm';
-import { Item } from 'src/items/entities/item.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
+import { Item } from 'src/items/entities/item.entity';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { UserRole } from '../enum/user-role.enum';
 
 @Entity('account')
 export class User extends BaseEntity {
@@ -19,7 +19,7 @@ export class User extends BaseEntity {
         enum: UserRole,
         default: UserRole.USER,
     })
-    role!: string;
+    role!: UserRole;
 
     @Column('integer', { default: 0, name: 'reputation_score' })
     reputationScore!: number;
