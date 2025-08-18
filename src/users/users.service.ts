@@ -6,17 +6,18 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { UserModel } from './models/user.model';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserInput } from './dtos/input/create-user.input';
+import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { USER_ALREADY_EXISTS } from './messages/user.messages';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
 import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
+import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
+import { USER_NOT_FOUND } from './constants/errors.constants';
 
 @Injectable()
 export class UsersService {
@@ -25,13 +26,13 @@ export class UsersService {
         private readonly userRepository: Repository<User>,
     ) {}
 
-    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<UserModel>> {
+    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         const limit = pagArgs.limit;
         const decodedCursor = pagArgs.cursor
             ? decodeCursor(pagArgs.cursor)
             : undefined;
         // fetches limit + 1 records so we can detect whether there’s a next page
-        const edges = await createPaginationEdges<UserModel, IUserDbRecord>(
+        const edges = await createPaginationEdges<User, IUserDbRecord>(
             this.userRepository,
             limit,
             rawRecordTouserEntity,
@@ -50,21 +51,31 @@ export class UsersService {
         };
     }
 
-    async findOneById(id: string): Promise<UserModel> {
-        if (!validUUID(id))
-            throw new BadRequestException('Id is not a valid UUID');
+    async findOneByIdOrThrow(id: string): Promise<User> {
+        if (!validUUID(id)) throw new NotFoundException(USER_NOT_FOUND);
         const userFound = await this.userRepository.findOneBy({ id });
-        if (!userFound)
-            throw new NotFoundException(`User with id ${id} not found`);
+        if (!userFound) throw new NotFoundException(USER_NOT_FOUND);
         return userFound;
     }
 
-    async createOne(user: CreateUserInput): Promise<UserModel> {
+    async findOneByEmail(email: string): Promise<User | null> {
+        const userFound = await this.userRepository.findOneBy({ email });
+        return userFound;
+    }
+
+    async findOneByEmailOrThrow(email: string): Promise<User> {
+        const userFound = await this.findOneByEmail(email);
+        if (!userFound)
+            throw new BadRequestException(`User with email ${email} not found`);
+        return userFound;
+    }
+
+    async createOne(user: SignUpInput): Promise<User> {
         try {
             return await this.userRepository.save(user);
         } catch (error) {
             if (isDuplicatedKeyError(error))
-                throw new BadRequestException('User already exists');
+                throw new BadRequestException(USER_ALREADY_EXISTS);
             throw new InternalServerErrorException(error);
         }
     }

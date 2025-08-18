@@ -1,5 +1,13 @@
 {
   "compilerOptions": {
+    "paths": {
+      "@integration/*": [
+        "testing/integration/*"
+      ],
+      "@queries/*": [
+        "testing/queries/*"
+      ]
+    },
     "strict": true,
     "module": "commonjs",
     "declaration": true,

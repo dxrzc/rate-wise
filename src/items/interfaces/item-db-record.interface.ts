@@ -1,4 +1,4 @@
-import { IBaseRawDbRecord } from 'src/common/interfaces/base-raw-db-record.interface';
+import { IBaseRawDbRecord } from 'src/common/interfaces/database/base-raw-db-record.interface';
 import { User } from 'src/users/entities/user.entity';
 
 export interface IItemDbRecord extends IBaseRawDbRecord {

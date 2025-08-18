@@ -6,17 +6,16 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
-import { ItemModel } from './models/item.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dtos/input/create-item.input';
+import { IItemDbRecord } from './interfaces/item-db-record.interface';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { rawRecordToItemEntity } from './functions/raw-record-to-item-entity';
-import { IPaginatedType } from 'src/common/interfaces/paginated-type.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-import { IItemDbRecord } from './interfaces/item-db-record.interface';
+import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 
 @Injectable()
 export class ItemsService {
@@ -25,12 +24,12 @@ export class ItemsService {
         private readonly itemRepository: Repository<Item>,
     ) {}
 
-    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
+    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
         const limit = pagArgs.limit;
         const decodedCursor = pagArgs.cursor
             ? decodeCursor(pagArgs.cursor)
             : undefined;
-        const edges = await createPaginationEdges<ItemModel, IItemDbRecord>(
+        const edges = await createPaginationEdges<Item, IItemDbRecord>(
             this.itemRepository,
             limit,
             rawRecordToItemEntity,
@@ -49,7 +48,7 @@ export class ItemsService {
         };
     }
 
-    async findOneById(id: string): Promise<ItemModel> {
+    async findOneById(id: string): Promise<Item> {
         if (!validUUID(id))
             throw new BadRequestException('Id is not a valid UUID');
         const itemFound = await this.itemRepository.findOneBy({ id });
@@ -68,7 +67,7 @@ export class ItemsService {
         }
     }
 
-    // updateOne(id: number, data: UpdateItemInput): ItemModel {
+    // updateOne(id: number, data: UpdateItemInput): Item {
     //     const item = itemsSeed.find((item) => item.id === id);
     //     if (!item) throw new NotFoundException(`Item with id ${id} not found`);
     //     Object.assign(item, data);

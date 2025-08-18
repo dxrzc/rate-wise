@@ -9,7 +9,7 @@ type UserModel {
   updatedAt: DateTime!
   username: String!
   email: String!
-  role: String!
+  role: UserRole!
   reputationScore: Float!
 }
 
@@ -17,6 +17,18 @@ type UserModel {
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+"""Available roles for a user."""
+enum UserRole {
+  """Regular user with basic permissions."""
+  USER
+
+  """User with moderation capabilities."""
+  MODERATOR
+
+  """Administrator with full access."""
+  ADMIN
+}
 
 type UserModelEdge {
   cursor: String!
@@ -62,14 +74,12 @@ type Query {
 }
 
 type Mutation {
-  createUser(user_data: CreateUserInput!): UserModel!
+  seedUsers(quantity: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
-}
-
-input CreateUserInput {
-  username: String!
-  email: String!
-  password: String!
+  signUp(user_data: SignUpInput!): UserModel!
+  signIn(credentials: SignInInput!): UserModel!
+  signOut: Boolean!
+  signOutAll(password: ReAuthenticationInput!): Boolean!
 }
 
 input CreateItemInput {
@@ -77,4 +87,19 @@ input CreateItemInput {
   description: String!
   category: String!
   tags: [String!]!
+}
+
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+input ReAuthenticationInput {
+  password: String!
 }

@@ -1,19 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ServerConfigService } from './config/services/server.config.service';
-import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app/app.module';
+import { ServerConfigService } from './config/services/server-config.service';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const serverConfig = app.get(ServerConfigService);
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-        }),
-    );
     await app.listen(serverConfig.port);
-
     // TODO: NestJS logger
     console.log(`Running in ${serverConfig.environment.toUpperCase()} mode`);
 

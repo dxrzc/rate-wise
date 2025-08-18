@@ -1,8 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ServerConfigService } from './services/server.config.service';
+import { RedisConfigService } from './services/redis-config.service';
+import { ServerConfigService } from './services/server-config.service';
+import { SessionConfigService } from './services/session-config.service';
+import { DatabaseConfigService } from './services/database-config.service';
 import { configValidationSchema } from './schemas/config-validation.schema';
-import { DatabaseConfigService } from './services/postgres-db.config.service';
 
 @Global()
 @Module({
@@ -11,13 +13,25 @@ import { DatabaseConfigService } from './services/postgres-db.config.service';
             expandVariables: true,
             validationSchema: configValidationSchema,
             validatePredefined: true,
+            envFilePath: `.env.${process.env.NODE_ENV?.slice(0, 3)}`, // dev, int, e2e
             validationOptions: {
                 allowUnknown: true,
                 abortEarly: true,
             },
         }),
     ],
-    providers: [ConfigService, ServerConfigService, DatabaseConfigService],
-    exports: [ServerConfigService, DatabaseConfigService],
+    providers: [
+        ConfigService,
+        ServerConfigService,
+        DatabaseConfigService,
+        RedisConfigService,
+        SessionConfigService,
+    ],
+    exports: [
+        ServerConfigService,
+        DatabaseConfigService,
+        RedisConfigService,
+        SessionConfigService,
+    ],
 })
 export class AppConfigModule {}
