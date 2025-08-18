@@ -1,31 +1,33 @@
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
+import { DatabaseConfigService } from 'src/config/services/database-config.service';
+import { ServerConfigService } from 'src/config/services/server-config.service';
+import { RedisConfigService } from 'src/config/services/redis-config.service';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AppConfigModule } from 'src/config/app-config.module';
+import { Environment } from 'src/common/enum/environment.enum';
+import { WinstonConfigService } from './logger/logger.config';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { Item } from 'src/items/entities/item.entity';
+import { User } from 'src/users/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
+import { RedisModule } from 'src/redis/redis.module';
+import { ItemsModule } from 'src/items/items.module';
+import { ConditionalModule } from '@nestjs/config';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AuthModule } from 'src/auth/auth.module';
+import { SeedModule } from 'src/seed/seed.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { GraphQLModule } from '@nestjs/graphql';
+import { Request, Response } from 'express';
+import { WinstonModule } from 'nest-winston';
+import { join } from 'path';
 import {
     MiddlewareConsumer,
     Module,
     NestModule,
     ValidationPipe,
 } from '@nestjs/common';
-import { join } from 'path';
-import { Request, Response } from 'express';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { GraphQLModule } from '@nestjs/graphql';
-import { AuthModule } from 'src/auth/auth.module';
-import { SeedModule } from 'src/seed/seed.module';
-import { ConditionalModule } from '@nestjs/config';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
-import { UsersModule } from 'src/users/users.module';
-import { RedisModule } from 'src/redis/redis.module';
-import { ItemsModule } from 'src/items/items.module';
-import { User } from 'src/users/entities/user.entity';
-import { Item } from 'src/items/entities/item.entity';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { AppConfigModule } from 'src/config/app-config.module';
-import { Environment } from 'src/common/enum/environment.enum';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { RedisConfigService } from 'src/config/services/redis-config.service';
-import { ServerConfigService } from 'src/config/services/server-config.service';
-import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
-import { DatabaseConfigService } from 'src/config/services/database-config.service';
-import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 @Module({
     providers: [
@@ -44,6 +46,9 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     ],
     imports: [
         AppConfigModule,
+        WinstonModule.forRootAsync({
+            useClass: WinstonConfigService,
+        }),
         TypeOrmModule.forRootAsync({
             inject: [DatabaseConfigService],
             useFactory: (dbConfigService: DatabaseConfigService) => ({
