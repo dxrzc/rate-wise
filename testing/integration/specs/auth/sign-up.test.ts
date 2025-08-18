@@ -120,7 +120,7 @@ describe('signUp', () => {
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
-                role: userDb?.role,
+                role: userDb?.role.toUpperCase(),
                 id: userDb?.id,
             });
         });
