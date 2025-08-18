@@ -11,6 +11,8 @@ import {
     AUTHENTICATION_REQUIRED,
     INVALID_CREDENTIALS,
 } from 'src/auth/constants/errors.constants';
+import { faker } from '@faker-js/faker/.';
+import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 
 describe('signOutAll', () => {
     describe('Session Cookie not provided', () => {
@@ -23,6 +25,22 @@ describe('signOutAll', () => {
                 Code.UNAUTHENTICATED,
                 AUTHENTICATION_REQUIRED,
             );
+        });
+    });
+
+    describe('Invalid password length (wiring test)', () => {
+        test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
+            // sign up
+            const { sessionCookie } = await createUser();
+            // sign out all
+            const badPassword = faker.internet.password({
+                length: PASSWORD_MAX_LENGTH + 1,
+            });
+            const res = await request(testKit.app.getHttpServer())
+                .post('/graphql')
+                .set('Cookie', sessionCookie)
+                .send(createQuery(signOutAllQuery, { password: badPassword }));
+            expect(res).toFailWith(Code.BAD_REQUEST, 'Bad Request Exception');
         });
     });
 

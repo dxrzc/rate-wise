@@ -1,11 +1,7 @@
-import { Field, InputType } from '@nestjs/graphql';
-import { IsString, MaxLength } from 'class-validator';
-import { PASSWORD_MAX_LENGTH } from '../constants/auth.constants';
+import { InputType, PickType } from '@nestjs/graphql';
+import { SignUpInput } from './sign-up.input';
 
 @InputType()
-export class ReAuthenticationInput {
-    @IsString()
-    @MaxLength(PASSWORD_MAX_LENGTH)
-    @Field(() => String)
-    password!: string;
-}
+export class ReAuthenticationInput extends PickType(SignUpInput, [
+    'password',
+] as const) {}
