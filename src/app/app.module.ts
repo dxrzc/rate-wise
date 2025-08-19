@@ -1,12 +1,11 @@
-import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { DatabaseConfigService } from 'src/config/services/database-config.service';
-import { ServerConfigService } from 'src/config/services/server-config.service';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { Environment } from 'src/common/enum/environment.enum';
 import { WinstonConfigService } from './logger/logger.config';
+import { GqlConfigService } from './graphql/graphql.config';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Item } from 'src/items/entities/item.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -19,9 +18,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { SeedModule } from 'src/seed/seed.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
-import { Request, Response } from 'express';
 import { WinstonModule } from 'nest-winston';
-import { join } from 'path';
 import {
     MiddlewareConsumer,
     Module,
@@ -63,29 +60,7 @@ import {
         }),
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
             driver: ApolloDriver,
-            inject: [ServerConfigService],
-            useFactory: ({ environment }: ServerConfigService) => ({
-                playground: false,
-                plugins: [ApolloServerPluginLandingPageLocalDefault()],
-                formatError: (error) => {
-                    const code = error.extensions?.code;
-                    const stackTrace = error.extensions?.stacktrace;
-                    const isDev = environment === Environment.DEVELOPMENT;
-                    return {
-                        message: error.message,
-                        code: code || 'INTERNAL_SERVER_ERROR',
-                        stackTrace: isDev ? stackTrace : undefined,
-                    };
-                },
-                autoSchemaFile: join(
-                    process.cwd(),
-                    'src/common/graphql/schema.gql',
-                ),
-                context: (context: { req: Request; res: Response }) => ({
-                    req: context.req,
-                    res: context.res,
-                }),
-            }),
+            useClass: GqlConfigService,
         }),
         RedisModule.forRootAsync({
             isGlobal: true,
