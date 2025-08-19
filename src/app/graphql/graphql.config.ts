@@ -1,4 +1,4 @@
-import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/dist/esm/plugin/landingPage/default';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { ServerConfigService } from 'src/config/services/server-config.service';
 import { INTERNAL_SERVER_ERROR } from 'src/common/constants/errors.constants';
 import { Environment } from 'src/common/enum/environment.enum';
