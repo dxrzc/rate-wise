@@ -1,14 +1,12 @@
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
-import { DatabaseConfigService } from 'src/config/services/database-config.service';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { TypeOrmConfigService } from './typeorm/typeorm.config';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { Environment } from 'src/common/enum/environment.enum';
 import { WinstonConfigService } from './logger/logger.config';
 import { GqlConfigService } from './graphql/graphql.config';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { Item } from 'src/items/entities/item.entity';
-import { User } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { ItemsModule } from 'src/items/items.module';
@@ -43,31 +41,22 @@ import {
     ],
     imports: [
         AppConfigModule,
-        WinstonModule.forRootAsync({
-            useClass: WinstonConfigService,
-        }),
-        TypeOrmModule.forRootAsync({
-            inject: [DatabaseConfigService],
-            useFactory: (dbConfigService: DatabaseConfigService) => ({
-                type: 'postgres',
-                entities: [User, Item],
-                url: dbConfigService.uri,
-                autoLoadEntities: false,
-                retryAttempts: 3,
-                retryDelay: 1000,
-                synchronize: true, //!
-            }),
-        }),
-        GraphQLModule.forRootAsync<ApolloDriverConfig>({
-            driver: ApolloDriver,
-            useClass: GqlConfigService,
-        }),
         RedisModule.forRootAsync({
             isGlobal: true,
             inject: [RedisConfigService],
             useFactory: (redisConfigService: RedisConfigService) => ({
                 uri: redisConfigService.uri,
             }),
+        }),
+        WinstonModule.forRootAsync({
+            useClass: WinstonConfigService,
+        }),
+        TypeOrmModule.forRootAsync({
+            useClass: TypeOrmConfigService,
+        }),
+        GraphQLModule.forRootAsync<ApolloDriverConfig>({
+            driver: ApolloDriver,
+            useClass: GqlConfigService,
         }),
         ConditionalModule.registerWhen(
             SeedModule,
