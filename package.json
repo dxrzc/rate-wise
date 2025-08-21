@@ -19,7 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
-    "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts"
+    "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",    
+    "migration:generate": "npm run build && node scripts/generate-migration.js",
+    "dev:migration:run": "npm run build && npx typeorm -d dist/db/data-source.dev.js migration:run",
+    "dev:migration:revert": "npm run build && npx typeorm -d dist/db/data-source.dev.js migration:revert"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
@@ -34,6 +37,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "connect-redis": "^9.0.0",
+    "dotenv-expand": "^12.0.2",
     "express-session": "^1.18.2",
     "graphql": "^16.11.0",
     "graphql-fields": "^2.0.3",

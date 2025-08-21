@@ -10,8 +10,8 @@ import { configValidationSchema } from './schemas/config-validation.schema';
 @Module({
     imports: [
         ConfigModule.forRoot({
-            expandVariables: true,
             validationSchema: configValidationSchema,
+            expandVariables: true,
             validatePredefined: true,
             envFilePath: `.env.${process.env.NODE_ENV?.slice(0, 3)}`, // dev, int, e2e
             validationOptions: {
