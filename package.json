@@ -19,7 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
-    "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts"
+    "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",    
+    "dev:migration:generate": "npm run build && npx typeorm -d dist/db/development/data-source.js migration:generate"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
