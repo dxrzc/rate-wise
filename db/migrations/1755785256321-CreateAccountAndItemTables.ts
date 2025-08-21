@@ -1,14 +1,15 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateAccountAndItemTables1755783647295
+export class CreateAccountAndItemTables1755785256321
     implements MigrationInterface
 {
-    name = 'CreateAccountAndItemTables1755783647295';
+    name = 'CreateAccountAndItemTables1755785256321';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `CREATE TABLE "base_entity" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_03e6c58047b7a4b3f6de0bfa8d7" PRIMARY KEY ("id"))`,
+            `CREATE TYPE "account_role_enum" AS ENUM('user','moderator','admin')`,
         );
+
         await queryRunner.query(
             `CREATE TABLE "item" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "title" character varying(40) NOT NULL, "description" text NOT NULL, "category" character varying(40) NOT NULL, "tags" character varying(20) array NOT NULL, "average_rating" numeric(3,2) NOT NULL DEFAULT '0', "review_count" integer NOT NULL DEFAULT '0', "user_id" uuid, CONSTRAINT "PK_d3c0c71f23e7adcf952a1d13423" PRIMARY KEY ("id"))`,
         );
@@ -26,6 +27,6 @@ export class CreateAccountAndItemTables1755783647295
         );
         await queryRunner.query(`DROP TABLE "account"`);
         await queryRunner.query(`DROP TABLE "item"`);
-        await queryRunner.query(`DROP TABLE "base_entity"`);
+        await queryRunner.query(`DROP TYPE "account_role_enum"`);
     }
 }
