@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Observable } from 'rxjs';
 
 @Injectable()
-export class RequestInterceptor implements NestInterceptor {
+export class RequestTracingInterceptor implements NestInterceptor {
     constructor(private readonly cls: ClsService) {}
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
