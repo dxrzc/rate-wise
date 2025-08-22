@@ -1,5 +1,5 @@
 import { appRequestTracingInterceptor } from './providers/interceptors/app-reqtracing.interceptor.provider';
-import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
+import { SessionMiddlewareFactory } from './providers/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
