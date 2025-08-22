@@ -1,12 +1,10 @@
 import { ServerConfigService } from './config/services/server-config.service';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app/app.module';
 import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
     // TODO: replace logger in bootstraping
     const app = await NestFactory.create(AppModule);
-    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
     const serverConfig = app.get(ServerConfigService);
     await app.listen(serverConfig.port);
     // TODO: NestJS logger
