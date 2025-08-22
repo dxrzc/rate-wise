@@ -1,5 +1,6 @@
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
+import { globalRequestInterceptor } from './interceptors/request.interceptor';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { globalValidationPipe } from './pipes/validation.pipe';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -18,11 +19,21 @@ import { SeedModule } from 'src/seed/seed.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { WinstonModule } from 'nest-winston';
+import { ClsModule } from 'nestjs-cls';
 
 @Module({
-    providers: [SessionMiddlewareFactory, globalGuard, globalValidationPipe],
+    providers: [
+        SessionMiddlewareFactory,
+        globalGuard,
+        globalValidationPipe,
+        globalRequestInterceptor,
+    ],
     imports: [
         AppConfigModule,
+        ClsModule.forRoot({
+            global: true,
+            middleware: { mount: true },
+        }),
         RedisModule.forRootAsync({
             isGlobal: true,
             inject: [RedisConfigService],
