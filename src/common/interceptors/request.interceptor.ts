@@ -21,6 +21,7 @@ export class RequestInterceptor implements NestInterceptor {
         const reqId = uuidv4();
         this.cls.set('ip', userIp);
         this.cls.set('requestId', reqId);
+        this.cls.set('method', graphQLContext.getHandler().name);
         return next.handle();
     }
 }
