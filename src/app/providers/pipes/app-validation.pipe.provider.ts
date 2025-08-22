@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 
-export const globalValidationPipe = {
+export const appValidationPipe = {
     provide: APP_PIPE,
     useValue: new ValidationPipe({
         whitelist: true,

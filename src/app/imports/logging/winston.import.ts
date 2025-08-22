@@ -1,6 +1,6 @@
 import { ServerConfigService } from 'src/config/services/server-config.service';
-import { consoleTransportFactory } from './transports/console-transport.factory';
-import { fileSystemTransportFactory } from './transports/fs-transport.factory';
+import { consoleTransportFactory } from './transports/console.transport.factory';
+import { fileSystemTransportFactory } from './transports/fs.transport.factory';
 import { Injectable } from '@nestjs/common';
 import {
     WinstonModuleOptions,
