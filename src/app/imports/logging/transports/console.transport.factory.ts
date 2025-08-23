@@ -10,6 +10,7 @@ export function consoleTransportFactory(env: Environment) {
         level: mssgsLvl,
         format: winston.format.combine(
             winston.format.timestamp(),
+            winston.format.ms(),
             winston.format.printf((info) => {
                 const colorizer = winston.format.colorize().colorize;
                 const cls = ClsServiceManager.getClsService();
@@ -18,7 +19,9 @@ export function consoleTransportFactory(env: Environment) {
                 const timestamp = <string>info.timestamp;
                 const mssg = <string>info.message;
                 const level = info.level;
+                const ms = <string>info.ms;
 
+                const colorizedMs = colorizer('verbose', ms);
                 const coloredTimestamp = colorizer(level, `[${timestamp}]`);
                 const coloredRequest = colorizer(level, `[${requestId}]`);
                 const coloredMethod = colorizer(level, `[${method}]`);
@@ -28,7 +31,7 @@ export function consoleTransportFactory(env: Environment) {
                     `[${level.toUpperCase()}]`,
                 );
 
-                return `${coloredTimestamp} ${coloredRequest} ${coloredMethod} ${coloredLevel}: ${formattedMssg}`;
+                return `${coloredTimestamp} ${coloredRequest} ${coloredMethod} ${coloredLevel}: ${formattedMssg} ${colorizedMs}`;
             }),
         ),
     });
