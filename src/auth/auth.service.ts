@@ -2,41 +2,31 @@ import {
     INVALID_CREDENTIALS,
     MAX_SESSIONS_REACHED,
 } from './constants/errors.constants';
-import { BadRequestException, Injectable } from '@nestjs/common';
 import { SessionConfigService } from 'src/config/services/session-config.service';
-import { ServerConfigService } from 'src/config/services/server-config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
+import { HashingService } from 'src/common/services/hashing.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { RequestContext } from './types/request-context.type';
 import { SessionService } from './services/session.service';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly sessionConfig: SessionConfigService,
-        private readonly serverConfig: ServerConfigService,
+        private readonly hashingService: HashingService,
         private readonly sessionService: SessionService,
         private readonly userService: UsersService,
         private readonly logger: HttpLoggerService,
     ) {}
 
-    private hashPassword(password: string): string {
-        const salt = bcrypt.genSaltSync(this.serverConfig.bcryptSaltRounds);
-        return bcrypt.hashSync(password, salt);
-    }
-
-    private passwordMatches(hash: string, password: string): boolean {
-        return bcrypt.compareSync(password, hash);
-    }
-
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
         this.logger.info(`Account creation attemp for ${signUpInput.email}`);
-        signUpInput.password = this.hashPassword(signUpInput.password);
+        signUpInput.password = this.hashingService.hash(signUpInput.password);
         const user = await this.userService.createOne(signUpInput);
         await this.sessionService.newSession(req, user.id);
         this.logger.info(`Account ${signUpInput.email} created successfully `);
@@ -52,7 +42,7 @@ export class AuthService {
             throw new BadRequestException(INVALID_CREDENTIALS);
         }
 
-        if (!this.passwordMatches(user.password, credentials.password)) {
+        if (!this.hashingService.compare(credentials.password, user.password)) {
             this.logger.error('Password does not match');
             throw new BadRequestException(INVALID_CREDENTIALS);
         }
@@ -81,9 +71,9 @@ export class AuthService {
     ): Promise<void> {
         this.logger.info(`Attemp to close all sessions for user: ${userId}`);
         const user = await this.userService.findOneByIdOrThrow(userId);
-        const passwordMatches = this.passwordMatches(
-            user.password,
+        const passwordMatches = this.hashingService.compare(
             auth.password,
+            user.password,
         );
         if (!passwordMatches) {
             this.logger.warn(`Invalid credentials for userId: ${userId}`);
