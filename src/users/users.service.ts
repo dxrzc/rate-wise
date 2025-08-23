@@ -88,7 +88,6 @@ export class UsersService {
             return created;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                console.log(error);
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
                 throw new BadRequestException(USER_ALREADY_EXISTS);
             }

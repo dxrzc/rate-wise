@@ -33,7 +33,7 @@ const config: Config = {
     preset: 'ts-jest',
     testEnvironment: 'jest-environment-node',
 
-    // maxWorkers: '50%',
+    maxWorkers: '50%',
 };
 
 export default config;
