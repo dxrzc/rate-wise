@@ -1,6 +1,6 @@
-import { appRequestTracingInterceptor } from './providers/interceptors/app-reqtracing.interceptor.provider';
 import { SessionMiddlewareFactory } from './providers/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
+import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { WinstonConfigService } from './imports/logging/winston.import';
@@ -23,8 +23,8 @@ import { ClsModule } from 'nestjs-cls';
 
 @Module({
     providers: [
+        RequestContextPlugin,
         SessionMiddlewareFactory,
-        appRequestTracingInterceptor,
         appValidationPipe,
         appAuthGuard,
     ],

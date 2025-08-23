@@ -3,7 +3,9 @@ import { makeSessionsIndexKey } from '../functions/make-sessions-index-key';
 import { promisify } from 'src/common/functions/utils/promisify.util';
 import { RequestContext } from '../types/request-context.type';
 import { RedisService } from 'src/redis/redis.service';
-import { Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject, Injectable } from '@nestjs/common';
+import { Logger } from 'winston';
 
 /*
     Every time a session is granted is added to a redis set like this.
@@ -31,7 +33,11 @@ import { Injectable } from '@nestjs/common';
 */
 @Injectable()
 export class SessionService {
-    constructor(private readonly redisService: RedisService) {}
+    constructor(
+        @Inject(WINSTON_MODULE_PROVIDER)
+        private readonly logger: Logger,
+        private readonly redisService: RedisService,
+    ) {}
 
     // creates a session-user relation to track down sessions and their respective owners
     private async createSessionUserRelation(userId: string, sessionId: string) {
@@ -39,6 +45,7 @@ export class SessionService {
             makeUserSessionRelationKey(sessionId),
             userId,
         );
+        this.logger.debug(`Session-user relation created`);
     }
 
     // adds the sessionID to a set containing all the sessions belonging to a user
@@ -47,11 +54,13 @@ export class SessionService {
             makeSessionsIndexKey(userId),
             sessionID,
         );
+        this.logger.debug(`Session added to user sessions`);
     }
 
     // generate a new session id preventing session fixation
     private async regenerateSession(req: RequestContext): Promise<void> {
         await promisify<void>((cb) => req.session.regenerate(cb));
+        this.logger.debug(`Session regenerated`);
     }
 
     async deleteAllSessions(userId: string): Promise<void> {
@@ -61,6 +70,7 @@ export class SessionService {
             this.redisService.delete(`session:${sId}`),
         );
         await Promise.all(deletions);
+        this.logger.debug(`All sessions of user ${userId} deleted`);
     }
 
     async activeSessions(userId: string): Promise<number> {
@@ -69,6 +79,7 @@ export class SessionService {
 
     async deleteSession(req: RequestContext) {
         await promisify<void>((cb) => req.session.destroy(cb));
+        this.logger.debug(`Session ${req.sessionID} deleted`);
     }
 
     async newSession(req: RequestContext, userId: string) {
