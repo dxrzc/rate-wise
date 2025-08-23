@@ -45,9 +45,7 @@ export class SessionService {
             makeUserSessionRelationKey(sessionId),
             userId,
         );
-        this.logger.debug(
-            `Session ${sessionId} relation with user ${userId} created`,
-        );
+        this.logger.debug(`Session-user relation created`);
     }
 
     // adds the sessionID to a set containing all the sessions belonging to a user
@@ -56,15 +54,13 @@ export class SessionService {
             makeSessionsIndexKey(userId),
             sessionID,
         );
-        this.logger.debug(
-            `Session ${sessionID} added to user ${userId} sessions`,
-        );
+        this.logger.debug(`Session added to user sessions`);
     }
 
     // generate a new session id preventing session fixation
     private async regenerateSession(req: RequestContext): Promise<void> {
         await promisify<void>((cb) => req.session.regenerate(cb));
-        this.logger.debug(`Session ${req.sessionID} regenerated`);
+        this.logger.debug(`Session regenerated`);
     }
 
     async deleteAllSessions(userId: string): Promise<void> {
