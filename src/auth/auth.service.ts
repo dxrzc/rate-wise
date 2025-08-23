@@ -2,29 +2,27 @@ import {
     INVALID_CREDENTIALS,
     MAX_SESSIONS_REACHED,
 } from './constants/errors.constants';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { SessionConfigService } from 'src/config/services/session-config.service';
 import { ServerConfigService } from 'src/config/services/server-config.service';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { RequestContext } from './types/request-context.type';
 import { SessionService } from './services/session.service';
 import { UsersService } from 'src/users/users.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import * as bcrypt from 'bcryptjs';
-import { Logger } from 'winston';
 
 @Injectable()
 export class AuthService {
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER)
-        private readonly logger: Logger,
         private readonly sessionConfig: SessionConfigService,
         private readonly serverConfig: ServerConfigService,
         private readonly sessionService: SessionService,
         private readonly userService: UsersService,
+        private readonly logger: HttpLoggerService,
     ) {}
 
     private hashPassword(password: string): string {

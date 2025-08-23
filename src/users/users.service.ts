@@ -1,32 +1,29 @@
 import {
     BadRequestException,
-    Inject,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
-import { USER_ALREADY_EXISTS } from './messages/user.messages';
+import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
+import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
+import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
+import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
+import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
+import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
-import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
-import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
-import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
-import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
-import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
+import { USER_ALREADY_EXISTS } from './messages/user.messages';
 import { USER_NOT_FOUND } from './constants/errors.constants';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER)
-        private readonly logger: Logger,
+        private readonly logger: HttpLoggerService,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
     ) {}
