@@ -3,8 +3,11 @@ import { Environment } from 'src/common/enum/environment.enum';
 import * as winston from 'winston';
 
 export function consoleTransportFactory(env: Environment) {
+    const mssgsLvl = env === Environment.PRODUCTION ? 'info' : 'debug';
+
     return new winston.transports.Console({
         silent: env === Environment.INTEGRATION,
+        level: mssgsLvl,
         format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf((info) => {
