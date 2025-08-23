@@ -1,19 +1,24 @@
+import {
+    CanActivate,
+    ExecutionContext,
+    Inject,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { IGraphQLContext } from '../interfaces/graphql-context.interface';
 import { AUTHENTICATION_REQUIRED } from '../constants/errors.constants';
 import { Public } from 'src/common/decorators/public.decorator';
 import { UsersService } from 'src/users/users.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Reflector } from '@nestjs/core';
-import {
-    CanActivate,
-    ExecutionContext,
-    Injectable,
-    UnauthorizedException,
-} from '@nestjs/common';
+import { Logger } from 'winston';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
     constructor(
+        @Inject(WINSTON_MODULE_PROVIDER)
+        private readonly logger: Logger,
         private readonly userService: UsersService,
         private readonly reflector: Reflector,
     ) {}
@@ -28,13 +33,15 @@ export class AuthGuard implements CanActivate {
         const reqContext = graphQLContext.getContext<IGraphQLContext>();
         const session = reqContext.req.session;
         if (!session || !session.userId) {
+            this.logger.error('Authentication required');
             throw new UnauthorizedException(AUTHENTICATION_REQUIRED);
         }
 
         const userInSession = session.userId;
         const user = await this.userService.findOneByIdOrThrow(userInSession);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const userRole = user.role;
+
+        this.logger.info(`Access granted for user ${user.id} (${userRole})`);
 
         // TODO: attach to request object
 
