@@ -4,6 +4,7 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
+import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
 import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
@@ -87,7 +88,8 @@ export class UsersService {
             return created;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                console.log(error); // TODO: show duplicated key in log
+                console.log(error);
+                this.logger.error(getDuplicatedErrorKeyDetail(error));
                 throw new BadRequestException(USER_ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
