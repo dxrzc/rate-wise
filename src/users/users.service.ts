@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    Inject,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
@@ -18,10 +19,14 @@ import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-k
 import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
 import { USER_NOT_FOUND } from './constants/errors.constants';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class UsersService {
     constructor(
+        @Inject(WINSTON_MODULE_PROVIDER)
+        private readonly logger: Logger,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
     ) {}
@@ -52,9 +57,15 @@ export class UsersService {
     }
 
     async findOneByIdOrThrow(id: string): Promise<User> {
-        if (!validUUID(id)) throw new NotFoundException(USER_NOT_FOUND);
+        if (!validUUID(id)) {
+            this.logger.error('Invalid UUID');
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
         const userFound = await this.userRepository.findOneBy({ id });
-        if (!userFound) throw new NotFoundException(USER_NOT_FOUND);
+        if (!userFound) {
+            this.logger.error(`User with id ${id} not found`);
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
         return userFound;
     }
 
@@ -65,17 +76,23 @@ export class UsersService {
 
     async findOneByEmailOrThrow(email: string): Promise<User> {
         const userFound = await this.findOneByEmail(email);
-        if (!userFound)
-            throw new BadRequestException(`User with email ${email} not found`);
+        if (!userFound) {
+            this.logger.error(`User with email ${email} not found`);
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
         return userFound;
     }
 
     async createOne(user: SignUpInput): Promise<User> {
         try {
-            return await this.userRepository.save(user);
+            const created = await this.userRepository.save(user);
+            this.logger.info(`User ${created.id} created successfully`);
+            return created;
         } catch (error) {
-            if (isDuplicatedKeyError(error))
+            if (isDuplicatedKeyError(error)) {
+                console.log(error); // TODO: show duplicated key in log
                 throw new BadRequestException(USER_ALREADY_EXISTS);
+            }
             throw new InternalServerErrorException(error);
         }
     }
