@@ -1,5 +1,5 @@
-import { ClsServiceManager } from 'nestjs-cls';
 import { Environment } from 'src/common/enum/environment.enum';
+import { ClsServiceManager } from 'nestjs-cls';
 import * as winston from 'winston';
 
 export function consoleTransportFactory(env: Environment) {

@@ -1,25 +1,22 @@
 import {
     CanActivate,
     ExecutionContext,
-    Inject,
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
 import { IGraphQLContext } from '../interfaces/graphql-context.interface';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { AUTHENTICATION_REQUIRED } from '../constants/errors.constants';
 import { Public } from 'src/common/decorators/public.decorator';
 import { UsersService } from 'src/users/users.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Reflector } from '@nestjs/core';
-import { Logger } from 'winston';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER)
-        private readonly logger: Logger,
         private readonly userService: UsersService,
+        private readonly logger: HttpLoggerService,
         private readonly reflector: Reflector,
     ) {}
 

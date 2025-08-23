@@ -9,7 +9,7 @@ export function fileSystemTransportFactory(env: Environment) {
     return new winston.transports.File({
         silent: env === Environment.INTEGRATION,
         level: 'info', // No debug messages in fs
-        filename: `${folder}/http-messages.log`,
+        filename: `${folder}/messages.log`,
         format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf((info) => {

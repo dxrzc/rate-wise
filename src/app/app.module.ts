@@ -3,13 +3,13 @@ import { appValidationPipe } from './providers/pipes/app-validation.pipe.provide
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
 import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
-import { WinstonConfigService } from './imports/logging/winston.import';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppConfigModule } from 'src/config/app-config.module';
 import { Environment } from 'src/common/enum/environment.enum';
+import { LoggingModule } from 'src/logging/logging.module';
 import { UsersModule } from 'src/users/users.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { ItemsModule } from 'src/items/items.module';
@@ -18,7 +18,6 @@ import { AuthModule } from 'src/auth/auth.module';
 import { SeedModule } from 'src/seed/seed.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
-import { WinstonModule } from 'nest-winston';
 import { ClsModule } from 'nestjs-cls';
 
 @Module({
@@ -41,9 +40,6 @@ import { ClsModule } from 'nestjs-cls';
                 uri: redisConfigService.uri,
             }),
         }),
-        WinstonModule.forRootAsync({
-            useClass: WinstonConfigService,
-        }),
         TypeOrmModule.forRootAsync({
             useClass: TypeOrmConfigService,
         }),
@@ -55,6 +51,7 @@ import { ClsModule } from 'nestjs-cls';
             SeedModule,
             (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.PRODUCTION,
         ),
+        LoggingModule,
         UsersModule,
         ItemsModule,
         AuthModule,

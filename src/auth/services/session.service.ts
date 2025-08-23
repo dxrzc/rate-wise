@@ -1,11 +1,10 @@
 import { makeUserSessionRelationKey } from '../functions/make-user-session-relation-key';
 import { makeSessionsIndexKey } from '../functions/make-sessions-index-key';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { promisify } from 'src/common/functions/utils/promisify.util';
 import { RequestContext } from '../types/request-context.type';
 import { RedisService } from 'src/redis/redis.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Inject, Injectable } from '@nestjs/common';
-import { Logger } from 'winston';
+import { Injectable } from '@nestjs/common';
 
 /*
     Every time a session is granted is added to a redis set like this.
@@ -34,8 +33,7 @@ import { Logger } from 'winston';
 @Injectable()
 export class SessionService {
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER)
-        private readonly logger: Logger,
+        private readonly logger: HttpLoggerService,
         private readonly redisService: RedisService,
     ) {}
 
