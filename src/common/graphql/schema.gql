@@ -10,6 +10,7 @@ type UserModel {
   username: String!
   email: String!
   role: UserRole!
+  status: UserStatus!
   reputationScore: Float!
 }
 
@@ -28,6 +29,18 @@ enum UserRole {
 
   """Administrator with full access."""
   ADMIN
+}
+
+"""Available statuses for a user."""
+enum UserStatus {
+  """User is active and can log in."""
+  ACTIVE
+
+  """User has registered but not yet verified their email."""
+  PENDING_VERIFICATION
+
+  """User account has been suspended."""
+  SUSPENDED
 }
 
 type UserModelEdge {
