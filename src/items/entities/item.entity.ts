@@ -28,6 +28,6 @@ export class Item extends BaseEntity {
     reviewCount!: number;
 
     @ManyToOne(() => User, (user) => user.items)
-    @JoinColumn({ name: 'user_id' })
+    @JoinColumn({ name: 'account_id' })
     user!: User;
 }
