@@ -6,12 +6,12 @@ import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { createQuery } from '@integration/utils/create-query.util';
 import { createUser } from '@integration/utils/create-user.util';
+import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signInQuery } from '@queries/sign-in.query';
 import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import * as request from 'supertest';
-import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 
 describe('signIn', () => {
     describe('Successful sign-in', () => {
@@ -40,6 +40,7 @@ describe('signIn', () => {
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
+                status: userDb?.status.toUpperCase(),
                 role: userDb?.role.toUpperCase(),
                 id: userDb?.id,
             });

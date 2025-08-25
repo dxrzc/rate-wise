@@ -6,13 +6,15 @@ import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { createQuery } from '@integration/utils/create-query.util';
 import { createUser } from '@integration/utils/create-user.util';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { testKit } from '@integration/utils/test-kit.util';
 import { UserModel } from 'src/users/models/user.model';
 import { signUpQuery } from '@queries/sign-up.query';
 import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import * as request from 'supertest';
-import { USER_MESSAGES } from 'src/users/messages/user.messages';
+import { UserStatus } from 'src/users/enum/user-status.enum';
+import { UserRole } from 'src/users/enum/user-role.enum';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
@@ -80,13 +82,14 @@ describe('signUp', () => {
         const userId = res.body.data.signUp.id as string;
         const userDB = await testKit.userRepos.findOneBy({ id: userId });
         expect(userDB).not.toBeNull();
-        expect(userDB!.role).toBe('user');
+        expect(userDB!.role).toBe(UserRole.USER); // default
         expect(userDB!.reputationScore).toBe(0);
         expect(userDB!.email).toBe(user.email);
         expect(userDB!.username).toBe(user.username);
         expect(userDB!.password).not.toBe(user.password); // hashed
         expect(userDB!.createdAt).toBeDefined();
         expect(userDB!.updatedAt).toBeDefined();
+        expect(userDB!.status).toBe(UserStatus.PENDING_VERIFICATION); // default
     });
 
     describe('Password exceeds the max password length (wiring test)', () => {
@@ -126,6 +129,7 @@ describe('signUp', () => {
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
+                status: userDb?.status.toUpperCase(),
                 role: userDb?.role.toUpperCase(),
                 id: userDb?.id,
             });

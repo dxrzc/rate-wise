@@ -6,6 +6,7 @@ mutation SignUp($input: SignUpInput!) {
     updatedAt
     username
     email
+    status
     role
     reputationScore
   }

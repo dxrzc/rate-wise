@@ -2,6 +2,7 @@ import { IBaseRawDbRecord } from 'src/common/interfaces/database/base-raw-db-rec
 
 export interface IUserDbRecord extends IBaseRawDbRecord {
     username: string;
+    status: string;
     email: string;
     password: string;
     role: string;
