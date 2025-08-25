@@ -11,10 +11,6 @@ export const configValidationSchema = Joi.object({
     SESSION_COOKIE_NAME: Joi.string().required(),
     BCRYPT_SALT_ROUNDS: Joi.number().integer().required(),
     NODE_ENV: Joi.string()
-        .valid(
-            Environment.DEVELOPMENT,
-            Environment.PRODUCTION,
-            Environment.INTEGRATION,
-        )
+        .valid(...Object.values(Environment))
         .required(),
 });
