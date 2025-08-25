@@ -7,6 +7,8 @@ import { GqlOptionsFactory } from '@nestjs/graphql';
 import { Injectable } from '@nestjs/common';
 import { join } from 'path';
 
+// TODO: add system logging for internal server errors
+
 @Injectable()
 export class GqlConfigService implements GqlOptionsFactory {
     constructor(private readonly serverConfig: ServerConfigService) {}
