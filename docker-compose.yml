@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:17.5-alpine
+    container_name: postgres
     restart: always        
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -15,6 +16,7 @@ services:
 
   redis:
     image: redis:8.0-alpine
+    container_name: redis
     restart: always
     volumes:
       - redis:/data
@@ -48,7 +50,12 @@ services:
 
 volumes:
   redis: 
+    name: rate-wise-redis
     external: false
   postgres:
+    name: rate-wise-postgres
+    external: false
+  mailpit:
+    name: rate-wise-mailpit
     external: false
       
