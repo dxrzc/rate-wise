@@ -24,6 +24,24 @@ services:
       - ${REDIS_PORT}:6379
     profiles:
       - dev
+    
+  mailpit:
+    image: axllent/mailpit:v1.27.6
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+        - mailpit:/data
+    ports:
+        - "${MAILHOG_SMTP_PORT}:1025"
+        - "${MAILHOG_UI_PORT}:8025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1   
+      MP_SEND_API_AUTH_ACCEPT_ANY: 1
+    profiles:
+      - dev
 
   postgres-test:
     image: postgres:17.5-alpine
