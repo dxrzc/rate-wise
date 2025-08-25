@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { IGraphQLContext } from '../interfaces/graphql-context.interface';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
-import { AUTHENTICATION_REQUIRED } from '../constants/errors.constants';
 import { Public } from 'src/common/decorators/public.decorator';
 import { UsersService } from 'src/users/users.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
+import { AUTH_MESSAGES } from '../messages/auth.messages';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
         const session = reqContext.req.session;
         if (!session || !session.userId) {
             this.logger.error('Authentication required');
-            throw new UnauthorizedException(AUTHENTICATION_REQUIRED);
+            throw new UnauthorizedException(AUTH_MESSAGES.UNAUTHORIZED);
         }
 
         const userInSession = session.userId;

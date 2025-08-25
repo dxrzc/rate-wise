@@ -11,10 +11,7 @@ import { signInQuery } from '@queries/sign-in.query';
 import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import * as request from 'supertest';
-import {
-    INVALID_CREDENTIALS,
-    MAX_SESSIONS_REACHED,
-} from 'src/auth/constants/errors.constants';
+import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 
 describe('signIn', () => {
     describe('Successful sign-in', () => {
@@ -151,7 +148,7 @@ describe('signIn', () => {
     });
 
     describe('Password does not match', () => {
-        test('should return BAD REQUEST and INVALID_CREDENTIALS message', async () => {
+        test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
             const { email } = await createUser();
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
@@ -161,12 +158,15 @@ describe('signIn', () => {
                         email,
                     }),
                 );
-            expect(res).toFailWith(Code.BAD_REQUEST, INVALID_CREDENTIALS);
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                AUTH_MESSAGES.INVALID_CREDENTIALS,
+            );
         });
     });
 
     describe('User in email does not exist', () => {
-        test('should return BAD REQUEST and INVALID_CREDENTIALS message', async () => {
+        test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
                 .send(
@@ -175,12 +175,15 @@ describe('signIn', () => {
                         email: testKit.userSeed.email,
                     }),
                 );
-            expect(res).toFailWith(Code.BAD_REQUEST, INVALID_CREDENTIALS);
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                AUTH_MESSAGES.INVALID_CREDENTIALS,
+            );
         });
     });
 
     describe('User exceeds the maximum active sessions', () => {
-        test('should return BAD REQUEST and MAX_SESSIONS_REACHED message', async () => {
+        test('should return BAD REQUEST code and MAX_SESSIONS_REACHED message', async () => {
             const maxSessions = testKit.sessConfig.maxUserSessions;
             const { email, password } = await createUser(); // 1 session
             for (let i = 0; i < maxSessions - 1; i++) {
@@ -201,7 +204,10 @@ describe('signIn', () => {
                         email,
                     }),
                 );
-            expect(res).toFailWith(Code.BAD_REQUEST, MAX_SESSIONS_REACHED);
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                AUTH_MESSAGES.MAX_SESSIONS_REACHED,
+            );
         });
     });
 

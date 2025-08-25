@@ -14,9 +14,8 @@ import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
-import { USER_ALREADY_EXISTS } from './messages/user.messages';
-import { USER_NOT_FOUND } from './constants/errors.constants';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { USER_MESSAGES } from './messages/user.messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -57,12 +56,12 @@ export class UsersService {
     async findOneByIdOrThrow(id: string): Promise<User> {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
-            throw new NotFoundException(USER_NOT_FOUND);
+            throw new NotFoundException(USER_MESSAGES.NOT_FOUND);
         }
         const userFound = await this.userRepository.findOneBy({ id });
         if (!userFound) {
             this.logger.error(`User with id ${id} not found`);
-            throw new NotFoundException(USER_NOT_FOUND);
+            throw new NotFoundException(USER_MESSAGES.NOT_FOUND);
         }
         return userFound;
     }
@@ -76,7 +75,7 @@ export class UsersService {
         const userFound = await this.findOneByEmail(email);
         if (!userFound) {
             this.logger.error(`User with email ${email} not found`);
-            throw new NotFoundException(USER_NOT_FOUND);
+            throw new NotFoundException(USER_MESSAGES.NOT_FOUND);
         }
         return userFound;
     }
@@ -89,7 +88,7 @@ export class UsersService {
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
-                throw new BadRequestException(USER_ALREADY_EXISTS);
+                throw new BadRequestException(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }

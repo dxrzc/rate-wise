@@ -3,20 +3,20 @@ import { makeUserSessionRelationKey } from 'src/auth/functions/make-user-session
 import { makeSessionsIndexKey } from 'src/auth/functions/make-sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { USER_ALREADY_EXISTS } from 'src/users/messages/user.messages';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { createQuery } from '@integration/utils/create-query.util';
+import { createUser } from '@integration/utils/create-user.util';
 import { testKit } from '@integration/utils/test-kit.util';
+import { UserModel } from 'src/users/models/user.model';
 import { signUpQuery } from '@queries/sign-up.query';
 import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import * as request from 'supertest';
-import { createUser } from '@integration/utils/create-user.util';
-import { UserModel } from 'src/users/models/user.model';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 describe('signUp', () => {
     describe('Username already exists', () => {
-        test('should return BAD REQUEST and USER_ALREADY_EXISTS message ', async () => {
+        test('should return BAD REQUEST code and ALREADY_EXISTS message ', async () => {
             const username = testKit.userSeed.username;
             await request(testKit.app.getHttpServer())
                 .post('/graphql')
@@ -36,12 +36,15 @@ describe('signUp', () => {
                         password: testKit.userSeed.password,
                     }),
                 );
-            expect(res).toFailWith(Code.BAD_REQUEST, USER_ALREADY_EXISTS);
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                USER_MESSAGES.ALREADY_EXISTS,
+            );
         });
     });
 
     describe('Email already exists', () => {
-        test('should return BAD REQUEST and USER_ALREADY_EXISTS message', async () => {
+        test('should return BAD REQUEST code and ALREADY_EXISTS message', async () => {
             const email = testKit.userSeed.email;
             await request(testKit.app.getHttpServer())
                 .post('/graphql')
@@ -61,7 +64,10 @@ describe('signUp', () => {
                         password: testKit.userSeed.password,
                     }),
                 );
-            expect(res).toFailWith(Code.BAD_REQUEST, USER_ALREADY_EXISTS);
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                USER_MESSAGES.ALREADY_EXISTS,
+            );
         });
     });
 

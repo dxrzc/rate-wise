@@ -1,7 +1,7 @@
-import { AUTHENTICATION_REQUIRED } from 'src/auth/constants/errors.constants';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { createQuery } from '@integration/utils/create-query.util';
 import { createUser } from '@integration/utils/create-user.util';
+import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signOutQuery } from '@queries/sign-out.query';
 import { Code } from '@integration/enum/code.enum';
@@ -9,13 +9,13 @@ import * as request from 'supertest';
 
 describe('signOut', () => {
     describe('Session cookie not provided', () => {
-        test('return UNAUTHORIZED and AUTHENTICATION_REQUIRED message', async () => {
+        test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
             const res = await request(testKit.app.getHttpServer())
                 .post('/graphql')
                 .send(createQuery(signOutQuery, {}));
             expect(res).toFailWith(
                 Code.UNAUTHENTICATED,
-                AUTHENTICATION_REQUIRED,
+                AUTH_MESSAGES.UNAUTHORIZED,
             );
         });
     });

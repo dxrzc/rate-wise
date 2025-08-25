@@ -1,7 +1,3 @@
-import {
-    INVALID_CREDENTIALS,
-    MAX_SESSIONS_REACHED,
-} from './constants/errors.constants';
 import { SessionConfigService } from 'src/config/services/session-config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
@@ -9,6 +5,7 @@ import { HashingService } from 'src/common/services/hashing.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { RequestContext } from './types/request-context.type';
 import { SessionService } from './services/session.service';
+import { AUTH_MESSAGES } from './messages/auth.messages';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
@@ -39,18 +36,18 @@ export class AuthService {
 
         if (!user) {
             this.logger.error(`Email not found`);
-            throw new BadRequestException(INVALID_CREDENTIALS);
+            throw new BadRequestException(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
         if (!this.hashingService.compare(credentials.password, user.password)) {
             this.logger.error('Password does not match');
-            throw new BadRequestException(INVALID_CREDENTIALS);
+            throw new BadRequestException(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
         const sessions = await this.sessionService.activeSessions(user.id);
         if (sessions === this.sessionConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${user.id}`);
-            throw new BadRequestException(MAX_SESSIONS_REACHED);
+            throw new BadRequestException(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         }
 
         await this.sessionService.newSession(req, user.id);
@@ -77,7 +74,7 @@ export class AuthService {
         );
         if (!passwordMatches) {
             this.logger.warn(`Invalid credentials for userId: ${userId}`);
-            throw new BadRequestException(INVALID_CREDENTIALS);
+            throw new BadRequestException(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
         await this.sessionService.deleteAllSessions(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
