@@ -1,13 +1,10 @@
-import { ServerConfigService } from 'src/config/services/server-config.service';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class HashingService {
-    constructor(private readonly serverConfig: ServerConfigService) {}
-
-    hash(data: string): string {
-        const salt = bcrypt.genSaltSync(this.serverConfig.bcryptSaltRounds);
+    hash(data: string, saltRounds: number): string {
+        const salt = bcrypt.genSaltSync(saltRounds);
         return bcrypt.hashSync(data, salt);
     }
 
