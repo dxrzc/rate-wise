@@ -1,4 +1,5 @@
 import { SessionConfigService } from 'src/config/services/session-config.service';
+import { ServerConfigService } from 'src/config/services/server-config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { HashingService } from 'src/common/services/hashing.service';
@@ -15,6 +16,7 @@ import { SignUpInput } from './dtos/sign-up.input';
 export class AuthService {
     constructor(
         private readonly sessionConfig: SessionConfigService,
+        private readonly serverConfig: ServerConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionService,
         private readonly userService: UsersService,
@@ -23,7 +25,10 @@ export class AuthService {
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
         this.logger.info(`Account creation attemp for ${signUpInput.email}`);
-        signUpInput.password = this.hashingService.hash(signUpInput.password);
+        signUpInput.password = this.hashingService.hash(
+            signUpInput.password,
+            this.serverConfig.bcryptSaltRounds,
+        );
         const user = await this.userService.createOne(signUpInput);
         await this.sessionService.newSession(req, user.id);
         this.logger.info(`Account ${signUpInput.email} created successfully `);
