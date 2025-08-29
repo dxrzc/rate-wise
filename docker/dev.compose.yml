@@ -1,6 +1,6 @@
 name: 'rate-wise'
 services:
-  app:
+  app:    
     container_name: app
     restart: always
     build:
@@ -30,9 +30,11 @@ services:
       SMTP_USER: ${SMTP_USER:-dev}
       SMTP_PASS: ${SMTP_PASS:-devPass}
 
-# from compose.yml
   postgres:    
     container_name: postgres
+    extends: 
+      file: ./compose.yml
+      service: postgres 
     restart: always        
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -43,18 +45,22 @@ services:
       POSTGRES_PASSWORD: dev123
       POSTGRES_DB: ratewise_dev
 
-# from compose.yml
   redis:    
     container_name: redis
+    extends: 
+      file: ./compose.yml
+      service: redis 
     restart: always
     volumes:
       - redis:/data
     ports:
       - ${REDIS_PORT:-6379}:6379
 
-# from compose.yml
   mailpit:    
     container_name: mailpit
+    extends: 
+      file: ./compose.yml
+      service: mailpit
     restart: always
     volumes:
         - mailpit:/data
