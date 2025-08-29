@@ -9,7 +9,7 @@ import { Response } from 'supertest';
 export function getSessionCookie(res: Response): string {
     const setCookieHeader = res.header['set-cookie'] as unknown as string[];
     const cookie = setCookieHeader.find(
-        (c) => c.split('=')[0] === testKit.sessConfig.cookieName,
+        (c) => c.split('=')[0] === testKit.authConfig.sessCookieName,
     );
     if (!cookie) throw new Error('No session cookie found');
     return cookie;

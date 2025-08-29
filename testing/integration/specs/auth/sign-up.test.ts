@@ -166,7 +166,7 @@ describe('signUp', () => {
                 .post('/graphql')
                 .send(createQuery(signUpQuery, testKit.userSeed.signUpInput));
             expect(res).notToFail();
-            expect(res).toContainCookie(testKit.sessConfig.cookieName);
+            expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
 
         test('should store session cookie in redis', async () => {

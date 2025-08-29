@@ -12,7 +12,7 @@ import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { toContainCookie } from './custom-matchers/to-contain-cookie';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
-import { SessionConfigService } from 'src/config/services/session-config.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
 
 let nestApp: INestApplication<App>;
 
@@ -31,7 +31,7 @@ beforeAll(async () => {
     const dataSource = nestApp.get(DataSource);
     testKit.app = nestApp;
     testKit.userSeed = nestApp.get(UserSeedService);
-    testKit.sessConfig = nestApp.get(SessionConfigService);
+    testKit.authConfig = nestApp.get(AuthConfigService);
     testKit.userRepos = dataSource.getRepository(User);
     testKit.redisService = nestApp.get(RedisService);
 });
