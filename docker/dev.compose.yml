@@ -1,0 +1,80 @@
+name: 'rate-wise'
+services:
+  app:
+    container_name: app
+    restart: always
+    build:
+      context: ..
+      target: development
+    ports:
+      - ${SERVER_PORT:-3000}:3000
+    volumes:
+      - ../src:/usr/src/app/src
+      - ../logs:/usr/src/app/logs
+      - ../tsconfig.json:/usr/src/app/tsconfig.json
+    depends_on:
+      - postgres
+      - redis
+      - mailpit      
+    environment:
+      PORT: ${PORT:-3000}
+      PASSWORD_SALT_ROUNDS: ${PASSWORD_SALT_ROUNDS:-3}
+      POSTGRES_URI: postgresql://dev:dev123@postgres:${POSTGRES_PORT:-5432}/ratewise_dev
+      REDIS_URI: redis://redis:${REDIS_PORT:-6379}
+      SESS_COOKIE_SECRET: ${SESS_COOKIE_SECRET:-secret123}
+      SESS_COOKIE_MAX_AGE_MS: ${SESS_COOKIE_MAX_AGE_MS:-600000}
+      SESS_COOKIE_NAME: ${SESS_COOKIE_NAME:-ssid}
+      MAX_USER_SESSIONS: ${MAX_USER_SESSIONS:-3}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-dev}
+      SMTP_PASS: ${SMTP_PASS:-devPass}
+
+# from compose.yml
+  postgres:    
+    container_name: postgres
+    restart: always        
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    environment:      
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev123
+      POSTGRES_DB: ratewise_dev
+
+# from compose.yml
+  redis:    
+    container_name: redis
+    restart: always
+    volumes:
+      - redis:/data
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+
+# from compose.yml
+  mailpit:    
+    container_name: mailpit
+    restart: always
+    volumes:
+        - mailpit:/data
+    ports:
+        - "${MAILHOG_SMTP_PORT:-1025}:1025"
+        - "${MAILHOG_UI_PORT:-8025}:8025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1   
+      MP_SEND_API_AUTH_ACCEPT_ANY: 1
+
+volumes:
+  redis: 
+    name: rate-wise-redis
+    external: false
+  postgres:
+    name: rate-wise-postgres
+    external: false
+  mailpit:
+    name: rate-wise-mailpit
+    external: false
