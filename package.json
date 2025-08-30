@@ -21,9 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
     "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",
-    "migration:generate": "npm run build && node scripts/generate-migration.js",
-    "dev:migration:run": "npm run build && npx typeorm -d dist/db/data-source.dev.js migration:run",
-    "dev:migration:revert": "npm run build && npx typeorm -d dist/db/data-source.dev.js migration:revert"
+    "migration:generate": "docker compose -f docker/dev.compose.yml exec app node scripts/generate-migration.js",    
+    "dev:migration:run": "docker compose -f docker/dev.compose.yml run --rm migrate",
+    "dev:migration:revert": "docker compose -f docker/dev.compose.yml exec app npx typeorm -d dist/db/data-source.js migration:revert"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",

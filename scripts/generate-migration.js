@@ -8,5 +8,5 @@ if (args.length === 0) {
 const migrationName = args[0];
 const migrationPath = `db/migrations/${migrationName}`;
 
-const command = `npx typeorm -d dist/db/data-source.dev.js migration:generate ${migrationPath}`;
+const command = `npx typeorm -d dist/db/data-source.js migration:generate ${migrationPath}`;
 execSync(command, { stdio: 'inherit' });

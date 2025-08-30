@@ -12,6 +12,9 @@ services:
       - ../src:/usr/src/app/src
       - ../logs:/usr/src/app/logs
       - ../tsconfig.json:/usr/src/app/tsconfig.json
+      # Needed to generate and revert migrations inside the container
+      - ../db:/usr/src/app/db      
+      - ../scripts:/usr/src/app/scripts
     depends_on:
       - postgres
       - redis
