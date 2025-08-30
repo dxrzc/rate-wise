@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "docker compose -f docker/dev.compose.yml up --attach app",
+    "dev": "docker compose -f docker/dev.compose.yml up --attach migrate --attach app",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
