@@ -20,7 +20,7 @@ export const configValidationSchema = Joi.object<IConfigs, true>({
     SMTP_USER: Joi.string().required(),
     SMTP_PASS: Joi.string().required(),
 
-    // Email
+    // App
     PORT: Joi.number().port().default(3000),
     NODE_ENV: Joi.string()
         .valid(...Object.values(Environment))
