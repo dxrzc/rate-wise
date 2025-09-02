@@ -1,11 +1,11 @@
-import { ISMTPConfig } from '../interface/smtp-config.interface';
+import { IConfigs } from '../interface/config.interface';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class SMTPConfigService {
+export class SmtpConfigService {
     constructor(
-        private readonly configService: ConfigService<ISMTPConfig, true>,
+        private readonly configService: ConfigService<IConfigs, true>,
     ) {}
 
     get host(): string {

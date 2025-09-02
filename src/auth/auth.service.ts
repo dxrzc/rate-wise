@@ -1,5 +1,5 @@
-import { SessionConfigService } from 'src/config/services/session-config.service';
-import { ServerConfigService } from 'src/config/services/server-config.service';
+import { ServerConfigService } from 'src/config/services/server.config.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { HashingService } from 'src/common/services/hashing.service';
@@ -15,7 +15,7 @@ import { SignUpInput } from './dtos/sign-up.input';
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly sessionConfig: SessionConfigService,
+        private readonly authConfig: AuthConfigService,
         private readonly serverConfig: ServerConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionService,
@@ -27,7 +27,7 @@ export class AuthService {
         this.logger.info(`Account creation attemp for ${signUpInput.email}`);
         signUpInput.password = this.hashingService.hash(
             signUpInput.password,
-            this.serverConfig.bcryptSaltRounds,
+            this.authConfig.passwordSaltRounds,
         );
         const user = await this.userService.createOne(signUpInput);
         await this.sessionService.newSession(req, user.id);
@@ -50,7 +50,7 @@ export class AuthService {
         }
 
         const sessions = await this.sessionService.activeSessions(user.id);
-        if (sessions === this.sessionConfig.maxUserSessions) {
+        if (sessions === this.authConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${user.id}`);
             throw new BadRequestException(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         }

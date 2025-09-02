@@ -1,5 +1,5 @@
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-import { ServerConfigService } from 'src/config/services/server-config.service';
+import { ServerConfigService } from 'src/config/services/server.config.service';
 import { INTERNAL_SERVER_ERROR } from 'src/common/constants/errors.constants';
 import { Environment } from 'src/common/enum/environment.enum';
 import { ApolloDriverConfig } from '@nestjs/apollo';
@@ -14,7 +14,7 @@ export class GqlConfigService implements GqlOptionsFactory {
     constructor(private readonly serverConfig: ServerConfigService) {}
 
     createGqlOptions(): ApolloDriverConfig {
-        const environment = this.serverConfig.environment;
+        const environment = this.serverConfig.env;
 
         return {
             playground: false,

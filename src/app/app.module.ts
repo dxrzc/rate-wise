@@ -1,15 +1,15 @@
 import { SessionMiddlewareFactory } from './providers/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
-import { RedisConfigService } from 'src/config/services/redis-config.service';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
+import { DbConfigService } from 'src/config/services/db.config.service';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { AppConfigModule } from 'src/config/app-config.module';
 import { Environment } from 'src/common/enum/environment.enum';
 import { LoggingModule } from 'src/logging/logging.module';
+import { ConfigModule } from 'src/config/config.module';
 import { UsersModule } from 'src/users/users.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { ItemsModule } from 'src/items/items.module';
@@ -28,16 +28,16 @@ import { ClsModule } from 'nestjs-cls';
         appAuthGuard,
     ],
     imports: [
-        AppConfigModule,
+        ConfigModule,
         ClsModule.forRoot({
             global: true,
             middleware: { mount: true },
         }),
         RedisModule.forRootAsync({
             isGlobal: true,
-            inject: [RedisConfigService],
-            useFactory: (redisConfigService: RedisConfigService) => ({
-                uri: redisConfigService.uri,
+            inject: [DbConfigService],
+            useFactory: (dbConfig: DbConfigService) => ({
+                uri: dbConfig.redisUri,
             }),
         }),
         TypeOrmModule.forRootAsync({

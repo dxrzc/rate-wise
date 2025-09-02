@@ -1,10 +1,10 @@
 import { consoleTransportFactory } from './transports/console.transport.factory';
-import { ServerConfigService } from 'src/config/services/server-config.service';
 import { fileSystemTransportFactory } from './transports/fs.transport.factory';
 import { reqFsTransportFactory } from './transports/req-fs.transport.factory';
 import { IRequestLog } from './interfaces/request-log.interface';
 import { Injectable } from '@nestjs/common';
 import * as winston from 'winston';
+import { ServerConfigService } from 'src/config/services/server.config.service';
 
 @Injectable()
 export class HttpLoggerService {
@@ -13,7 +13,7 @@ export class HttpLoggerService {
     private fsLogger: winston.Logger;
 
     constructor(private readonly serverConfig: ServerConfigService) {
-        const env = this.serverConfig.environment;
+        const env = this.serverConfig.env;
 
         const mssgConsole = consoleTransportFactory(env);
         this.consoleLogger = winston.createLogger({

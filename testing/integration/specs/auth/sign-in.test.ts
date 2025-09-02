@@ -89,7 +89,7 @@ describe('signIn', () => {
                     }),
                 );
             expect(res).notToFail();
-            expect(res).toContainCookie(testKit.sessConfig.cookieName);
+            expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
 
         test('should add the new session to the user sessions index redis set', async () => {
@@ -185,7 +185,7 @@ describe('signIn', () => {
 
     describe('User exceeds the maximum active sessions', () => {
         test('should return BAD REQUEST code and MAX_SESSIONS_REACHED message', async () => {
-            const maxSessions = testKit.sessConfig.maxUserSessions;
+            const maxSessions = testKit.authConfig.maxUserSessions;
             const { email, password } = await createUser(); // 1 session
             for (let i = 0; i < maxSessions - 1; i++) {
                 await expect(

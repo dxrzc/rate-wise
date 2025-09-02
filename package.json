@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "dev": "docker compose -f docker/dev.compose.yml up --attach migrate --attach app",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -20,9 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
     "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",
-    "migration:generate": "npm run build && node scripts/generate-migration.js",
-    "dev:migration:run": "npm run build && npx typeorm -d dist/db/data-source.dev.js migration:run",
-    "dev:migration:revert": "npm run build && npx typeorm -d dist/db/data-source.dev.js migration:revert"
+    "migration:generate": "docker compose -f docker/dev.compose.yml exec app node scripts/generate-migration.js",    
+    "dev:migration:run": "docker compose -f docker/dev.compose.yml run --rm migrate",
+    "dev:migration:revert": "docker compose -f docker/dev.compose.yml exec app npx typeorm -d dist/db/data-source.js migration:revert"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
@@ -42,7 +43,6 @@
     "graphql": "^16.11.0",
     "graphql-fields": "^2.0.3",
     "joi": "^17.13.3",
-    "nest-winston": "^1.10.2",
     "nestjs-cls": "^6.0.1",
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",

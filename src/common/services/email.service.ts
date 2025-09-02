@@ -1,4 +1,4 @@
-import { SMTPConfigService } from 'src/config/services/smtp-config.service';
+import { SmtpConfigService } from 'src/config/services/smtp.config.service';
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
@@ -6,7 +6,7 @@ import * as nodemailer from 'nodemailer';
 export class EmailService {
     private transporter: nodemailer.Transporter;
 
-    constructor(private readonly emailConfig: SMTPConfigService) {
+    constructor(private readonly emailConfig: SmtpConfigService) {
         this.transporter = nodemailer.createTransport({
             host: emailConfig.host,
             port: emailConfig.port,
