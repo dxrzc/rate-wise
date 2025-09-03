@@ -1,31 +1,19 @@
-import * as compose from 'docker-compose';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as path from 'path';
+import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { runMigration } from './helpers/run-migration.helper';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
-const execAsync = promisify(exec);
+export default async function () {
+    const psqlContainer = await new PostgreSqlContainer('postgres:17.5-alpine')
+        .withDatabase('ratewise_template')
+        .withTmpFs({ '/var/lib/postgresql/data': 'rw' })
+        .start();
+    const postgresUri = psqlContainer.getConnectionUri();
 
-export default async function globalSetup() {
-    const services = ['postgres-test', 'redis-test'];
-    global.services = services;
-    console.log('\n');
-    console.log('📦 Running containers...');
-    await compose.upMany(services, {
-        cwd: path.join(__dirname),
-        env: {
-            ...process.env,
-        },
-    });
-    console.log('✅ Containers started');
+    await Promise.all([
+        fs.writeFile(join(__dirname, 'postgres-uri.txt'), postgresUri),
+        runMigration(postgresUri),
+    ]);
 
-    try {
-        console.log('🚚 Running migrations...');
-        const migr = 'npx typeorm -d dist/db/data-source.int.js migration:run';
-        await execAsync('npm run build', { cwd: process.cwd() });
-        await execAsync(migr, { cwd: process.cwd() });
-        console.log('✅ Migrations completed');
-    } catch (err) {
-        console.error('❗Error running migration:', err);
-        process.exit(1);
-    }
+    globalThis.psqlContainer = psqlContainer;
 }

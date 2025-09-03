@@ -20,7 +20,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
-    "test:int": "NODE_ENV=integration node --env-file=.env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",
+    "test:int": "node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",
     "migration:generate": "docker compose -f docker/dev.compose.yml exec app node scripts/generate-migration.js",
     "dev:migration:run": "docker compose -f docker/dev.compose.yml run --rm migrate",
     "dev:migration:revert": "docker compose -f docker/dev.compose.yml exec app npx typeorm -d dist/db/data-source.js migration:revert"
