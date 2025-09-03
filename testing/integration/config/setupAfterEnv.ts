@@ -35,6 +35,13 @@ beforeAll(async () => {
         'utf8',
     );
     redisContainer = await new RedisContainer('redis:8.0-alpine')
+        .withCommand([
+            'redis-server',
+            '--appendonly',
+            'no', // AOF persistence
+            '--save',
+            '""', // disables snapshots
+        ])
         .withTmpFs({ '/data': 'rw' })
         .start();
 
