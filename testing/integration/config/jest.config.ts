@@ -1,22 +1,18 @@
 import type { Config } from 'jest';
 
 const config: Config = {
+    testEnvironment: 'jest-environment-node',
     rootDir: process.cwd(), // workidr
+    preset: 'ts-jest',
 
     globalSetup: '<rootDir>/testing/integration/config/global-setup.ts',
     globalTeardown: '<rootDir>/testing/integration/config/global-teardown.ts',
-
-    // setup
     setupFilesAfterEnv: [
         '<rootDir>/testing/integration/config/setupAfterEnv.ts',
     ],
 
     // coverage
     collectCoverage: true,
-    // collectCoverageFrom: [
-    //     '<rootDir>/src/**/*.ts',
-    //     '!<rootDir>/test/integration/**',
-    // ],
     coverageDirectory: '<rootDir>/coverage/integration',
     coverageProvider: 'v8',
 
@@ -29,9 +25,6 @@ const config: Config = {
         '^@integration/(.*)$': '<rootDir>/testing/integration/$1',
         '^@queries/(.*)$': '<rootDir>/testing/queries/$1',
     },
-
-    preset: 'ts-jest',
-    testEnvironment: 'jest-environment-node',
 
     maxWorkers: '50%',
 };

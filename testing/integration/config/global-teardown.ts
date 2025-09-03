@@ -1,8 +1,10 @@
-import * as compose from 'docker-compose';
-import * as path from 'path';
+import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 export default async function () {
-    await compose.downMany(global.services as string[], {
-        cwd: path.join(__dirname),
-    });
+    await Promise.all([
+        fs.rm(join(__dirname, 'postgres-uri.txt'), { force: true }),
+        (globalThis.psqlContainer as StartedPostgreSqlContainer).stop(),
+    ]);
 }
