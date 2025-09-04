@@ -13,9 +13,7 @@ import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from './custom-matchers/to-contain-cookie';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
-import { IConfigs } from 'src/config/interface/config.interface';
 import { cloneDatabase } from './helpers/clone-database.helper';
-import { Environment } from 'src/common/enum/environment.enum';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -45,24 +43,8 @@ beforeAll(async () => {
         .withTmpFs({ '/data': 'rw' })
         .start();
 
-    // Environment variables
-    Object.assign<any, IConfigs>(process.env, {
-        PASSWORD_SALT_ROUNDS: 1,
-        POSTGRES_URI: await cloneDatabase(templatePostgresDb),
-        REDIS_URI: redisContainer.getConnectionUrl(),
-        SESS_COOKIE_SECRET: 'ABC123',
-        SESS_COOKIE_MAX_AGE_MS: 60000,
-        SESS_COOKIE_NAME: 'ssid',
-        MAX_USER_SESSIONS: 3,
-        NODE_ENV: Environment.INTEGRATION,
-
-        // unused
-        PORT: 3000,
-        SMTP_HOST: 'localhost',
-        SMTP_PORT: 1025,
-        SMTP_USER: 'dev',
-        SMTP_PASS: 'dev123',
-    });
+    process.env.POSTGRES_URI = await cloneDatabase(templatePostgresDb);
+    process.env.REDIS_URI = redisContainer.getConnectionUrl();
 
     // Application
     const moduleFixture: TestingModule = await Test.createTestingModule({
