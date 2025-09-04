@@ -41,6 +41,9 @@ services:
       service: migrate
     environment:
       POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
+    depends_on:
+      postgres:
+        condition: service_healthy    
 
   postgres:    
     container_name: postgres
@@ -56,6 +59,12 @@ services:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev123
       POSTGRES_DB: ratewise_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d ratewise_dev"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s    
 
   redis:    
     container_name: redis

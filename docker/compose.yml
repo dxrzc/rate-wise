@@ -13,5 +13,3 @@ services:
       target: development
     volumes:
       - ../db:/usr/src/app/db
-    depends_on:
-    - postgres
