@@ -5,3 +5,13 @@ services:
     image: redis:8.0-alpine    
   postgres:
     image: postgres:17.5-alpine          
+  migrate:        
+    restart: "no"
+    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
+    build:
+      context: ..
+      target: development
+    volumes:
+      - ../db:/usr/src/app/db
+    depends_on:
+    - postgres

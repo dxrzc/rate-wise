@@ -36,17 +36,11 @@ services:
 
   migrate:
     container_name: migrate
-    restart: "no"
-    build:
-      context: ..
-      target: development
-    volumes:
-      - ../db:/usr/src/app/db
-    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"
+    extends:
+      file: ./compose.yml
+      service: migrate
     environment:
       POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
-    depends_on:
-    - postgres
 
   postgres:    
     container_name: postgres
