@@ -6,6 +6,7 @@ services:
     build:
       context: ..
       target: development
+    image: ratewise:dev
     ports:
       - ${SERVER_PORT:-3000}:3000
     volumes:
@@ -15,8 +16,7 @@ services:
       # Needed to generate and revert migrations inside the container
       - ../db:/usr/src/app/db      
       - ../scripts:/usr/src/app/scripts
-    depends_on:
-      - postgres
+    depends_on:      
       - redis
       - mailpit      
       - migrate
@@ -36,24 +36,17 @@ services:
 
   migrate:
     container_name: migrate
-    restart: "no"
-    build:
-      context: ..
-      target: development
-    volumes:
-      - ../db:/usr/src/app/db
-    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"
+    extends:
+      file: ./compose.yml
+      service: migrate
     environment:
       POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
-    depends_on:
-    - postgres
 
   postgres:    
     container_name: postgres
     extends: 
       file: ./compose.yml
-      service: postgres 
-    restart: always        
+      service: postgres        
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
@@ -62,15 +55,18 @@ services:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev123
       POSTGRES_DB: ratewise_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d ratewise_dev"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s    
 
   redis:    
     container_name: redis
     extends: 
       file: ./compose.yml
-      service: redis 
-    restart: always
-    volumes:
-      - redis:/data
+      service: redis   
     ports:
       - ${REDIS_PORT:-6379}:6379
 
@@ -78,8 +74,7 @@ services:
     container_name: mailpit
     extends: 
       file: ./compose.yml
-      service: mailpit
-    restart: always
+      service: mailpit    
     volumes:
         - mailpit:/data
     ports:

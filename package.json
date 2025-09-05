@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "touch .env.dev && docker compose --env-file .env.dev -f docker/dev.compose.yml up --attach migrate --attach app",
     "integration": "touch .env.int && NODE_ENV=integration node --env-file .env.int node_modules/jest/bin/jest.js --config testing/integration/config/jest.config.ts",
+    "e2e": "touch .env.e2e && node --env-file .env.e2e node_modules/jest/bin/jest.js --config testing/e2e/config/jest.config.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -71,6 +72,7 @@
     "@types/node": "^22.10.7",
     "@types/nodemailer": "^7.0.1",
     "@types/supertest": "^6.0.2",
+    "axios": "^1.11.0",
     "docker-compose": "^1.2.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
