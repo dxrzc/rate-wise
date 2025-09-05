@@ -6,6 +6,7 @@ services:
     build:
       context: ..
       target: development
+    image: ratewise:dev
     ports:
       - ${SERVER_PORT:-3000}:3000
     volumes:
