@@ -14,8 +14,13 @@ import { toContainCookie } from './custom-matchers/to-contain-cookie';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { cloneDatabase } from './helpers/clone-database.helper';
+import { Environment } from 'src/common/enum/environment.enum';
 import { readFileSync } from 'fs';
+import { config } from 'dotenv';
 import { join } from 'path';
+
+config({ path: '.env.test' });
+process.env.NODE_ENV = Environment.INTEGRATION;
 
 let nestApp: INestApplication<App>;
 let redisContainer: StartedRedisContainer;

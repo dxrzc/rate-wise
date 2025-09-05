@@ -1,13 +1,45 @@
 services:
+  app:
+    restart: always
+    depends_on:      
+      redis:
+        condition: service_started    
+      mailpit:
+        condition: service_started      
+      migrate:
+        condition: service_completed_successfully
+    environment:      
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
+      REDIS_URI: redis://redis:6379  
+
   mailpit:
     image: axllent/mailpit:v1.27.6     
     restart: always
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1   
+      MP_SEND_API_AUTH_ACCEPT_ANY: 1    
+
   redis:
     image: redis:8.0-alpine    
     restart: always
+
   postgres:
     image: postgres:17.5-alpine          
     restart: always
+    environment:      
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: ratewise
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d ratewise"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s     
+
   migrate:        
     restart: "no"
     build:
@@ -19,4 +51,6 @@ services:
       - ../db:/usr/src/app/db
     depends_on:
       postgres:
-        condition: service_healthy        
+        condition: service_healthy  
+    environment:
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
