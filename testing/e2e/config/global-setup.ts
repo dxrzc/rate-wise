@@ -9,7 +9,6 @@ export default async function () {
         composeFile,
     )
         .withBuild()
-        .withEnvironmentFile('.env.e2e')
         .up();
 
     globalThis.environment = environment;
