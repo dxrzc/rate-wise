@@ -1,9 +1,10 @@
 name: 'rate-wise'
 
 services:
-  app:    
-    container_name: app
-    restart: always
+  app:        
+    extends:
+      file: ./compose.yml
+      service: app
     build:
       context: ..
       target: development
@@ -16,57 +17,36 @@ services:
       - ../tsconfig.json:/usr/src/app/tsconfig.json      
       - ../db:/usr/src/app/db      
       - ../scripts:/usr/src/app/scripts
-    depends_on:      
-      - redis
-      - mailpit      
-      - migrate
-    environment:      
-      POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
-      REDIS_URI: redis://redis:6379
     env_file:
       - path: ../.env.defaults
         required: true 
       - path: ../.env.dev
         required: false            
 
-  migrate:
-    container_name: migrate
+  migrate:    
     extends:
       file: ./compose.yml
       service: migrate
-    environment:
-      POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
 
-  postgres:    
-    container_name: postgres
+  postgres:        
     extends: 
       file: ./compose.yml
       service: postgres        
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT:-5432}:5432
-    environment:      
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev123
-      POSTGRES_DB: ratewise_dev
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev -d ratewise_dev"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s    
+      - ${POSTGRES_PORT:-5432}:5432    
 
-  redis:    
-    container_name: redis
+  redis:        
     extends: 
       file: ./compose.yml
       service: redis   
+    volumes:
+      - redis:/data      
     ports:
-      - ${REDIS_PORT:-6379}:6379
+      - ${REDIS_PORT:-6379}:6379    
 
-  mailpit:    
-    container_name: mailpit
+  mailpit:        
     extends: 
       file: ./compose.yml
       service: mailpit    
@@ -75,12 +55,6 @@ services:
     ports:
         - "${MAILHOG_SMTP_PORT:-1025}:1025"
         - "${MAILHOG_UI_PORT:-8025}:8025"
-    environment:
-      MP_MAX_MESSAGES: 5000
-      MP_DATABASE: /data/mailpit.db
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1   
-      MP_SEND_API_AUTH_ACCEPT_ANY: 1
 
 volumes:
   redis: 
