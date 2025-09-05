@@ -1,10 +1,13 @@
 services:
   mailpit:
-    image: axllent/mailpit:v1.27.6    
+    image: axllent/mailpit:v1.27.6     
+    restart: always
   redis:
     image: redis:8.0-alpine    
+    restart: always
   postgres:
     image: postgres:17.5-alpine          
+    restart: always
   migrate:        
     restart: "no"
     build:

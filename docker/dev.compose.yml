@@ -46,8 +46,7 @@ services:
     container_name: postgres
     extends: 
       file: ./compose.yml
-      service: postgres 
-    restart: always        
+      service: postgres        
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
@@ -67,10 +66,7 @@ services:
     container_name: redis
     extends: 
       file: ./compose.yml
-      service: redis 
-    restart: always
-    volumes:
-      - redis:/data
+      service: redis   
     ports:
       - ${REDIS_PORT:-6379}:6379
 
@@ -78,8 +74,7 @@ services:
     container_name: mailpit
     extends: 
       file: ./compose.yml
-      service: mailpit
-    restart: always
+      service: mailpit    
     volumes:
         - mailpit:/data
     ports:
