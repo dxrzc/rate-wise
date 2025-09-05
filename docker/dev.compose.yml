@@ -41,9 +41,6 @@ services:
       service: migrate
     environment:
       POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
-    depends_on:
-      postgres:
-        condition: service_healthy    
 
   postgres:    
     container_name: postgres

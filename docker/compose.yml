@@ -14,3 +14,6 @@ services:
     command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
     volumes:
       - ../db:/usr/src/app/db
+    depends_on:
+      postgres:
+        condition: service_healthy        
