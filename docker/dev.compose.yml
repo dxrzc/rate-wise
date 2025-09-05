@@ -24,9 +24,9 @@ services:
       POSTGRES_URI: postgresql://dev:dev123@postgres:5432/ratewise_dev
       REDIS_URI: redis://redis:6379
     env_file:
-      - path: ../default.env
+      - path: ../.env.defaults
         required: true 
-      - path: ../dev.env
+      - path: ../.env.dev
         required: false            
 
   migrate:
