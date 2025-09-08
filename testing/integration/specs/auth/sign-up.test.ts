@@ -12,7 +12,7 @@ import { UserStatus } from 'src/users/enum/user-status.enum';
 import { testKit } from '@integration/utils/test-kit.util';
 import { UserRole } from 'src/users/enum/user-role.enum';
 import { UserModel } from 'src/users/models/user.model';
-import { Code } from '@integration/enum/code.enum';
+import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 
 describe('signUp', () => {

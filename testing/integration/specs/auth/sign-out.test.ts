@@ -3,14 +3,14 @@ import { signOut } from '@test-utils/operations/auth/sign-out.operation';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
-import { Code } from '@integration/enum/code.enum';
+import { Code } from 'src/common/enum/code.enum';
 
 describe('signOut', () => {
     describe('Session cookie not provided', () => {
-        test('return UNAUTHENTICATED code and UNAUTHORIZED message', async () => {
+        test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
             const res = await testKit.request.send(signOut());
             expect(res).toFailWith(
-                Code.UNAUTHENTICATED,
+                Code.UNAUTHORIZED,
                 AUTH_MESSAGES.UNAUTHORIZED,
             );
         });
