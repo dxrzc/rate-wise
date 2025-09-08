@@ -24,6 +24,7 @@ const config: Config = {
         '^src/(.*)$': '<rootDir>/src/$1',
         '^@integration/(.*)$': '<rootDir>/testing/integration/$1',
         '^@queries/(.*)$': '<rootDir>/testing/queries/$1',
+        '^@test-utils/(.*)$': '<rootDir>/testing/utils/$1',
     },
 
     maxWorkers: '50%',

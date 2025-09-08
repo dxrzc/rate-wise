@@ -4,8 +4,8 @@
       "@integration/*": [
         "testing/integration/*"
       ],
-      "@queries/*": [
-        "testing/queries/*"
+      "@test-utils/*": [
+        "testing/utils/*"
       ]
     },
     "strict": true,
