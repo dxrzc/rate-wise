@@ -8,8 +8,8 @@ export function signOutAll({
 }: IOperation<ReAuthenticationInput, void>) {
     return operationFactory(
         {
-            operationName: 'signOut',
-            argumentName: 'password',
+            operationName: 'signOutAll',
+            argumentName: 'credentials',
             inputType: 'ReAuthenticationInput',
         },
         {

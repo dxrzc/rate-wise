@@ -40,6 +40,7 @@ describe('signIn', () => {
             const res = await testKit.request.send(
                 signIn({
                     input: { email, password },
+                    fields: ['id'],
                 }),
             );
             expect(res).notToFail();
@@ -51,6 +52,7 @@ describe('signIn', () => {
             const res = await testKit.request.send(
                 signIn({
                     input: { email, password },
+                    fields: ['id'],
                 }),
             );
             expect(res).notToFail();
@@ -66,6 +68,7 @@ describe('signIn', () => {
             const res = await testKit.request.send(
                 signIn({
                     input: { email, password },
+                    fields: ['id'],
                 }),
             );
             expect(res).notToFail();
@@ -80,6 +83,7 @@ describe('signIn', () => {
         test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
             const res = await testKit.request.send(
                 signIn({
+                    fields: ['id'],
                     input: {
                         email: testKit.userSeed.email,
                         password: faker.internet.password({
@@ -98,6 +102,7 @@ describe('signIn', () => {
             const res = await testKit.request.send(
                 signIn({
                     input: { email, password: testKit.userSeed.password },
+                    fields: ['id'],
                 }),
             );
             expect(res).toFailWith(
@@ -111,6 +116,7 @@ describe('signIn', () => {
         test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
             const res = await testKit.request.send(
                 signIn({
+                    fields: ['id'],
                     input: {
                         email: testKit.userSeed.email,
                         password: testKit.userSeed.password,
@@ -133,6 +139,7 @@ describe('signIn', () => {
                     testKit.request.send(
                         signIn({
                             input: { email, password },
+                            fields: ['id'],
                         }),
                     ),
                 ).resolves.notToFail();
@@ -140,6 +147,7 @@ describe('signIn', () => {
             const res = await testKit.request.send(
                 signIn({
                     input: { email, password },
+                    fields: ['id'],
                 }),
             );
             expect(res).toFailWith(
@@ -157,6 +165,7 @@ describe('signIn', () => {
                 await testKit.request.set('Cookie', sessionCookie).send(
                     signIn({
                         input: { email, password },
+                        fields: ['id'],
                     }),
                 );
                 await expect(

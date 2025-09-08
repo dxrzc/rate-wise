@@ -1,7 +1,10 @@
 export function signOut() {
-    return `
-    mutation Mutation {
-       signOut
-    }
-  `;
+    return {
+        query: `
+        mutation Mutation {
+            signOut
+        }
+        `,
+        variables: {},
+    };
 }

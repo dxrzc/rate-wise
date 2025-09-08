@@ -5,7 +5,7 @@ export function operationFactory(
     { operationName, inputType, argumentName }: IOperationInfo,
     { input, fields }: IOperation,
 ) {
-    let dataFetched: string[];
+    let dataFetched: string;
 
     if (fields === 'ALL') {
         dataFetched = [
@@ -17,17 +17,16 @@ export function operationFactory(
             'status',
             'role',
             'reputationScore',
-        ];
+        ].join();
     } else {
-        dataFetched = !fields || fields.length === 0 ? ['id'] : fields;
+        dataFetched = fields ? fields.join() : '';
     }
 
     return {
         query: `
                mutation ($input: ${inputType}!) {
-                ${operationName}(${argumentName}: $input) {
-                    ${dataFetched.join()}
-                }
+                ${operationName}(${argumentName}: $input)
+                    ${fields ? `{ ${dataFetched} }` : ''}                    
               }
         `,
         variables: { input },
