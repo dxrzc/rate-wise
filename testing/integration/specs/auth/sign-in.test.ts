@@ -1,39 +1,28 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { makeUserSessionRelationKey } from 'src/auth/functions/make-user-session-relation-key';
 import { makeSessionsIndexKey } from 'src/auth/functions/make-sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
-import { createQuery } from '@integration/utils/create-query.util';
+import { signIn } from '@test-utils/operations/auth/sign-in.operation';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
-import { signInQuery } from '@queries/sign-in.query';
 import { Code } from '@integration/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
-import * as request from 'supertest';
 
 describe('signIn', () => {
     describe('Successful sign-in', () => {
-        test('data should match the user data in database', async () => {
-            // sign up
+        test('returned data should match the user data in database', async () => {
             const { email, password, id } = await createUser();
-            // sign in
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password,
-                        email,
-                    }),
-                );
-            expect(res).notToFail();
-            // find user in db
-            const userDb = await testKit.userRepos.findOneBy({
-                id,
-            });
-            expect(userDb).not.toBeNull();
-            // data should match
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password },
+                    fields: 'ALL',
+                }),
+            );
+            const userDb = await testKit.userRepos.findOneByOrFail({ id });
             expect(res.body.data.signIn).toStrictEqual({
                 username: userDb?.username,
                 reputationScore: userDb?.reputationScore,
@@ -46,83 +35,39 @@ describe('signIn', () => {
             });
         });
 
-        test('user password can not be queried from the response data', async () => {
-            // sign up
-            const { email, password } = await createUser();
-            // sign in
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(
-                        `mutation SignIn($input: SignInInput!) {
-                          signIn(credentials: $input) {
-                            id
-                            createdAt
-                            updatedAt
-                            username
-                            email
-                            role
-                            reputationScore
-                            password
-                          }
-                        }`,
-                        {
-                            password,
-                            email,
-                        },
-                    ),
-                );
-            expect(res).toFailWith(
-                Code.GRAPHQL_VALIDATION_FAILED,
-                'Cannot query field "password" on type "UserModel".',
-            );
-        });
-
         test('should set a session cookie', async () => {
             const { email, password } = await createUser();
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password,
-                        email,
-                    }),
-                );
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password },
+                }),
+            );
             expect(res).notToFail();
             expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
 
         test('should add the new session to the user sessions index redis set', async () => {
             const { email, password } = await createUser();
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password,
-                        email,
-                    }),
-                );
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password },
+                }),
+            );
             expect(res).notToFail();
-            const key = makeSessionsIndexKey(res.body.data.signIn.id as string);
+            const key = makeSessionsIndexKey(res.body.data.signIn.id);
+            const sessId = getSidFromCookie(getSessionCookie(res));
             const sessSet = await testKit.redisService.setMembers(key);
             expect(sessSet.length).toBe(2); // signUp and signIn
-            expect(
-                sessSet.find(
-                    (key) => key === getSidFromCookie(getSessionCookie(res)),
-                ),
-            ).toBeDefined();
+            expect(sessSet.find((key) => key === sessId)).toBeDefined();
         });
 
         test('should create session-user relation record in redis', async () => {
             const { email, password } = await createUser();
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password,
-                        email,
-                    }),
-                );
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password },
+                }),
+            );
             expect(res).notToFail();
             const sid = getSidFromCookie(getSessionCookie(res));
             const key = makeUserSessionRelationKey(sid);
@@ -133,17 +78,16 @@ describe('signIn', () => {
 
     describe('Invalid password length (wiring test)', () => {
         test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
-            const invalidPassword = faker.internet.password({
-                length: PASSWORD_MAX_LENGTH + 1,
-            });
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password: invalidPassword,
+            const res = await testKit.request.send(
+                signIn({
+                    input: {
                         email: testKit.userSeed.email,
-                    }),
-                );
+                        password: faker.internet.password({
+                            length: PASSWORD_MAX_LENGTH + 1,
+                        }),
+                    },
+                }),
+            );
             expect(res).toFailWith(Code.BAD_REQUEST, 'Bad Request Exception');
         });
     });
@@ -151,14 +95,11 @@ describe('signIn', () => {
     describe('Password does not match', () => {
         test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
             const { email } = await createUser();
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password: testKit.userSeed.password,
-                        email,
-                    }),
-                );
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password: testKit.userSeed.password },
+                }),
+            );
             expect(res).toFailWith(
                 Code.BAD_REQUEST,
                 AUTH_MESSAGES.INVALID_CREDENTIALS,
@@ -168,14 +109,14 @@ describe('signIn', () => {
 
     describe('User in email does not exist', () => {
         test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password: testKit.userSeed.password,
+            const res = await testKit.request.send(
+                signIn({
+                    input: {
                         email: testKit.userSeed.email,
-                    }),
-                );
+                        password: testKit.userSeed.password,
+                    },
+                }),
+            );
             expect(res).toFailWith(
                 Code.BAD_REQUEST,
                 AUTH_MESSAGES.INVALID_CREDENTIALS,
@@ -189,22 +130,18 @@ describe('signIn', () => {
             const { email, password } = await createUser(); // 1 session
             for (let i = 0; i < maxSessions - 1; i++) {
                 await expect(
-                    request(testKit.app.getHttpServer()).post('/graphql').send(
-                        createQuery(signInQuery, {
-                            password,
-                            email,
+                    testKit.request.send(
+                        signIn({
+                            input: { email, password },
                         }),
                     ),
                 ).resolves.notToFail();
             }
-            const res = await request(testKit.app.getHttpServer())
-                .post('/graphql')
-                .send(
-                    createQuery(signInQuery, {
-                        password,
-                        email,
-                    }),
-                );
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password },
+                }),
+            );
             expect(res).toFailWith(
                 Code.BAD_REQUEST,
                 AUTH_MESSAGES.MAX_SESSIONS_REACHED,
@@ -217,19 +154,31 @@ describe('signIn', () => {
             test('old session should be removed from redis store (session rotation)', async () => {
                 const { sessionCookie, email, password } = await createUser();
                 const oldSid = getSidFromCookie(sessionCookie);
-                await request(testKit.app.getHttpServer())
-                    .post('/graphql')
-                    .set('Cookie', sessionCookie)
-                    .send(
-                        createQuery(signInQuery, {
-                            email,
-                            password,
-                        }),
-                    );
+                await testKit.request.set('Cookie', sessionCookie).send(
+                    signIn({
+                        input: { email, password },
+                    }),
+                );
                 await expect(
                     testKit.redisService.get(`session:${oldSid}`),
                 ).resolves.toBeNull();
             });
+        });
+    });
+
+    describe('Password queried in graphql operation', () => {
+        test('should failed with graphql validation error', async () => {
+            const { email, password } = await createUser();
+            const res = await testKit.request.send(
+                signIn({
+                    input: { email, password },
+                    fields: ['password' as any],
+                }),
+            );
+            expect(res).toFailWith(
+                Code.GRAPHQL_VALIDATION_FAILED,
+                <string>expect.any(String),
+            );
         });
     });
 });
