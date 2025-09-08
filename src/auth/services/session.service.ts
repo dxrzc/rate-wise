@@ -37,24 +37,6 @@ export class SessionService {
         private readonly redisService: RedisService,
     ) {}
 
-    // creates a session-user relation to track down sessions and their respective owners
-    private async createSessionUserRelation(userId: string, sessionId: string) {
-        await this.redisService.set(
-            makeUserSessionRelationKey(sessionId),
-            userId,
-        );
-        this.logger.debug(`Session-user relation created`);
-    }
-
-    // adds the sessionID to a set containing all the sessions belonging to a user
-    private async addSessionToUserSet(userId: string, sessionID: string) {
-        await this.redisService.addToSet(
-            makeSessionsIndexKey(userId),
-            sessionID,
-        );
-        this.logger.debug(`Session added to user sessions`);
-    }
-
     // generate a new session id preventing session fixation
     private async regenerateSession(req: RequestContext): Promise<void> {
         await promisify<void>((cb) => req.session.regenerate(cb));
@@ -80,12 +62,18 @@ export class SessionService {
         this.logger.debug(`Session ${req.sessionID} deleted`);
     }
 
+    async linkUserSession(sessionId: string, userId: string) {
+        await this.redisService.client
+            .multi()
+            .sAdd(makeSessionsIndexKey(userId), sessionId)
+            .set(makeUserSessionRelationKey(sessionId), userId)
+            .exec();
+        this.logger.debug(`Session ${sessionId} linked to user ${userId}`);
+    }
+
     async newSession(req: RequestContext, userId: string) {
         await this.regenerateSession(req);
         req.session.userId = userId;
-        await Promise.all([
-            this.createSessionUserRelation(userId, req.sessionID),
-            this.addSessionToUserSet(userId, req.sessionID),
-        ]);
+        await this.linkUserSession(req.sessionID, userId);
     }
 }
