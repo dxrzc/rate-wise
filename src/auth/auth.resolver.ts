@@ -46,7 +46,7 @@ export class AuthResolver {
 
     @Mutation(() => Boolean, { name: 'signOutAll' })
     async signOutAll(
-        @Args('password') input: ReAuthenticationInput,
+        @Args('credentials') input: ReAuthenticationInput,
         @Context('req') req: RequestContext,
         @Context('res') res: Response,
     ): Promise<boolean> {
