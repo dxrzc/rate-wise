@@ -15,6 +15,7 @@ import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { cloneDatabase } from './helpers/clone-database.helper';
 import { Environment } from 'src/common/enum/environment.enum';
+import * as request from 'supertest';
 import { readFileSync } from 'fs';
 import { config } from 'dotenv';
 import { join } from 'path';
@@ -64,6 +65,9 @@ beforeAll(async () => {
     testKit.authConfig = nestApp.get(AuthConfigService);
     testKit.userRepos = nestApp.get(DataSource).getRepository(User);
     testKit.redisService = nestApp.get(RedisService);
+    Object.defineProperty(testKit, 'request', {
+        get: () => request(testKit.app.getHttpServer()).post('/graphql'),
+    });
 });
 
 afterAll(async () => {

@@ -92,7 +92,7 @@ type Mutation {
   signUp(user_data: SignUpInput!): UserModel!
   signIn(credentials: SignInInput!): UserModel!
   signOut: Boolean!
-  signOutAll(password: ReAuthenticationInput!): Boolean!
+  signOutAll(credentials: ReAuthenticationInput!): Boolean!
 }
 
 input CreateItemInput {

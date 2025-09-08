@@ -5,6 +5,7 @@ import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { RedisService } from 'src/redis/redis.service';
+import { Request, Test } from 'supertest';
 
 export interface ITestKit {
     app: INestApplication<App>;
@@ -12,4 +13,5 @@ export interface ITestKit {
     authConfig: AuthConfigService;
     userRepos: Repository<User>;
     redisService: RedisService;
+    request: Test;
 }
