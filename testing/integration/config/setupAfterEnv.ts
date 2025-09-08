@@ -65,8 +65,9 @@ beforeAll(async () => {
     testKit.authConfig = nestApp.get(AuthConfigService);
     testKit.userRepos = nestApp.get(DataSource).getRepository(User);
     testKit.redisService = nestApp.get(RedisService);
-
-    testKit.request = request(testKit.app.getHttpServer()).post('/graphql');
+    Object.defineProperty(testKit, 'request', {
+        get: () => request(testKit.app.getHttpServer()).post('/graphql'),
+    });
 });
 
 afterAll(async () => {
