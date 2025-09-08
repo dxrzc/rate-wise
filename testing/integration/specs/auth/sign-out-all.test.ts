@@ -53,7 +53,7 @@ describe('signOutAll', () => {
     });
 
     describe('Session Cookie not provided', () => {
-        test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
+        test('return UNAUTHENTICATED code and UNAUTHORIZED message', async () => {
             await expect(
                 testKit.request.send(
                     signOutAll({

@@ -7,7 +7,7 @@ import { Code } from '@integration/enum/code.enum';
 
 describe('signOut', () => {
     describe('Session cookie not provided', () => {
-        test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
+        test('return UNAUTHENTICATED code and UNAUTHORIZED message', async () => {
             const res = await testKit.request.send(signOut());
             expect(res).toFailWith(
                 Code.UNAUTHENTICATED,
