@@ -79,7 +79,7 @@ export class UsersService {
     async createOne(user: SignUpInput): Promise<User> {
         try {
             const created = await this.userRepository.save(user);
-            this.logger.info(`User ${created.id} created successfully`);
+            this.logger.info(`User created in database`);
             return created;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {

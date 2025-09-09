@@ -27,7 +27,8 @@ const config: Config = {
         '^@test-utils/(.*)$': '<rootDir>/testing/utils/$1',
     },
 
-    maxWorkers: '50%',
+    testTimeout: 20000,
+    maxWorkers: 2,
 };
 
 export default config;

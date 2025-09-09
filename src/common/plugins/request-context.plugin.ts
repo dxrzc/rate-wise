@@ -37,6 +37,7 @@ export class RequestContextPlugin implements ApolloServerPlugin {
                 ) => {
                     const error = reqCtx.errors?.at(0)?.message;
                     const responseTime = Date.now() - now;
+                    this.logger.info(`Request completed (${responseTime}ms)`);
                     this.logger.request({
                         responseTime: `${responseTime}ms`,
                         requestId: reqId,

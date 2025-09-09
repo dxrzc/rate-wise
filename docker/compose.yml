@@ -44,8 +44,8 @@ services:
     restart: "no"
     build:
       context: ..
-      target: development
-    image: ratewise:dev
+      target: development   
+    image: ratewise:migrate 
     command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
     volumes:
       - ../db:/usr/src/app/db

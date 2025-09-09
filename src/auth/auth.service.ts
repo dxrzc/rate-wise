@@ -1,23 +1,21 @@
-import { ServerConfigService } from 'src/config/services/server.config.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { HashingService } from 'src/common/services/hashing.service';
-import { Injectable } from '@nestjs/common';
 import { RequestContext } from './types/request-context.type';
 import { SessionService } from './services/session.service';
+import { HttpError } from 'src/common/errors/http.errors';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
-import { HttpError } from 'src/common/errors/http.errors';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly authConfig: AuthConfigService,
-        private readonly serverConfig: ServerConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionService,
         private readonly userService: UsersService,
@@ -25,19 +23,17 @@ export class AuthService {
     ) {}
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
-        this.logger.info(`Account creation attemp for ${signUpInput.email}`);
         signUpInput.password = this.hashingService.hash(
             signUpInput.password,
             this.authConfig.passwordSaltRounds,
         );
         const user = await this.userService.createOne(signUpInput);
         await this.sessionService.newSession(req, user.id);
-        this.logger.info(`Account ${signUpInput.email} created successfully `);
+        this.logger.info(`Account ${user.id} created`);
         return user;
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
-        this.logger.info(`Sign in attemp for email ${credentials.email}`);
         const user = await this.userService.findOneByEmail(credentials.email);
 
         if (!user) {
@@ -57,13 +53,12 @@ export class AuthService {
         }
 
         await this.sessionService.newSession(req, user.id);
-        this.logger.info(`User ${user.id} signed in successfully`);
+        this.logger.info(`User ${user.id} signed in`);
         return user;
     }
 
     async signOut(req: RequestContext): Promise<void> {
         const userId = req.session.userId;
-        this.logger.info(`Sign out attemp for user ${userId}`);
         await this.sessionService.deleteSession(req);
         this.logger.info(`User ${userId} signed out`);
     }
@@ -72,7 +67,6 @@ export class AuthService {
         auth: ReAuthenticationInput,
         userId: string,
     ): Promise<void> {
-        this.logger.info(`Attemp to close all sessions for user: ${userId}`);
         const user = await this.userService.findOneByIdOrThrow(userId);
         const passwordMatches = this.hashingService.compare(
             auth.password,
