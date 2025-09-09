@@ -4,11 +4,11 @@ import { makeUserSessionRelationKey } from 'src/auth/functions/make-user-session
 import { makeSessionsIndexKey } from 'src/auth/functions/make-sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { signIn } from '@test-utils/operations/auth/sign-in.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
+import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
@@ -88,7 +88,7 @@ describe('signIn', () => {
                     input: {
                         email: testKit.userSeed.email,
                         password: faker.internet.password({
-                            length: PASSWORD_MAX_LENGTH + 1,
+                            length: AUTH_LIMITS.PASSWORD.MAX + 1,
                         }),
                     },
                 }),

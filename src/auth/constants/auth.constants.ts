@@ -1,7 +1,13 @@
-export const USERNAME_MIN_LENGTH = 3;
-export const USERNAME_MAX_LENGTH = 45;
-
-export const PASSWORD_MIN_LENGTH = 8;
-export const PASSWORD_MAX_LENGTH = 56;
-
-export const MAX_EMAIL_LENGTH = 45;
+export const AUTH_LIMITS = {
+    USERNAME: {
+        MIN: 3,
+        MAX: 45,
+    },
+    PASSWORD: {
+        MIN: 8,
+        MAX: 56,
+    },
+    EMAIL: {
+        MAX: 45,
+    },
+};

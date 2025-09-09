@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
 import { UserRole } from 'src/users/enum/user-role.enum';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
-import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
+import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 
 @Injectable()
 export class UserSeedService {
@@ -31,7 +31,7 @@ export class UserSeedService {
     get password(): string {
         const randomNumber = faker.number.int({ max: 4 });
         return faker.internet.password({
-            length: PASSWORD_MAX_LENGTH - randomNumber,
+            length: AUTH_LIMITS.PASSWORD.MAX - randomNumber,
         });
     }
 

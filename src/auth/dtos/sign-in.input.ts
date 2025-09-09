@@ -1,20 +1,17 @@
 import { IsEmail, IsString, MaxLength } from 'class-validator';
+import { AUTH_LIMITS } from '../constants/auth.constants';
 import { Field, InputType } from '@nestjs/graphql';
-import {
-    MAX_EMAIL_LENGTH,
-    PASSWORD_MAX_LENGTH,
-} from '../constants/auth.constants';
 
 @InputType()
 export class SignInInput {
     @IsString()
     @IsEmail()
-    @MaxLength(MAX_EMAIL_LENGTH)
+    @MaxLength(AUTH_LIMITS.EMAIL.MAX)
     @Field(() => String)
     email!: string;
 
     @IsString()
-    @MaxLength(PASSWORD_MAX_LENGTH)
+    @MaxLength(AUTH_LIMITS.PASSWORD.MAX)
     @Field(() => String)
     password!: string;
 }
