@@ -25,7 +25,6 @@ export class AuthService {
     ) {}
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
-        this.logger.info(`Account creation attemp`);
         signUpInput.password = this.hashingService.hash(
             signUpInput.password,
             this.authConfig.passwordSaltRounds,
@@ -37,7 +36,6 @@ export class AuthService {
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
-        this.logger.info(`Sign in attemp for email ${credentials.email}`);
         const user = await this.userService.findOneByEmail(credentials.email);
 
         if (!user) {
@@ -72,7 +70,6 @@ export class AuthService {
         auth: ReAuthenticationInput,
         userId: string,
     ): Promise<void> {
-        this.logger.info(`Attemp to close all sessions for user: ${userId}`);
         const user = await this.userService.findOneByIdOrThrow(userId);
         const passwordMatches = this.hashingService.compare(
             auth.password,
