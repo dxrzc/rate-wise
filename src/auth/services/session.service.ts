@@ -50,7 +50,7 @@ export class SessionService {
             this.redisService.delete(`session:${sId}`),
         );
         await Promise.all(deletions);
-        this.logger.debug(`All sessions of user ${userId} deleted`);
+        this.logger.debug(`All user ${userId} sessions deleted`);
     }
 
     async activeSessions(userId: string): Promise<number> {
@@ -68,12 +68,12 @@ export class SessionService {
             .sAdd(makeSessionsIndexKey(userId), sessionId)
             .set(makeUserSessionRelationKey(sessionId), userId)
             .exec();
-        this.logger.debug(`Session ${sessionId} linked to user ${userId}`);
     }
 
     async newSession(req: RequestContext, userId: string) {
         await this.regenerateSession(req);
         req.session.userId = userId;
         await this.linkUserSession(req.sessionID, userId);
+        this.logger.debug(`Session ${req.sessionID} created`);
     }
 }
