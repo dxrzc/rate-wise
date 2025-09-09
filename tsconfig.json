@@ -4,6 +4,9 @@
       "@integration/*": [
         "testing/integration/*"
       ],
+      "@unit/*": [
+        "testing/unit/*"
+      ],
       "@test-utils/*": [
         "testing/utils/*"
       ]
