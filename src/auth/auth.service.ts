@@ -1,4 +1,3 @@
-import { ServerConfigService } from 'src/config/services/server.config.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
@@ -17,7 +16,6 @@ import { Injectable } from '@nestjs/common';
 export class AuthService {
     constructor(
         private readonly authConfig: AuthConfigService,
-        private readonly serverConfig: ServerConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionService,
         private readonly userService: UsersService,
