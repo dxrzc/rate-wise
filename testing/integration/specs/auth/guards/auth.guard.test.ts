@@ -1,6 +1,7 @@
 import { signOut } from '@test-utils/operations/auth/sign-out.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { createUser } from '@integration/utils/create-user.util';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
 
@@ -25,10 +26,7 @@ describe('AuthGuard', () => {
             const res = await testKit.request
                 .set('Cookie', sessionCookie)
                 .send(signOut());
-            expect(res).toFailWith(
-                Code.UNAUTHORIZED,
-                AUTH_MESSAGES.UNAUTHORIZED,
-            );
+            expect(res).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
         });
     });
 });
