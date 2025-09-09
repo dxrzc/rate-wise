@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from './services/user-seed.service';
 import { SignInInput } from 'src/auth/dtos/sign-in.input';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 
 @Injectable()
 export class SeedService {
@@ -11,6 +12,7 @@ export class SeedService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly usersSeed: UserSeedService,
+        private readonly logger: HttpLoggerService,
     ) {}
 
     async deleteAll() {
@@ -25,5 +27,6 @@ export class SeedService {
         }
         const promises = data.map((user) => this.userRepository.save(user));
         await Promise.all(promises);
+        this.logger.debug(`${n} users seeded`);
     }
 }
