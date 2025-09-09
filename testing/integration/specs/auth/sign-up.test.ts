@@ -6,6 +6,7 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { signUp } from '@test-utils/operations/auth/sign-up.operation';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { UserStatus } from 'src/users/enum/user-status.enum';
@@ -130,7 +131,7 @@ describe('signUp', () => {
     });
 
     describe('Password exceeds the max password length (wiring test)', () => {
-        test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
+        test('should return BAD REQUEST code and INVALID_INPUT message', async () => {
             const res = await testKit.request.send(
                 signUp({
                     fields: ['id'],
@@ -142,7 +143,10 @@ describe('signUp', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, 'Bad Request Exception');
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                COMMON_MESSAGES.INVALID_INPUT,
+            );
         });
     });
 

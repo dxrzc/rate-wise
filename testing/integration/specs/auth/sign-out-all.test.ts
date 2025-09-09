@@ -3,6 +3,7 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { signIn } from '@test-utils/operations/auth/sign-in.operation';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -68,7 +69,7 @@ describe('signOutAll', () => {
     });
 
     describe('Invalid password length (wiring test)', () => {
-        test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
+        test('should return BAD REQUEST code and INVALID_INPUT message', async () => {
             const { sessionCookie } = await createUser();
             const res = await testKit.request.set('Cookie', sessionCookie).send(
                 signOutAll({
@@ -79,12 +80,15 @@ describe('signOutAll', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, 'Bad Request Exception');
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                COMMON_MESSAGES.INVALID_INPUT,
+            );
         });
     });
 
     describe('Password does not match', () => {
-        test('return BAD_REQUEST code and INVALID_CREDENTIALS message', async () => {
+        test('should return BAD_REQUEST code and INVALID_CREDENTIALS message', async () => {
             const { sessionCookie } = await createUser();
             await expect(
                 testKit.request.set('Cookie', sessionCookie).send(

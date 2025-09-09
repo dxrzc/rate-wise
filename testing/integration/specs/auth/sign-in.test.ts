@@ -6,6 +6,7 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { PASSWORD_MAX_LENGTH } from 'src/auth/constants/auth.constants';
 import { signIn } from '@test-utils/operations/auth/sign-in.operation';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -80,7 +81,7 @@ describe('signIn', () => {
     });
 
     describe('Invalid password length (wiring test)', () => {
-        test('should return BAD REQUEST and "Bad Request Exception" message', async () => {
+        test('should return BAD REQUEST code and INVALID_INPUT message', async () => {
             const res = await testKit.request.send(
                 signIn({
                     fields: ['id'],
@@ -92,7 +93,10 @@ describe('signIn', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, 'Bad Request Exception');
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                COMMON_MESSAGES.INVALID_INPUT,
+            );
         });
     });
 
