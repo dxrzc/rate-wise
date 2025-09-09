@@ -10,7 +10,10 @@ const config: Config = {
     testEnvironment: 'jest-environment-node',
     moduleNameMapper: {
         '^src/(.*)$': '<rootDir>/src/$1',
+        '^@unit/(.*)$': '<rootDir>/testing/unit/$1',
     },
+
+    maxWorkers: 2,
 };
 
 export default config;
