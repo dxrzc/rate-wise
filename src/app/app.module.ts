@@ -1,3 +1,4 @@
+import { appGraphqlExceptionFilter } from './providers/filters/app-graphql-exception.filter.provider';
 import { SessionMiddlewareFactory } from './providers/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
@@ -23,6 +24,7 @@ import { ClsModule } from 'nestjs-cls';
 @Module({
     providers: [
         RequestContextPlugin,
+        appGraphqlExceptionFilter,
         SessionMiddlewareFactory,
         appValidationPipe,
         appAuthGuard,
