@@ -9,7 +9,7 @@ import { signIn } from '@test-utils/operations/auth/sign-in.operation';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
-import { Code } from '@integration/enum/code.enum';
+import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 
 describe('signIn', () => {

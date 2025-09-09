@@ -29,15 +29,15 @@ export class GqlConfigService implements GqlOptionsFactory {
                 if (code !== 'INTERNAL_SERVER_ERROR') {
                     return {
                         message: error.message,
-                        stackTrace,
                         code,
+                        stackTrace,
                     };
                 }
 
                 return {
                     message: INTERNAL_SERVER_ERROR, // suppress raw server errors
-                    stackTrace,
                     code,
+                    stackTrace,
                 };
             },
             autoSchemaFile: join(
