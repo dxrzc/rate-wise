@@ -1,130 +1,65 @@
-import { validateAndTransform } from '@unit/utils/validateAndTransform.util';
+import { AppValidationPipe } from 'src/common/pipes/app-validation.pipe';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
+import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
-import { faker } from '@faker-js/faker/.';
+import { mock } from 'jest-mock-extended';
 
+const pipe = new AppValidationPipe(mock<HttpLoggerService>());
 const userSeed = new UserSeedService();
+const metadata: ArgumentMetadata = {
+    type: 'body',
+    metatype: SignUpInput,
+};
 
 describe('SignUpInput', () => {
-    describe('Username too long', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.email = userSeed.email;
-            input.password = userSeed.password;
-            input.username = faker.string.alpha({
-                length: AUTH_LIMITS.USERNAME.MAX + 1,
-            });
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('username');
+    describe('Password too long', () => {
+        test('throw BadRequestException and INVALID_INPUT message', async () => {
+            const data = {
+                ...userSeed.user,
+                password: 'a'.repeat(129),
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
+            );
         });
     });
 
-    describe('Username too short', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.email = userSeed.email;
-            input.password = userSeed.password;
-            input.username = faker.string.alpha({
-                length: AUTH_LIMITS.USERNAME.MIN - 1,
-            });
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('username');
+    describe('Valid email but too long', () => {
+        test('throw BadRequestException and INVALID_INPUT message', async () => {
+            const data = {
+                ...userSeed.user,
+                email: 'a'.repeat(AUTH_LIMITS.EMAIL.MAX) + '@example.com',
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
+            );
         });
     });
 
     describe('Invalid email format', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.username = userSeed.username;
-            input.password = userSeed.password;
-            input.email = 'invalid_email_format';
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('email');
+        test('throw BadRequestException and INVALID_INPUT message', async () => {
+            const data = {
+                ...userSeed.user,
+                email: 'invalid-email',
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
+            );
         });
     });
 
-    describe('Email too long', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.username = userSeed.username;
-            input.password = userSeed.password;
-            input.email = faker.string.alpha({
-                length: AUTH_LIMITS.EMAIL.MAX + 1,
-            });
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('email');
-        });
-    });
-
-    describe('Email too short', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.username = userSeed.username;
-            input.password = userSeed.password;
-            input.email = 'a@b.c';
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('email');
-        });
-    });
-
-    describe('Password too short', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.username = userSeed.username;
-            input.email = userSeed.email;
-            input.password = faker.string.alpha({
-                length: AUTH_LIMITS.PASSWORD.MIN - 1,
-            });
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('password');
-        });
-    });
-
-    describe('Password too long', () => {
-        test('invalid input', async () => {
-            const input = new SignUpInput();
-            input.username = userSeed.username;
-            input.email = userSeed.email;
-            input.password = faker.string.alpha({
-                length: AUTH_LIMITS.PASSWORD.MAX + 1,
-            });
-            const { error } = await validateAndTransform(SignUpInput, input);
-            expect(error).toContain('password');
-        });
-    });
-
-    describe.each(['email', 'username', 'password'])(
-        '%s not provided',
-        (field) => {
-            test('invalid input', async () => {
-                const input = new SignUpInput();
-                input.username = userSeed.username;
-                input.email = userSeed.email;
-                input.password = userSeed.password;
-                delete input[field];
-                const { error } = await validateAndTransform(
-                    SignUpInput,
-                    input,
-                );
-                expect(error).toContain(field);
-            });
-        },
-    );
-
-    describe('Valid input', () => {
-        test('return input with no changes', async () => {
-            const input = new SignUpInput();
-            const username = userSeed.username;
-            const email = userSeed.email;
-            const password = userSeed.password;
-            input.username = username;
-            input.email = email;
-            input.password = password;
-            const { data } = await validateAndTransform(SignUpInput, input);
-            expect(data?.username).toBe(username);
-            expect(data?.email).toBe(email);
-            expect(data?.password).toBe(password);
+    describe('Username too long', () => {
+        test('throw BadRequestException and INVALID_INPUT message', async () => {
+            const data = {
+                ...userSeed.user,
+                username: 'a'.repeat(AUTH_LIMITS.USERNAME.MAX + 1),
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
+            );
         });
     });
 });

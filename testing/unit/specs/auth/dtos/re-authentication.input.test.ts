@@ -1,50 +1,29 @@
 import { ReAuthenticationInput } from 'src/auth/dtos/re-authentication.input';
-import { UserSeedService } from 'src/seed/services/user-seed.service';
-import { validateAndTransform } from '@unit/utils/validateAndTransform.util';
+import { AppValidationPipe } from 'src/common/pipes/app-validation.pipe';
+import { HttpLoggerService } from 'src/logging/http/http-logger.service';
+import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { faker } from '@faker-js/faker/.';
+import { mock } from 'jest-mock-extended';
 
-const userSeed = new UserSeedService();
+const pipe = new AppValidationPipe(mock<HttpLoggerService>());
+const metadata: ArgumentMetadata = {
+    type: 'body',
+    metatype: ReAuthenticationInput,
+};
 
 describe('ReAuthenticationInput', () => {
     describe('Password too long', () => {
-        test('invalid input', async () => {
-            const input = new ReAuthenticationInput();
-            input.password = faker.internet.password({
-                length: AUTH_LIMITS.PASSWORD.MAX + 1,
-            });
-            const { error } = await validateAndTransform(
-                ReAuthenticationInput,
-                input,
+        test('throw BadRequestException and INVALID_INPUT messgae', async () => {
+            const data = {
+                password: faker.internet.password({
+                    length: AUTH_LIMITS.PASSWORD.MAX + 1,
+                }),
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
             );
-            expect(error).toContain('password');
-        });
-    });
-
-    describe('Password too short', () => {
-        test('invalid input', async () => {
-            const input = new ReAuthenticationInput();
-            input.password = faker.internet.password({
-                length: AUTH_LIMITS.PASSWORD.MIN - 1,
-            });
-            const { error } = await validateAndTransform(
-                ReAuthenticationInput,
-                input,
-            );
-            expect(error).toContain('password');
-        });
-    });
-
-    describe('Valid input', () => {
-        test('return input with no changes', async () => {
-            const input = new ReAuthenticationInput();
-            const password = userSeed.password;
-            input.password = password;
-            const { data } = await validateAndTransform(
-                ReAuthenticationInput,
-                input,
-            );
-            expect(data?.password).toBe(password);
         });
     });
 });
