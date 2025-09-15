@@ -5,7 +5,7 @@ export interface IConfigs {
     PORT: number;
     PASSWORD_SALT_ROUNDS: number;
     POSTGRES_URI: string;
-    REDIS_URI: string;
+    REDIS_AUTH_URI: string;
     SESS_COOKIE_SECRET: string;
     SESS_COOKIE_MAX_AGE_MS: number;
     SESS_COOKIE_NAME: string;

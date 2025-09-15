@@ -39,7 +39,7 @@ import { ClsModule } from 'nestjs-cls';
             isGlobal: true,
             inject: [DbConfigService],
             useFactory: (dbConfig: DbConfigService) => ({
-                uri: dbConfig.redisUri,
+                uri: dbConfig.redisAuthUri,
             }),
         }),
         TypeOrmModule.forRootAsync({
