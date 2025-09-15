@@ -37,6 +37,14 @@ services:
     ports:
       - ${POSTGRES_PORT:-5432}:5432    
 
+  redisinsight:
+    image: redis/redisinsight:2.70
+    restart: always
+    volumes:
+      - redisinsight:/data
+    ports:
+      - ${REDIS_INSIGHT-5540}:5540  
+
   redis_auth:        
     extends: 
       file: ./compose.yml
@@ -55,6 +63,9 @@ services:
         - "${MAILHOG_UI_PORT:-8025}:8025"
 
 volumes:
+  redisinsight:
+    name: rate-wise-redisinsight
+    external: false
   redis_auth: 
     name: rate-wise-redis-auth
     external: false
