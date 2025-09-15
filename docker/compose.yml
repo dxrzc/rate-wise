@@ -2,7 +2,7 @@ services:
   app:
     restart: always
     depends_on:      
-      redis:
+      redis_auth:
         condition: service_started    
       mailpit:
         condition: service_started      
@@ -10,7 +10,7 @@ services:
         condition: service_completed_successfully
     environment:      
       POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
-      REDIS_URI: redis://redis:6379  
+      REDIS_AUTH_URI: redis://redis_auth:6379
 
   mailpit:
     image: axllent/mailpit:v1.27.6     
@@ -22,9 +22,11 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1   
       MP_SEND_API_AUTH_ACCEPT_ANY: 1    
 
-  redis:
+  redis_auth:
     image: redis:8.0-alpine    
     restart: always
+    ports: 
+      - 6379
 
   postgres:
     image: postgres:17.5-alpine          
