@@ -1,7 +1,7 @@
+import { RedisSessionsConnectionManager } from './connections/redis.sessions.connection';
 import { ISessionsModuleOptions } from './interface/sessions-module-options.interface';
-import { SESSIONS_MODULE_TOKEN } from './constants/sessions-module-token.constant';
-import { REDIS_SESSIONS_TOKEN } from './constants/redis-sessions-token.constant';
-import { RedisSessionsConnectionManager } from './connections/redis.connection';
+import { SESSIONS_MODULE_OPTIONS } from './constants/sessions-module-options.constant';
+import { REDIS_SESSIONS_CLIENT } from './constants/redis-sessions-client.constant';
 import { SessionsService } from './sessions.service';
 import { createClient } from '@redis/client';
 import {
@@ -23,16 +23,16 @@ export class SessionsModule {
                 imports: options.imports || [],
                 providers: [
                     {
-                        provide: SESSIONS_MODULE_TOKEN,
+                        provide: SESSIONS_MODULE_OPTIONS,
                         useFactory: options.useFactory,
                         inject: options.inject,
                     },
                     {
-                        provide: REDIS_SESSIONS_TOKEN,
+                        provide: REDIS_SESSIONS_CLIENT,
                         useFactory: (opts: ISessionsModuleOptions) => {
                             return createClient({ url: opts.redisUri });
                         },
-                        inject: [SESSIONS_MODULE_TOKEN],
+                        inject: [SESSIONS_MODULE_OPTIONS],
                     },
                     RedisSessionsConnectionManager,
                     SessionsService,

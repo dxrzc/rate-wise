@@ -1,4 +1,4 @@
-import { REDIS_SESSIONS_TOKEN } from '../constants/redis-sessions-token.constant';
+import { REDIS_SESSIONS_CLIENT } from '../constants/redis-sessions-client.constant';
 import { RedisClientType } from '@redis/client';
 import {
     BeforeApplicationShutdown,
@@ -12,7 +12,7 @@ export class RedisSessionsConnectionManager
     implements OnModuleInit, BeforeApplicationShutdown
 {
     constructor(
-        @Inject(REDIS_SESSIONS_TOKEN)
+        @Inject(REDIS_SESSIONS_CLIENT)
         private readonly redisClient: RedisClientType,
     ) {}
 
