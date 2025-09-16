@@ -12,7 +12,7 @@ export class DbConfigService {
         return this.configService.get('POSTGRES_URI');
     }
 
-    get redisUri(): string {
-        return this.configService.get('REDIS_URI');
+    get redisAuthUri(): string {
+        return this.configService.get('REDIS_AUTH_URI');
     }
 }

@@ -1,11 +1,14 @@
 import { ServerConfigService } from './config/services/server.config.service';
 import { AppModule } from './app/app.module';
 import { NestFactory } from '@nestjs/core';
+import { Environment } from './common/enum/environment.enum';
 
 async function bootstrap() {
     // TODO: replace logger in bootstraping
     const app = await NestFactory.create(AppModule);
     const serverConfig = app.get(ServerConfigService);
+
+    if (serverConfig.env === Environment.PRODUCTION) app.enableShutdownHooks();
     await app.listen(serverConfig.port);
     // TODO: NestJS logger
     console.log(`Running in ${serverConfig.env.toUpperCase()} mode`);

@@ -3,14 +3,13 @@ import { App } from 'supertest/types';
 import { expect } from '@jest/globals';
 import { testKit } from '../utils/test-kit.util';
 import { INestApplication } from '@nestjs/common';
-import { getDataSourceToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { User } from 'src/users/entities/user.entity';
-import { RedisService } from 'src/redis/redis.service';
 import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from './custom-matchers/to-contain-cookie';
+import { REDIS_SESSIONS_CLIENT } from 'src/sessions/constants/redis-sessions-client.constant';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { cloneDatabase } from './helpers/clone-database.helper';
@@ -33,52 +32,56 @@ expect.extend({
 });
 
 beforeAll(async () => {
-    // Connections
-    const templatePostgresDb = readFileSync(
-        join(__dirname, 'postgres-uri.txt'),
-        'utf8',
-    );
-    redisContainer = await new RedisContainer('redis:8.0-alpine')
-        .withCommand([
-            'redis-server',
-            '--appendonly',
-            'no', // AOF persistence
-            '--save',
-            '""', // disables snapshots
-        ])
-        .withTmpFs({ '/data': 'rw' })
-        .start();
+    try {
+        // Connections
+        const templatePostgresDb = readFileSync(
+            join(__dirname, 'postgres-uri.txt'),
+            'utf8',
+        );
+        redisContainer = await new RedisContainer('redis:8.0-alpine')
+            .withCommand([
+                'redis-server',
+                '--appendonly',
+                'no', // AOF persistence
+                '--save',
+                '""', // disables snapshots
+            ])
+            .withTmpFs({ '/data': 'rw' })
+            .start();
 
-    process.env.POSTGRES_URI = await cloneDatabase(templatePostgresDb);
-    process.env.REDIS_URI = redisContainer.getConnectionUrl();
+        process.env.POSTGRES_URI = await cloneDatabase(templatePostgresDb);
+        process.env.REDIS_AUTH_URI = redisContainer.getConnectionUrl();
 
-    // Application
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [await import('src/app/app.module').then((m) => m.AppModule)], // loaded with new envs
-    }).compile();
-    nestApp = moduleFixture.createNestApplication();
-    await nestApp.init();
+        // Application
+        const moduleFixture: TestingModule = await Test.createTestingModule({
+            imports: [
+                await import('src/app/app.module').then((m) => m.AppModule),
+            ], // loaded with new envs
+        }).compile();
+        nestApp = moduleFixture.createNestApplication();
+        await nestApp.init();
 
-    // Test utils
-    testKit.app = nestApp;
-    testKit.userSeed = nestApp.get(UserSeedService);
-    testKit.authConfig = nestApp.get(AuthConfigService);
-    testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-    testKit.redisService = nestApp.get(RedisService);
-    Object.defineProperty(testKit, 'request', {
-        get: () => request(testKit.app.getHttpServer()).post('/graphql'),
-    });
+        // Test utils
+        testKit.app = nestApp;
+        testKit.userSeed = nestApp.get(UserSeedService);
+        testKit.authConfig = nestApp.get(AuthConfigService);
+        testKit.userRepos = nestApp.get(DataSource).getRepository(User);
+        testKit.authRedis = nestApp.get(REDIS_SESSIONS_CLIENT);
+        Object.defineProperty(testKit, 'request', {
+            get: () => request(testKit.app.getHttpServer()).post('/graphql'),
+        });
+    } catch (error) {
+        console.error(error);
+    }
 });
 
 afterAll(async () => {
-    if (nestApp) {
-        const dataSource = nestApp.get<DataSource>(getDataSourceToken());
-        const redisService = nestApp.get<RedisService>(RedisService);
-        redisService.disconnect();
-        await Promise.all([
-            dataSource.destroy(),
-            nestApp.close(),
-            redisContainer.stop(),
-        ]);
+    try {
+        if (nestApp) {
+            await nestApp.close ();
+            await redisContainer.stop();
+        }
+    } catch (error) {
+        console.error(error);
     }
 });

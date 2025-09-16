@@ -11,7 +11,7 @@ const POSTGRES_URI = Joi.string().uri();
 const SESS_COOKIE_SECRET = Joi.string();
 const SMTP_PORT = Joi.number().port();
 const SESS_COOKIE_NAME = Joi.string();
-const REDIS_URI = Joi.string().uri();
+const REDIS_AUTH_URI = Joi.string().uri();
 const SMTP_HOST = Joi.string().hostname();
 const PORT = Joi.number().port();
 const SMTP_USER = Joi.string();
@@ -20,7 +20,7 @@ const SMTP_PASS = Joi.string();
 export const envSchema = Joi.object<IConfigs, true>({
     // Db
     POSTGRES_URI: POSTGRES_URI.required(),
-    REDIS_URI: REDIS_URI.required(),
+    REDIS_AUTH_URI: REDIS_AUTH_URI.required(),
     // Auth
     SESS_COOKIE_SECRET: SESS_COOKIE_SECRET.required(),
     SESS_COOKIE_MAX_AGE_MS: SESS_COOKIE_MAX_AGE_MS.required(),
@@ -40,7 +40,7 @@ export const envSchema = Joi.object<IConfigs, true>({
 export const integrationEnvSchema = Joi.object<IConfigs, true>({
     // Db
     POSTGRES_URI: POSTGRES_URI.required(),
-    REDIS_URI: REDIS_URI.required(),
+    REDIS_AUTH_URI: REDIS_AUTH_URI.required(),
     // Auth
     SESS_COOKIE_SECRET: SESS_COOKIE_SECRET.default('ABC123'),
     SESS_COOKIE_MAX_AGE_MS: SESS_COOKIE_MAX_AGE_MS.default(600000),
