@@ -61,7 +61,11 @@ export class RedisSessionsConnectionManager
         await this.configureSubscriber();
     }
 
-    async beforeApplicationShutdown() {
+    // this is always called in integration   
+    async beforeApplicationShutdown() {     
         await this.redisClient.quit();
+        if(this.subscriber){
+            await this.subscriber.quit();
+        }
     }
 }

@@ -78,8 +78,8 @@ beforeAll(async () => {
 afterAll(async () => {
     try {
         if (nestApp) {
-            await testKit.authRedis.close();
-            await Promise.all([nestApp.close(), redisContainer.stop()]);
+            await nestApp.close ();
+            await redisContainer.stop();
         }
     } catch (error) {
         console.error(error);
