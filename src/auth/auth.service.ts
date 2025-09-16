@@ -2,8 +2,8 @@ import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { HashingService } from 'src/common/services/hashing.service';
+import { SessionsService } from 'src/sessions/sessions.service';
 import { RequestContext } from './types/request-context.type';
-import { SessionService } from './services/session.service';
 import { HttpError } from 'src/common/errors/http.errors';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { UsersService } from 'src/users/users.service';
@@ -17,7 +17,7 @@ export class AuthService {
     constructor(
         private readonly authConfig: AuthConfigService,
         private readonly hashingService: HashingService,
-        private readonly sessionService: SessionService,
+        private readonly sessionService: SessionsService,
         private readonly userService: UsersService,
         private readonly logger: HttpLoggerService,
     ) {}

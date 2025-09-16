@@ -1,6 +1,6 @@
-import { makeUserSessionRelationKey } from 'src/auth/functions/make-user-session-relation-key';
+import { makeUserSessionRelationKey } from './functions/make-user-session-relation-key';
+import { makeSessionsIndexKey } from 'src/sessions/functions/make-sessions-index-key';
 import { REDIS_SESSIONS_CLIENT } from './constants/redis-sessions-client.constant';
-import { makeSessionsIndexKey } from 'src/auth/functions/make-sessions-index-key';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/functions/utils/promisify.util';
