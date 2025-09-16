@@ -1,6 +1,7 @@
 services:
   app:
     restart: always
+    init: true
     depends_on:      
       redis_auth:
         condition: service_started    
