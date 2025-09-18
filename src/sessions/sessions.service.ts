@@ -1,17 +1,15 @@
-import { makeUserSessionRelationKey } from './functions/make-user-session-relation-key';
-import { makeSessionsIndexKey } from 'src/sessions/functions/make-sessions-index-key';
-import { REDIS_SESSIONS_CLIENT } from './constants/redis-sessions-client.constant';
+import { userAndSessionRelationKey } from './functions/user-session-relation-key';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/functions/utils/promisify.util';
-import { Inject, Injectable } from '@nestjs/common';
-import { RedisClientType } from 'redis';
+import { RedisAdapter } from 'src/redis/redis.adapter';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SessionsService {
     constructor(
-        @Inject(REDIS_SESSIONS_CLIENT)
-        private readonly redisClient: RedisClientType,
+        private readonly redis: RedisAdapter,
         private readonly logger: HttpLoggerService,
     ) {}
 
@@ -21,17 +19,18 @@ export class SessionsService {
     }
 
     async deleteAllSessions(userId: string): Promise<void> {
-        const indexKey = makeSessionsIndexKey(userId);
-        const sessionsIds = await this.redisClient.sMembers(indexKey);
+        const indexKey = userSessionsSetKey(userId);
+        const sessionsIds = await this.redis.setMembers(indexKey);
         const deletions = sessionsIds.map((sId) =>
-            this.redisClient.del(`session:${sId}`),
+            this.redis.delete(`session:${sId}`),
         );
         await Promise.all(deletions);
         this.logger.debug(`All user ${userId} sessions deleted`);
     }
 
     async activeSessions(userId: string): Promise<number> {
-        return await this.redisClient.sCard(makeSessionsIndexKey(userId));
+        const setkey = userSessionsSetKey(userId);
+        return await this.redis.setSize(setkey);
     }
 
     async deleteSession(req: RequestContext) {
@@ -40,10 +39,10 @@ export class SessionsService {
     }
 
     async linkUserSession(sessionId: string, userId: string) {
-        await this.redisClient
-            .multi()
-            .sAdd(makeSessionsIndexKey(userId), sessionId)
-            .set(makeUserSessionRelationKey(sessionId), userId)
+        await this.redis
+            .transaction()
+            .store(userAndSessionRelationKey(sessionId), userId)
+            .setAdd(userSessionsSetKey(userId), sessionId)
             .exec();
     }
 
