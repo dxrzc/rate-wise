@@ -1,5 +1,6 @@
 import { ISessionsModuleOptions } from './interface/sessions-module-options.interface';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
+import { SESSION_REDIS } from './constants/sess-redis.token.constant';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
 import { LoggingModule } from 'src/logging/logging.module';
 import { deleteSession } from './functions/delete-session';
@@ -28,7 +29,7 @@ export class SessionsModule {
                         inject: options.inject,
                     },
                     {
-                        provide: 'SESS_REDIS',
+                        provide: SESSION_REDIS,
                         useFactory: async (opts: ISessionsModuleOptions) => {
                             const redisAdapter = new RedisAdapter({
                                 uri: opts.redisUri,

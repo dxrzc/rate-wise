@@ -5,11 +5,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { SESSION_REDIS } from '../constants/sess-redis.token.constant';
 
 @Injectable()
 export class SessionMiddlewareFactory {
     constructor(
-        @Inject('SESS_REDIS')
+        @Inject(SESSION_REDIS)
         private readonly redis: RedisAdapter,
         private readonly authConfig: AuthConfigService,
         private readonly serverConfig: ServerConfigService,
