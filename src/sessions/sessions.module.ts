@@ -2,6 +2,7 @@ import { ISessionsModuleOptions } from './interface/sessions-module-options.inte
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
 import { LoggingModule } from 'src/logging/logging.module';
+import { deleteSession } from './functions/delete-session';
 import { SessionsService } from './sessions.service';
 import {
     ConfigurableModuleAsyncOptions,
@@ -31,6 +32,13 @@ export class SessionsModule {
                         useFactory: async (opts: ISessionsModuleOptions) => {
                             const redisAdapter = new RedisAdapter({
                                 uri: opts.redisUri,
+                                pubSub: {
+                                    notifyKeyspaceEvents: 'ExgK',
+                                    subscriptions: {
+                                        '__keyevent@0__:del': deleteSession,
+                                        '__keyevent@0__:expired': deleteSession,
+                                    },
+                                },
                             });
                             await redisAdapter.connection.connect();
                             return redisAdapter;
