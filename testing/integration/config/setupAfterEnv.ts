@@ -9,11 +9,12 @@ import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from './custom-matchers/to-contain-cookie';
-import { REDIS_SESSIONS_CLIENT } from 'src/sessions/constants/redis-sessions-client.constant';
+import { SESSION_REDIS } from 'src/sessions/constants/sess-redis.token.constant';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { cloneDatabase } from './helpers/clone-database.helper';
 import { Environment } from 'src/common/enum/environment.enum';
+import { RedisAdapter } from 'src/common/redis/redis.adapter';
 import * as request from 'supertest';
 import { readFileSync } from 'fs';
 import { config } from 'dotenv';
@@ -66,7 +67,7 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-        testKit.authRedis = nestApp.get(REDIS_SESSIONS_CLIENT);
+        testKit.authRedis = nestApp.get<RedisAdapter>(SESSION_REDIS);
         Object.defineProperty(testKit, 'request', {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
@@ -78,7 +79,7 @@ beforeAll(async () => {
 afterAll(async () => {
     try {
         if (nestApp) {
-            await nestApp.close ();
+            await testKit.authRedis.connection.disconnect();
             await redisContainer.stop();
         }
     } catch (error) {

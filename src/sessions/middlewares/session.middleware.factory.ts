@@ -4,14 +4,14 @@ import { Environment } from 'src/common/enum/environment.enum';
 import { Inject, Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
-import { REDIS_SESSIONS_CLIENT } from '../constants/redis-sessions-client.constant';
-import { RedisClientType } from 'redis';
+import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { SESSION_REDIS } from '../constants/sess-redis.token.constant';
 
 @Injectable()
 export class SessionMiddlewareFactory {
     constructor(
-        @Inject(REDIS_SESSIONS_CLIENT)
-        private readonly redisClient: RedisClientType,
+        @Inject(SESSION_REDIS)
+        private readonly redis: RedisAdapter,
         private readonly authConfig: AuthConfigService,
         private readonly serverConfig: ServerConfigService,
     ) {}
@@ -30,7 +30,8 @@ export class SessionMiddlewareFactory {
                 secure: this.serverConfig.env === Environment.PRODUCTION,
             },
             store: new RedisStore({
-                client: this.redisClient,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                client: this.redis.client,
                 prefix: 'session:',
             }),
         });

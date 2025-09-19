@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { makeUserSessionRelationKey } from 'src/sessions/functions/make-user-session-relation-key';
-import { makeSessionsIndexKey } from 'src/sessions/functions/make-sessions-index-key';
+import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { signIn } from '@test-utils/operations/auth/sign-in.operation';
@@ -57,9 +57,9 @@ describe('signIn', () => {
                 }),
             );
             expect(res).notToFail();
-            const key = makeSessionsIndexKey(res.body.data.signIn.id);
+            const key = userSessionsSetKey(res.body.data.signIn.id);
             const sessId = getSidFromCookie(getSessionCookie(res));
-            const sessSet = await testKit.authRedis.sMembers(key);
+            const sessSet = await testKit.authRedis.setMembers(key);
             expect(sessSet.length).toBe(2); // signUp and signIn
             expect(sessSet.find((key) => key === sessId)).toBeDefined();
         });
@@ -74,7 +74,7 @@ describe('signIn', () => {
             );
             expect(res).notToFail();
             const sid = getSidFromCookie(getSessionCookie(res));
-            const key = makeUserSessionRelationKey(sid);
+            const key = userAndSessionRelationKey(sid);
             const sessionOwner = await testKit.authRedis.get(key);
             expect(sessionOwner).toBe(res.body.data.signIn.id);
         });

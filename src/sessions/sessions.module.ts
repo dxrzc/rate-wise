@@ -1,17 +1,16 @@
-import { RedisSessionsConnectionManager } from './connections/redis.sessions.connection';
 import { ISessionsModuleOptions } from './interface/sessions-module-options.interface';
-import { SESSIONS_MODULE_OPTIONS } from './constants/sessions-module-options.constant';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
-import { REDIS_SESSIONS_CLIENT } from './constants/redis-sessions-client.constant';
+import { SESSION_REDIS } from './constants/sess-redis.token.constant';
+import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { LoggingModule } from 'src/logging/logging.module';
+import { deleteSession } from './functions/delete-session';
 import { SessionsService } from './sessions.service';
-import { createClient } from '@redis/client';
 import {
     ConfigurableModuleAsyncOptions,
     DynamicModule,
     Global,
     Module,
 } from '@nestjs/common';
-import { LoggingModule } from 'src/logging/logging.module';
 
 @Global()
 @Module({})
@@ -25,18 +24,28 @@ export class SessionsModule {
                 imports: [LoggingModule, ...(options.imports ?? [])],
                 providers: [
                     {
-                        provide: SESSIONS_MODULE_OPTIONS,
+                        provide: 'SESS_MODULE_OPTS',
                         useFactory: options.useFactory,
                         inject: options.inject,
                     },
                     {
-                        provide: REDIS_SESSIONS_CLIENT,
-                        useFactory: (opts: ISessionsModuleOptions) => {
-                            return createClient({ url: opts.redisUri });
+                        provide: SESSION_REDIS,
+                        useFactory: async (opts: ISessionsModuleOptions) => {
+                            const redisAdapter = new RedisAdapter({
+                                uri: opts.redisUri,
+                                pubSub: {
+                                    notifyKeyspaceEvents: 'ExgK',
+                                    subscriptions: {
+                                        '__keyevent@0__:del': deleteSession,
+                                        '__keyevent@0__:expired': deleteSession,
+                                    },
+                                },
+                            });
+                            await redisAdapter.connection.connect();
+                            return redisAdapter;
                         },
-                        inject: [SESSIONS_MODULE_OPTIONS],
+                        inject: ['SESS_MODULE_OPTS'],
                     },
-                    RedisSessionsConnectionManager,
                     SessionMiddlewareFactory,
                     SessionsService,
                 ],
