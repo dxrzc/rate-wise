@@ -1,9 +1,9 @@
-import { makeUserSessionRelationKey } from 'src/sessions/functions/make-user-session-relation-key';
-import { makeSessionsIndexKey } from 'src/sessions/functions/make-sessions-index-key';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { createUser } from '@integration/utils/create-user.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { sleep } from '@integration/utils/sleep.util';
+import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 
 describe('Session cleanup (redis)', () => {
     describe('Session is deleted from redis store', () => {
@@ -11,16 +11,16 @@ describe('Session cleanup (redis)', () => {
             // generate a session successfully
             const { sessionCookie, id } = await createUser();
             const sid = getSidFromCookie(sessionCookie);
-            const indexKey = makeSessionsIndexKey(id);
+            const indexKey = userSessionsSetKey(id);
             // sid in index
-            const indexPrev = await testKit.authRedis.sMembers(indexKey);
+            const indexPrev = await testKit.authRedis.setMembers(indexKey);
             expect(indexPrev.length).toBe(1);
             // delete session from redis
-            await testKit.authRedis.del(`session:${sid}`);
+            await testKit.authRedis.delete(`session:${sid}`);
             // since the redis subscriber works asynchronously
             await sleep(1000);
             // sessions should not exists in sessions-index
-            const index = await testKit.authRedis.sMembers(indexKey);
+            const index = await testKit.authRedis.setMembers(indexKey);
             expect(index.length).toBe(0);
         });
 
@@ -28,12 +28,12 @@ describe('Session cleanup (redis)', () => {
             // generate a session successfully
             const { sessionCookie } = await createUser();
             const sid = getSidFromCookie(sessionCookie);
-            const key = makeUserSessionRelationKey(sid);
+            const key = userAndSessionRelationKey(sid);
             // sess_user record exists
             const relationPrev = await testKit.authRedis.get(key);
             expect(relationPrev).not.toBeNull();
             // delete session from redis
-            await testKit.authRedis.del(`session:${sid}`);
+            await testKit.authRedis.delete(`session:${sid}`);
             // since the redis subscriber works asynchronously
             await sleep(1000);
             // sess_user should not exists
