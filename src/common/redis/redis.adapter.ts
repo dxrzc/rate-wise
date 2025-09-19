@@ -7,63 +7,65 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import { IRedisClient } from '../interfaces/redis/redis-client.interface';
-import { createClient } from '@redis/client';
+import { RedisConnectionManager } from './redis.connection.manager';
 
 export class RedisAdapter {
-    private readonly redis: any;
+    private readonly _connection: RedisConnectionManager;
 
     constructor(private readonly redisOpts: IRedisClient) {
-        this.redis = createClient({
-            url: redisOpts.uri,
-        });
-        this.redis.connect();
+        this._connection = new RedisConnectionManager(redisOpts);
     }
 
-    get client() {
-        return this.redis;
+    get connection(): RedisConnectionManager {
+        return this._connection;
+    }
+
+    get client(): any {
+        return this._connection.client;
     }
 
     /**
      * Adds a member to a Redis set.
      */
     async setAdd(key: string, member: string): Promise<void> {
-        await this.redis.sAdd(key, member);
+        await this.client.sAdd(key, member);
     }
 
     /**
      * Removes a member from a Redis set.
      */
     async setRem(key: string, member: string): Promise<void> {
-        await this.redis.sRem(key, member);
+        await this.client.sRem(key, member);
     }
 
     /**
      * Checks if a member exists in a Redis set.
      */
     async setIsMember(key: string, member: string): Promise<boolean> {
-        return (await this.redis.sIsMember(key, member)) === 1;
+        return (await this.client.sIsMember(key, member)) === 1;
     }
 
     /**
      * Retrieves all members of a Redis set.
      */
     async setMembers(key: string): Promise<string[]> {
-        return await this.redis.sMembers(key);
+        return await this.client.sMembers(key);
     }
 
     /**
      * Returns the number of members in a Redis set.
      */
     async setSize(key: string): Promise<number> {
-        return await this.redis.sCard(key);
+        return await this.client.sCard(key);
     }
 
     /**
      * Deletes a key from Redis.
      */
     async delete(key: string): Promise<void> {
-        await this.redis.del(key);
+        await this.client.del(key);
     }
 
     /**
@@ -78,9 +80,9 @@ export class RedisAdapter {
             data = JSON.stringify(data);
         }
         if (expTimeSeconds) {
-            await this.redis.set(key, data.toString(), { EX: expTimeSeconds });
+            await this.client.set(key, data.toString(), { EX: expTimeSeconds });
         } else {
-            await this.redis.set(key, data.toString());
+            await this.client.set(key, data.toString());
         }
     }
 
@@ -88,7 +90,7 @@ export class RedisAdapter {
      * Retrieves a value from Redis.
      */
     async get<T>(key: string): Promise<T | null> {
-        const data = await this.redis.get(key);
+        const data = await this.client.get(key);
         if (data) {
             try {
                 return JSON.parse(data) as T;
@@ -104,7 +106,7 @@ export class RedisAdapter {
      * Performs a Redis transaction (multi/exec).
      */
     transaction() {
-        const multi = this.redis.multi();
+        const multi = this.client.multi();
 
         const wrapper = {
             setAdd: (key: string, member: string) => {
