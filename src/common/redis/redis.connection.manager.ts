@@ -27,7 +27,7 @@ export class RedisConnectionManager {
             this.subscriber = await this.configureSubscriber();
     }
 
-    async configureSubscriber(): Promise<any> {
+    async configureSubscriber(): Promise<unknown> {
         const pubSub = this.redisOpts.pubSub;
         if (!pubSub) throw new Error('Pub/Sub not enabled');
         const subscriber = this.redis.duplicate();
@@ -43,6 +43,7 @@ export class RedisConnectionManager {
                 );
             }),
         );
+        return subscriber;
     }
 
     async disconnect() {
