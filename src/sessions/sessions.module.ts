@@ -28,8 +28,12 @@ export class SessionsModule {
                     },
                     {
                         provide: 'SESS_REDIS',
-                        useFactory: (opts: ISessionsModuleOptions) => {
-                            return new RedisAdapter({ uri: opts.redisUri });
+                        useFactory: async (opts: ISessionsModuleOptions) => {
+                            const redisAdapter = new RedisAdapter({
+                                uri: opts.redisUri,
+                            });
+                            await redisAdapter.connection.connect();
+                            return redisAdapter;
                         },
                         inject: ['SESS_MODULE_OPTS'],
                     },
