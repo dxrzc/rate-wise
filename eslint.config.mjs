@@ -8,7 +8,8 @@ export default tseslint.config(
   {
     ignores: [
       'eslint.config.mjs',
-      'scripts/*.js'
+      'scripts/*.js',
+      'testing/**/*'
     ],
   },
   eslint.configs.recommended,
