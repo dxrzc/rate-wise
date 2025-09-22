@@ -4,14 +4,6 @@
     "db/**/*"
   ],
   "compilerOptions": {
-    "paths": {
-      "@integration/*": [
-        "testing/integration/*"
-      ],
-      "@test-utils/*": [
-        "testing/utils/*"
-      ]
-    },
     "strict": true,
     "module": "commonjs",
     "declaration": true,
