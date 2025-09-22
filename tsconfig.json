@@ -1,11 +1,12 @@
 {
+  "include": [
+    "src/**/*",
+    "db/**/*"
+  ],
   "compilerOptions": {
     "paths": {
       "@integration/*": [
         "testing/integration/*"
-      ],
-      "@unit/*": [
-        "testing/unit/*"
       ],
       "@test-utils/*": [
         "testing/utils/*"
