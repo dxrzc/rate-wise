@@ -2,6 +2,7 @@ services:
   app:
     restart: always
     init: true
+    pull_policy: never
     depends_on:      
       redis_auth:
         condition: service_started    
@@ -49,6 +50,7 @@ services:
       context: ..
       target: development   
     image: ratewise:migrate 
+    pull_policy: never
     command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
     volumes:
       - ../db:/usr/src/app/db
