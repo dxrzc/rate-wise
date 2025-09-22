@@ -7,19 +7,18 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     ignores: [
-      'eslint.config.mjs',
+      'eslint.config.mjs',      
       'scripts/*.js',
-      'testing/**/*'
     ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
+    files: ["src/**/*.{ts,js}", "db/**/*.{ts,js}"],
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
       },
       sourceType: 'commonjs',
       parserOptions: {
@@ -27,12 +26,33 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn'
     },
   },
+
+  {
+    files: ["testing/**/*.{ts,js}"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',         // allow type 'any'
+      '@typescript-eslint/no-unsafe-assignment': 'off',    // allow assigning values of type 'any'
+      '@typescript-eslint/no-unsafe-member-access': 'off', // allow property access on 'any'
+      '@typescript-eslint/no-unsafe-return': 'off',        // allow returning 'any'
+      '@typescript-eslint/no-unsafe-call': 'off',          // allow calling 'any' as a function
+      '@typescript-eslint/no-unsafe-argument': 'off',      // allow passing 'any' as args
+      '@typescript-eslint/no-require-imports': 'off',      // allow require() imports 
+    },
+  }
 );
