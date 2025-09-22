@@ -1,4 +1,4 @@
-import { signOut } from '@test-utils/operations/auth/sign-out.operation';
+import { signOut } from '@utils/operations/auth/sign-out.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';

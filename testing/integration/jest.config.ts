@@ -1,17 +1,21 @@
+const { compilerOptions } = require('./tsconfig.json');
+import { pathsToModuleNameMapper } from 'ts-jest';
 import type { Config } from 'jest';
 
 const config: Config = {
     testEnvironment: 'jest-environment-node',
     rootDir: process.cwd(), // workidr
     preset: 'ts-jest',
+    testTimeout: 20000,
+    maxWorkers: 2,
 
+    roots: ['<rootDir>/testing/integration/specs'],
     globalSetup: '<rootDir>/testing/integration/config/global-setup.ts',
     globalTeardown: '<rootDir>/testing/integration/config/global-teardown.ts',
     setupFilesAfterEnv: [
         '<rootDir>/testing/integration/config/setupAfterEnv.ts',
     ],
 
-    // coverage
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/integration',
     coverageProvider: 'v8',
@@ -20,19 +24,17 @@ const config: Config = {
         '!<rootDir>/testing/integration/**',
     ],
 
-    // test files
-    roots: ['<rootDir>/testing/integration/specs'],
-
-    // aliases
-    moduleNameMapper: {
-        '^src/(.*)$': '<rootDir>/src/$1',
-        '^@integration/(.*)$': '<rootDir>/testing/integration/$1',
-        '^@queries/(.*)$': '<rootDir>/testing/queries/$1',
-        '^@test-utils/(.*)$': '<rootDir>/testing/utils/$1',
+    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+        prefix: '<rootDir>/',
+    }),
+    transform: {
+        '^.+\\.ts$': [
+            'ts-jest',
+            {
+                tsconfig: '<rootDir>/testing/integration/tsconfig.json',
+            },
+        ],
     },
-
-    testTimeout: 20000,
-    maxWorkers: 2,
 };
 
 export default config;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { signUp } from '@test-utils/operations/auth/sign-up.operation';
+import { signUp } from '@utils/operations/auth/sign-up.operation';
 import { getSessionCookie } from './get-session-cookie.util';
 import { UserModel } from 'src/users/models/user.model';
 import { testKit } from './test-kit.util';

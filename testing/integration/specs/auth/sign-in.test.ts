@@ -4,7 +4,7 @@ import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-r
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signIn } from '@test-utils/operations/auth/sign-in.operation';
+import { signIn } from '@utils/operations/auth/sign-in.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signUp } from '@test-utils/operations/auth/sign-up.operation';
+import { signUp } from '@utils/operations/auth/sign-up.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';

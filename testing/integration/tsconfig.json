@@ -1,0 +1,20 @@
+{
+    "extends": "../tsconfig.json",
+    "include": [
+        "./**/*"
+    ],
+    "compilerOptions": {
+        "paths": {
+            "src/*": [
+                "./src/*"
+            ],
+            "@integration/*": [
+                "./testing/integration/*"
+            ],
+            "@utils/*": [
+                "./testing/integration/utils/*",
+                "./testing/utils/*"
+            ]
+        }
+    }
+}
