@@ -3,4 +3,10 @@
     "include": [
         "utils/**/*"
     ],
+    "compilerOptions": {
+        "types": [
+            "jest",
+            "node"
+        ]
+    }
 }
