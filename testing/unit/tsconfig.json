@@ -1,0 +1,16 @@
+{
+    "extends": "../tsconfig.json",
+    "include": [
+        "./**/*"
+    ],
+    "compilerOptions": {        
+        "paths": {
+            "src/*": [
+                "./src/*"
+            ],
+            "@utils/*": [
+                "./testing/unit/utils/*"
+            ]
+        }
+    }
+}
