@@ -1,5 +1,5 @@
 import { ISessionsModuleOptions } from 'src/sessions/interface/sessions-module-options.interface';
-import { REDIS_FOR_TOKENS } from './constants/redis-tokens-client.token.constant';
+import { REDIS_TOKENS_CLIENT } from './constants/redis-tokens-client.token.constant';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
 import { TokensService } from './tokens.service';
 import {
@@ -26,7 +26,7 @@ export class TokensModule {
                         inject: options.inject,
                     },
                     {
-                        provide: REDIS_FOR_TOKENS,
+                        provide: REDIS_TOKENS_CLIENT,
                         useFactory: async (opts: ISessionsModuleOptions) => {
                             const redisAdapter = new RedisAdapter({
                                 uri: opts.redisUri,
