@@ -9,7 +9,7 @@ import { notToFail } from './custom-matchers/not-to-fail';
 import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from './custom-matchers/to-contain-cookie';
-import { REDIS_SESSIONS_CLIENT } from 'src/sessions/constants/sess-redis.token.constant';
+import { REDIS_SESSIONS_CLIENT } from 'src/sessions/constants/redis-sess-client.token.constant';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { cloneDatabase } from './helpers/clone-database.helper';
