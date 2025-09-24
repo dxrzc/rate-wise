@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
-import { REDIS_SESSIONS_CLIENT } from '../constants/sess-redis.token.constant';
+import { REDIS_SESSIONS_CLIENT } from '../constants/redis-sess-client.token.constant';
 
 @Injectable()
 export class SessionMiddlewareFactory {
