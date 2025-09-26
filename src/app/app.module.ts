@@ -2,6 +2,7 @@ import { appGraphqlExceptionFilter } from './providers/filters/app-graphql-excep
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
 import { DbConfigService } from 'src/config/services/db.config.service';
@@ -21,7 +22,6 @@ import { SeedModule } from 'src/seed/seed.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ClsModule } from 'nestjs-cls';
-import { AuthConfigService } from 'src/config/services/auth.config.service';
 
 @Module({
     providers: [
