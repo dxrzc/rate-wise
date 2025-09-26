@@ -16,6 +16,8 @@ const SMTP_HOST = Joi.string().hostname();
 const PORT = Joi.number().port();
 const SMTP_USER = Joi.string();
 const SMTP_PASS = Joi.string();
+const EMAIL_AUTH_TOKEN_SECRET = Joi.string();
+const EMAIL_AUTH_TOKEN_EXP = Joi.string();
 
 export const envSchema = Joi.object<IConfigs, true>({
     // Db
@@ -27,6 +29,8 @@ export const envSchema = Joi.object<IConfigs, true>({
     SESS_COOKIE_NAME: SESS_COOKIE_NAME.required(),
     MAX_USER_SESSIONS: MAX_USER_SESSIONS.required(),
     PASSWORD_SALT_ROUNDS: PASSWORD_SALT_ROUNDS.required(),
+    EMAIL_AUTH_TOKEN_SECRET: EMAIL_AUTH_TOKEN_SECRET.required(),
+    EMAIL_AUTH_TOKEN_EXP: EMAIL_AUTH_TOKEN_EXP.required(),
     // SMTP
     SMTP_HOST: SMTP_HOST.required(),
     SMTP_PORT: SMTP_PORT.required(),
@@ -47,6 +51,8 @@ export const integrationEnvSchema = Joi.object<IConfigs, true>({
     SESS_COOKIE_NAME: SESS_COOKIE_NAME.default('ssid'),
     MAX_USER_SESSIONS: MAX_USER_SESSIONS.default(3),
     PASSWORD_SALT_ROUNDS: PASSWORD_SALT_ROUNDS.default(1),
+    EMAIL_AUTH_TOKEN_SECRET: EMAIL_AUTH_TOKEN_SECRET.default('secret123'),
+    EMAIL_AUTH_TOKEN_EXP: EMAIL_AUTH_TOKEN_EXP.default('5m'),
     // SMTP
     SMTP_HOST: SMTP_HOST.default('testHost'),
     SMTP_PORT: SMTP_PORT.default(1025),
