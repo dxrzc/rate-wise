@@ -27,4 +27,12 @@ export class AuthConfigService {
     get passwordSaltRounds(): number {
         return this.configService.get('PASSWORD_SALT_ROUNDS');
     }
+
+    get emailTokenExpTime(): string {
+        return this.configService.get('EMAIL_AUTH_TOKEN_EXP');
+    }
+
+    get emailTokenSecret(): string {
+        return this.configService.get('EMAIL_AUTH_TOKEN_SECRET');
+    }
 }
