@@ -8,12 +8,13 @@ import {
     Global,
     Module,
 } from '@nestjs/common';
+import { ITokensModuleOptions } from './interfaces/tokens-module-options.interface';
 
 @Global()
 @Module({})
 export class TokensModule {
     static forRootAsync(
-        options: ConfigurableModuleAsyncOptions<ISessionsModuleOptions>,
+        options: ConfigurableModuleAsyncOptions<ITokensModuleOptions>,
     ): DynamicModule {
         if (options.useFactory) {
             return {
