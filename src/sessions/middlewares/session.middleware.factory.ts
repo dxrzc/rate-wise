@@ -32,7 +32,7 @@ export class SessionMiddlewareFactory {
                 secure: this.serverConfig.env === Environment.PRODUCTION,
             },
             store: new RedisStore({
-                client: this.redis.client,
+                client: <unknown>this.redis.client,
                 prefix: 'session:',
             }),
         });
