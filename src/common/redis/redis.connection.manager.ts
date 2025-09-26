@@ -48,6 +48,6 @@ export class RedisConnectionManager {
 
     async disconnect() {
         await this.redis.destroy();
-        await this.subscriber.destroy();
+        if (this.subscriber) await this.subscriber.destroy();
     }
 }
