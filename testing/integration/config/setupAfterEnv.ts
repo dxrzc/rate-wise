@@ -10,6 +10,7 @@ import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from './custom-matchers/to-contain-cookie';
 import { REDIS_SESSIONS_CLIENT } from 'src/sessions/constants/redis-sess-client.token.constant';
+import { REDIS_TOKENS_CLIENT } from 'src/tokens/constants/redis-tokens-client.token.constant';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { cloneDatabase } from './helpers/clone-database.helper';
@@ -70,6 +71,8 @@ beforeAll(async () => {
         testKit.sessRedisClient = nestApp.get<RedisAdapter>(
             REDIS_SESSIONS_CLIENT,
         );
+        testKit.tokensRedisClient =
+            nestApp.get<RedisAdapter>(REDIS_TOKENS_CLIENT);
         Object.defineProperty(testKit, 'request', {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
@@ -81,7 +84,10 @@ beforeAll(async () => {
 afterAll(async () => {
     try {
         if (nestApp) {
-            await testKit.sessRedisClient.connection.disconnect();
+            await Promise.all([
+                testKit.sessRedisClient.connection.disconnect(),
+                testKit.tokensRedisClient.connection.disconnect(),
+            ]);
             await redisContainer.stop();
         }
     } catch (error) {

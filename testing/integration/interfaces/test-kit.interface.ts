@@ -13,5 +13,6 @@ export interface ITestKit {
     authConfig: AuthConfigService;
     userRepos: Repository<User>;
     sessRedisClient: RedisAdapter;
+    tokensRedisClient: RedisAdapter;
     request: Test;
 }
