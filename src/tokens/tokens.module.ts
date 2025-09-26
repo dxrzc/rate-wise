@@ -5,15 +5,13 @@ import { TokensService } from './tokens.service';
 import {
     ConfigurableModuleAsyncOptions,
     DynamicModule,
-    Global,
     Module,
 } from '@nestjs/common';
 import { ITokensModuleOptions } from './interfaces/tokens-module-options.interface';
 
-@Global()
 @Module({})
 export class TokensModule {
-    static forRootAsync(
+    static forFeature(
         options: ConfigurableModuleAsyncOptions<ITokensModuleOptions>,
     ): DynamicModule {
         if (options.useFactory) {
