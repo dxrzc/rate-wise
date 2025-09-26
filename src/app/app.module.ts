@@ -13,7 +13,6 @@ import { Environment } from 'src/common/enum/environment.enum';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { LoggingModule } from 'src/logging/logging.module';
 import { ConfigModule } from 'src/config/config.module';
-import { TokensModule } from 'src/tokens/tokens.module';
 import { UsersModule } from 'src/users/users.module';
 import { ItemsModule } from 'src/items/items.module';
 import { ConditionalModule } from '@nestjs/config';
@@ -41,12 +40,6 @@ import { ClsModule } from 'nestjs-cls';
                 cookieMaxAgeMs: authConfig.sessCookieMaxAgeMs,
                 cookieName: authConfig.sessCookieName,
                 cookieSecret: authConfig.sessCookieSecret,
-                redisUri: dbConfig.redisAuthUri,
-            }),
-        }),
-        TokensModule.forRootAsync({
-            inject: [DbConfigService],
-            useFactory: (dbConfig: DbConfigService) => ({
                 redisUri: dbConfig.redisAuthUri,
             }),
         }),
