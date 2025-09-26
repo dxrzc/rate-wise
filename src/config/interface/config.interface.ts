@@ -4,6 +4,8 @@ export interface IConfigs {
     NODE_ENV: Environment;
     PORT: number;
     PASSWORD_SALT_ROUNDS: number;
+    EMAIL_AUTH_TOKEN_SECRET: string;
+    EMAIL_AUTH_TOKEN_EXP: string;
     POSTGRES_URI: string;
     REDIS_AUTH_URI: string;
     SESS_COOKIE_SECRET: string;
