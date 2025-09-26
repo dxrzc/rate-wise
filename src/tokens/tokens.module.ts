@@ -1,5 +1,7 @@
 import { ISessionsModuleOptions } from 'src/sessions/interface/sessions-module-options.interface';
 import { REDIS_TOKENS_CLIENT } from './constants/redis-tokens-client.token.constant';
+import { ITokensModuleOptions } from './interfaces/tokens-module-options.interface';
+import { TOKEN_MODULE_OPTS } from './constants/tokens-module-opts.constant';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
 import { TokensService } from './tokens.service';
 import {
@@ -7,7 +9,6 @@ import {
     DynamicModule,
     Module,
 } from '@nestjs/common';
-import { ITokensModuleOptions } from './interfaces/tokens-module-options.interface';
 
 @Module({})
 export class TokensModule {
@@ -20,7 +21,7 @@ export class TokensModule {
                 imports: [...(options.imports ?? [])],
                 providers: [
                     {
-                        provide: 'TOKENS_MODULE_OPTIONS',
+                        provide: TOKEN_MODULE_OPTS,
                         useFactory: options.useFactory,
                         inject: options.inject,
                     },
@@ -33,7 +34,7 @@ export class TokensModule {
                             await redisAdapter.connection.connect();
                             return redisAdapter;
                         },
-                        inject: ['TOKENS_MODULE_OPTIONS'],
+                        inject: [TOKEN_MODULE_OPTS],
                     },
                     TokensService,
                 ],
