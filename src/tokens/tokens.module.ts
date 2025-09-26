@@ -4,6 +4,7 @@ import { ITokensModuleOptions } from './interfaces/tokens-module-options.interfa
 import { TOKEN_MODULE_OPTS } from './constants/tokens-module-opts.constant';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
 import { TokensService } from './tokens.service';
+import { JwtModule } from '@nestjs/jwt';
 import {
     ConfigurableModuleAsyncOptions,
     DynamicModule,
@@ -16,15 +17,27 @@ export class TokensModule {
         options: ConfigurableModuleAsyncOptions<ITokensModuleOptions>,
     ): DynamicModule {
         if (options.useFactory) {
+            // Provides the options used to configure this module
+            const moduleOptionsProvider = {
+                provide: TOKEN_MODULE_OPTS,
+                useFactory: options.useFactory,
+                inject: options.inject,
+            };
             return {
                 module: TokensModule,
-                imports: [...(options.imports ?? [])],
+                imports: [
+                    ...(options.imports ?? []),
+                    JwtModule.registerAsync({
+                        extraProviders: [moduleOptionsProvider],
+                        inject: [TOKEN_MODULE_OPTS],
+                        useFactory: (moduleOpts: ITokensModuleOptions) => ({
+                            secret: moduleOpts.tokenSecret,
+                            signOptions: { expiresIn: moduleOpts.expiresIn },
+                        }),
+                    }),
+                ],
                 providers: [
-                    {
-                        provide: TOKEN_MODULE_OPTS,
-                        useFactory: options.useFactory,
-                        inject: options.inject,
-                    },
+                    moduleOptionsProvider,
                     {
                         provide: REDIS_TOKENS_CLIENT,
                         useFactory: async (opts: ISessionsModuleOptions) => {
