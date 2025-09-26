@@ -13,14 +13,15 @@ describe('Session cleanup (redis)', () => {
             const sid = getSidFromCookie(sessionCookie);
             const indexKey = userSessionsSetKey(id);
             // sid in index
-            const indexPrev = await testKit.authRedis.setMembers(indexKey);
+            const indexPrev =
+                await testKit.sessRedisClient.setMembers(indexKey);
             expect(indexPrev.length).toBe(1);
             // delete session from redis
-            await testKit.authRedis.delete(`session:${sid}`);
+            await testKit.sessRedisClient.delete(`session:${sid}`);
             // since the redis subscriber works asynchronously
             await sleep(1000);
             // sessions should not exists in sessions-index
-            const index = await testKit.authRedis.setMembers(indexKey);
+            const index = await testKit.sessRedisClient.setMembers(indexKey);
             expect(index.length).toBe(0);
         });
 
@@ -30,14 +31,14 @@ describe('Session cleanup (redis)', () => {
             const sid = getSidFromCookie(sessionCookie);
             const key = userAndSessionRelationKey(sid);
             // sess_user record exists
-            const relationPrev = await testKit.authRedis.get(key);
+            const relationPrev = await testKit.sessRedisClient.get(key);
             expect(relationPrev).not.toBeNull();
             // delete session from redis
-            await testKit.authRedis.delete(`session:${sid}`);
+            await testKit.sessRedisClient.delete(`session:${sid}`);
             // since the redis subscriber works asynchronously
             await sleep(1000);
             // sess_user should not exists
-            const relation = await testKit.authRedis.get(key);
+            const relation = await testKit.sessRedisClient.get(key);
             expect(relation).toBeNull();
         });
     });

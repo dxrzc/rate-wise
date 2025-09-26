@@ -67,7 +67,9 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-        testKit.authRedis = nestApp.get<RedisAdapter>(REDIS_SESSIONS_CLIENT);
+        testKit.sessRedisClient = nestApp.get<RedisAdapter>(
+            REDIS_SESSIONS_CLIENT,
+        );
         Object.defineProperty(testKit, 'request', {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
@@ -79,7 +81,7 @@ beforeAll(async () => {
 afterAll(async () => {
     try {
         if (nestApp) {
-            await testKit.authRedis.connection.disconnect();
+            await testKit.sessRedisClient.connection.disconnect();
             await redisContainer.stop();
         }
     } catch (error) {

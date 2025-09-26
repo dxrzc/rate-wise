@@ -71,7 +71,7 @@ describe('signUp', () => {
             );
             expect(res).notToFail();
             const key = userSessionsSetKey(res.body.data.signUp.id as string);
-            const sessSet = await testKit.authRedis.setMembers(key);
+            const sessSet = await testKit.sessRedisClient.setMembers(key);
             expect(sessSet.length).toBe(1);
             expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
         });
@@ -83,7 +83,7 @@ describe('signUp', () => {
             expect(res).notToFail();
             const sid = getSidFromCookie(getSessionCookie(res));
             const key = userAndSessionRelationKey(sid);
-            const sessionOwner = await testKit.authRedis.get(key);
+            const sessionOwner = await testKit.sessRedisClient.get(key);
             expect(sessionOwner).toBe(res.body.data.signUp.id);
         });
     });
@@ -178,7 +178,7 @@ describe('signUp', () => {
                 );
                 // old session is deleted
                 await expect(
-                    testKit.authRedis.get(`session:${oldSid}`),
+                    testKit.sessRedisClient.get(`session:${oldSid}`),
                 ).resolves.toBeNull();
             });
         });
