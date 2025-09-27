@@ -1,4 +1,4 @@
-import { baseJestConfig } from '../utils/config/jest.base.config';
+import { baseJestConfig } from '../common/config/jest.base.config';
 import type { Config } from 'jest';
 
 const config: Config = {

@@ -7,7 +7,7 @@ export const baseJestConfig: Config = {
 
     moduleNameMapper: {
         '^src/(.*)$': '<rootDir>/src/$1',
-        '^@commontestutils/(.*)$': '<rootDir>/testing/utils/$1',
+        '^@commontestutils/(.*)$': '<rootDir>/testing/common/utils/$1',
     },
 
     transform: {
