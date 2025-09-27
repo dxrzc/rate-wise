@@ -66,6 +66,10 @@ export default tseslint.config(
               group: ["@unit/*", "testing/e2e/*"],
               message: "Imports from another tests folder are not allowed",
             },
+            {
+              group: ["testing/*"],
+              message: "Use aliases instead of relative imports",
+            },
           ],
         },
       ],
