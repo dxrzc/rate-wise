@@ -22,7 +22,7 @@
                 "./testing/e2e/*"
             ],
             "@commontestutils/*": [
-                "./testing/utils/*",
+                "./testing/common/utils/*",
             ]
         }
     }
