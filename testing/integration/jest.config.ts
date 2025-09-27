@@ -1,11 +1,8 @@
-const { compilerOptions } = require('./tsconfig.json');
-import { pathsToModuleNameMapper } from 'ts-jest';
+import { baseJestConfig } from '../common/config/jest.base.config';
 import type { Config } from 'jest';
 
 const config: Config = {
-    testEnvironment: 'jest-environment-node',
-    rootDir: process.cwd(), // workidr
-    preset: 'ts-jest',
+    ...baseJestConfig,
     testTimeout: 20000,
     maxWorkers: 2,
 
@@ -24,16 +21,9 @@ const config: Config = {
         '!<rootDir>/testing/integration/**',
     ],
 
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-        prefix: '<rootDir>/',
-    }),
-    transform: {
-        '^.+\\.ts$': [
-            'ts-jest',
-            {
-                tsconfig: '<rootDir>/testing/integration/tsconfig.json',
-            },
-        ],
+    moduleNameMapper: {
+        ...baseJestConfig.moduleNameMapper,
+        '^@integration/(.*)$': '<rootDir>/testing/integration/$1',
     },
 };
 

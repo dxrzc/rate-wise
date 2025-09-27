@@ -1,6 +1,8 @@
+import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signUp } from '@utils/operations/auth/sign-up.operation';
+import { signUp } from '@commontestutils/operations/auth/sign-up.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
@@ -11,8 +13,6 @@ import { UserRole } from 'src/users/enum/user-role.enum';
 import { UserModel } from 'src/users/models/user.model';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 
 describe('signUp', () => {
     describe('Successful signUp', () => {

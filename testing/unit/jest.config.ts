@@ -1,27 +1,20 @@
-const { compilerOptions } = require('./tsconfig.json');
-import { pathsToModuleNameMapper } from 'ts-jest';
 import type { Config } from 'jest';
+import { baseJestConfig } from '../common/config/jest.base.config';
 
 const config: Config = {
-    rootDir: process.cwd(), // workidr
+    ...baseJestConfig,
+    maxWorkers: 3,
+
+    roots: ['<rootDir>/testing/unit/specs'],
+
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/unit',
     coverageProvider: 'v8',
-    roots: ['<rootDir>/testing/unit/specs'],
-    preset: 'ts-jest',
-    testEnvironment: 'jest-environment-node',
-    transform: {
-        '^.+\\.ts$': [
-            'ts-jest',
-            {
-                tsconfig: '<rootDir>/testing/unit/tsconfig.json',
-            },
-        ],
+
+    moduleNameMapper: {
+        ...baseJestConfig.moduleNameMapper,
+        '^@unit/(.*)$': '<rootDir>/testing/unit/$1',
     },
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-        prefix: '<rootDir>/',
-    }),
-    maxWorkers: 2,
 };
 
 export default config;

@@ -54,5 +54,45 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'off',      // allow passing 'any' as args
       '@typescript-eslint/no-require-imports': 'off',      // allow require() imports 
     },
-  }
+  },
+  {
+    files: ["testing/integration/**/*.{ts,js}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@unit/*", "@e2e/*"],
+              message: "Imports from another tests folder are not allowed",
+            },
+            {
+              group: ["testing/*"],
+              message: "Use aliases instead of relative imports",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["testing/unit/**/*.{ts,js}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@integration/*", "@e2e/*"],
+              message: "Imports from another tests folder are not allowed",
+            },
+            {
+              group: ["testing/*"],
+              message: "Use aliases instead of relative imports",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
