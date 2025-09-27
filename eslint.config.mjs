@@ -75,4 +75,24 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ["testing/unit/**/*.{ts,js}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@integration/*", "@e2e/*"],
+              message: "Imports from another tests folder are not allowed",
+            },
+            {
+              group: ["testing/*"],
+              message: "Use aliases instead of relative imports",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
