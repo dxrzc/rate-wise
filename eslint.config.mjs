@@ -63,7 +63,7 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@unit/*", "testing/e2e/*"],
+              group: ["@unit/*", "@e2e/*"],
               message: "Imports from another tests folder are not allowed",
             },
             {
