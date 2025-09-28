@@ -11,12 +11,15 @@
         "paths": {
             "src/*": [
                 "./src/*"
+            ],            
+            "@unit/*": [
+                "./testing/unit/*"
+            ],
+            "@components/*": [
+                "./testing/components/*"
             ],
             "@integration/*": [
                 "./testing/integration/*"
-            ],
-            "@unit/*": [
-                "./testing/unit/*"
             ],
             "@e2e/*": [
                 "./testing/e2e/*"
