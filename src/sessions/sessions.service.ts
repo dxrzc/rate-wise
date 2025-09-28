@@ -15,12 +15,20 @@ export class SessionsService {
         private readonly logger: HttpLoggerService,
     ) {}
 
-    private async regenerateSession(req: RequestContext): Promise<void> {
+    private async regenerate(req: RequestContext): Promise<void> {
         await promisify<void>((cb) => req.session.regenerate(cb));
         this.logger.debug(`Session regenerated`);
     }
 
-    async deleteAllSessions(userId: string): Promise<void> {
+    private async linkToUser(sessionId: string, userId: string) {
+        await this.redis
+            .transaction()
+            .store(userAndSessionRelationKey(sessionId), userId)
+            .setAdd(userSessionsSetKey(userId), sessionId)
+            .exec();
+    }
+
+    async deleteAll(userId: string): Promise<void> {
         const indexKey = userSessionsSetKey(userId);
         const sessionsIds = await this.redis.setMembers(indexKey);
         const deletions = sessionsIds.map((sId) =>
@@ -30,28 +38,20 @@ export class SessionsService {
         this.logger.debug(`All user ${userId} sessions deleted`);
     }
 
-    async activeSessions(userId: string): Promise<number> {
+    async count(userId: string): Promise<number> {
         const setkey = userSessionsSetKey(userId);
         return await this.redis.setSize(setkey);
     }
 
-    async deleteSession(req: RequestContext) {
+    async delete(req: RequestContext) {
         await promisify<void>((cb) => req.session.destroy(cb));
         this.logger.debug(`Session ${req.sessionID} deleted`);
     }
 
-    async linkUserSession(sessionId: string, userId: string) {
-        await this.redis
-            .transaction()
-            .store(userAndSessionRelationKey(sessionId), userId)
-            .setAdd(userSessionsSetKey(userId), sessionId)
-            .exec();
-    }
-
-    async newSession(req: RequestContext, userId: string) {
-        await this.regenerateSession(req);
+    async create(req: RequestContext, userId: string) {
+        await this.regenerate(req);
         req.session.userId = userId;
-        await this.linkUserSession(req.sessionID, userId);
+        await this.linkToUser(req.sessionID, userId);
         this.logger.debug(`Session ${req.sessionID} created`);
     }
 }
