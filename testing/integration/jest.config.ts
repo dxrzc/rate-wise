@@ -7,10 +7,10 @@ const config: Config = {
     maxWorkers: 2,
 
     roots: ['<rootDir>/testing/integration/specs'],
-    globalSetup: '<rootDir>/testing/integration/config/global-setup.ts',
-    globalTeardown: '<rootDir>/testing/integration/config/global-teardown.ts',
+    globalSetup: '<rootDir>/testing/integration/setup/global/setup.ts',
+    globalTeardown: '<rootDir>/testing/integration/setup/global/teardown.ts',
     setupFilesAfterEnv: [
-        '<rootDir>/testing/integration/config/setupAfterEnv.ts',
+        '<rootDir>/testing/integration/setup/after-env/setup.ts',
     ],
 
     collectCoverage: true,
