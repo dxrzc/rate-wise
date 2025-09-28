@@ -11,7 +11,7 @@ export class TokensService {
         private readonly jwtService: JwtService,
     ) {}
 
-    generate(payload: string): string {
+    generate(payload: { [prop: string]: any }): string {
         const token = this.jwtService.sign(payload);
         return token;
     }
