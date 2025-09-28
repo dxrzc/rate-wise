@@ -47,7 +47,7 @@ export class AuthService {
         }
 
         const sessions = await this.sessionService.count(user.id);
-        if (sessions === this.authConfig.maxUserSessions) {
+        if (sessions >= this.authConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${user.id}`);
             throw HttpError.BadRequest(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         }
