@@ -3,4 +3,5 @@ export interface ISessionsModuleOptions {
     cookieName: string;
     cookieSecret: string;
     cookieMaxAgeMs: number;
+    secure: boolean;
 }

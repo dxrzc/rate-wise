@@ -2,6 +2,7 @@ import { appGraphqlExceptionFilter } from './providers/filters/app-graphql-excep
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
+import { ServerConfigService } from 'src/config/services/server.config.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
@@ -32,11 +33,13 @@ import { ClsModule } from 'nestjs-cls';
     imports: [
         ConfigModule,
         SessionsModule.forRootAsync({
-            inject: [DbConfigService, AuthConfigService],
+            inject: [DbConfigService, AuthConfigService, ServerConfigService],
             useFactory: (
                 dbConfig: DbConfigService,
                 authConfig: AuthConfigService,
+                serverConfig: ServerConfigService,
             ) => ({
+                secure: serverConfig.env === Environment.PRODUCTION,
                 cookieMaxAgeMs: authConfig.sessCookieMaxAgeMs,
                 cookieName: authConfig.sessCookieName,
                 cookieSecret: authConfig.sessCookieSecret,

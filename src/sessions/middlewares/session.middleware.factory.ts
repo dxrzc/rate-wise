@@ -1,9 +1,7 @@
 import { ISessionsModuleOptions } from '../interface/sessions-module-options.interface';
 import { REDIS_SESSIONS_CLIENT } from '../constants/redis-sess-client.token.constant';
 import { SESS_MODULE_OPTS } from '../constants/sess-module-opts.token.constant';
-import { ServerConfigService } from 'src/config/services/server.config.service';
 import { RedisAdapter } from 'src/common/redis/redis.adapter';
-import { Environment } from 'src/common/enum/environment.enum';
 import { Inject, Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
@@ -11,7 +9,6 @@ import { RedisStore } from 'connect-redis';
 @Injectable()
 export class SessionMiddlewareFactory {
     constructor(
-        private readonly serverConfig: ServerConfigService,
         @Inject(REDIS_SESSIONS_CLIENT)
         private readonly redis: RedisAdapter,
         @Inject(SESS_MODULE_OPTS)
@@ -29,7 +26,7 @@ export class SessionMiddlewareFactory {
             cookie: {
                 httpOnly: true,
                 maxAge: this.sessOpts.cookieMaxAgeMs,
-                secure: this.serverConfig.env === Environment.PRODUCTION,
+                secure: this.sessOpts.secure,
             },
             store: new RedisStore({
                 client: <unknown>this.redis.client,
