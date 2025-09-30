@@ -7,7 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({})
 export class TokensModule {
-    static forFeature(
+    static forFeatureAsync(
         options: AsyncConfigModuleWithCustomProvider<ITokensOptions>,
     ): DynamicModule {
         if (!options.useFactory)
