@@ -1,1 +1,0 @@
-export const TOKEN_MODULE_OPTS = 'TOKEN_MODULE_OPTS';
