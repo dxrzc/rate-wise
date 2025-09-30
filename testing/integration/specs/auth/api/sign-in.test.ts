@@ -2,9 +2,9 @@ import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-r
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signIn } from '@utils/operations/auth/sign-in.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
+import { signIn } from '@commontestutils/operations/auth/sign-in.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -57,7 +57,7 @@ describe('signIn', () => {
             expect(res).notToFail();
             const key = userSessionsSetKey(res.body.data.signIn.id);
             const sessId = getSidFromCookie(getSessionCookie(res));
-            const sessSet = await testKit.authRedis.setMembers(key);
+            const sessSet = await testKit.redisAuth.setMembers(key);
             expect(sessSet.length).toBe(2); // signUp and signIn
             expect(sessSet.find((key) => key === sessId)).toBeDefined();
         });
@@ -73,7 +73,7 @@ describe('signIn', () => {
             expect(res).notToFail();
             const sid = getSidFromCookie(getSessionCookie(res));
             const key = userAndSessionRelationKey(sid);
-            const sessionOwner = await testKit.authRedis.get(key);
+            const sessionOwner = await testKit.redisAuth.get(key);
             expect(sessionOwner).toBe(res.body.data.signIn.id);
         });
     });
@@ -171,7 +171,7 @@ describe('signIn', () => {
                     }),
                 );
                 await expect(
-                    testKit.authRedis.get(`session:${oldSid}`),
+                    testKit.redisAuth.get(`session:${oldSid}`),
                 ).resolves.toBeNull();
             });
         });

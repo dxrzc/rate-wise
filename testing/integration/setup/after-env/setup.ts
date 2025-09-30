@@ -1,20 +1,20 @@
 import { DataSource } from 'typeorm';
 import { App } from 'supertest/types';
 import { expect } from '@jest/globals';
-import { testKit } from '../utils/test-kit.util';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { User } from 'src/users/entities/user.entity';
-import { notToFail } from './custom-matchers/not-to-fail';
-import { toFailWith } from './custom-matchers/to-fail-with';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
-import { toContainCookie } from './custom-matchers/to-contain-cookie';
-import { SESSION_REDIS } from 'src/sessions/constants/sess-redis.token.constant';
+import { toContainCookie } from '@integration/custom/matchers/to-contain-cookie';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
+import { toFailWith } from '@integration/custom/matchers/to-fail-with';
+import { notToFail } from '@integration/custom/matchers/not-to-fail';
 import { cloneDatabase } from './helpers/clone-database.helper';
 import { Environment } from 'src/common/enum/environment.enum';
-import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
+import { RedisService } from 'src/redis/redis.service';
+import { testKit } from '@integration/utils/test-kit.util';
 import * as request from 'supertest';
 import { readFileSync } from 'fs';
 import { config } from 'dotenv';
@@ -36,7 +36,7 @@ beforeAll(async () => {
     try {
         // Connections
         const templatePostgresDb = readFileSync(
-            join(__dirname, 'postgres-uri.txt'),
+            join(__dirname, '../global/postgres-uri.txt'),
             'utf8',
         );
         redisContainer = await new RedisContainer('redis:8.0-alpine')
@@ -67,7 +67,7 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-        testKit.authRedis = nestApp.get<RedisAdapter>(SESSION_REDIS);
+        testKit.redisAuth = nestApp.get<RedisService>(REDIS_AUTH);
         Object.defineProperty(testKit, 'request', {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
@@ -77,12 +77,5 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    try {
-        if (nestApp) {
-            await testKit.authRedis.connection.disconnect();
-            await redisContainer.stop();
-        }
-    } catch (error) {
-        console.error(error);
-    }
+    await nestApp.close();
 });

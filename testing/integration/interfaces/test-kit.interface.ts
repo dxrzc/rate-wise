@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
-import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { RedisService } from 'src/redis/redis.service';
 import { Test } from 'supertest';
 
 export interface ITestKit {
@@ -12,6 +12,6 @@ export interface ITestKit {
     userSeed: UserSeedService;
     authConfig: AuthConfigService;
     userRepos: Repository<User>;
-    authRedis: RedisAdapter;
+    redisAuth: RedisService;
     request: Test;
 }

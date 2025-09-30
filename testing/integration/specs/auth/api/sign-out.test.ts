@@ -1,5 +1,5 @@
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
-import { signOut } from '@utils/operations/auth/sign-out.operation';
+import { signOut } from '@commontestutils/operations/auth/sign-out.operation';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -27,7 +27,7 @@ describe('signOut', () => {
             expect(res).notToFail();
             // cookie should be removed from redis
             await expect(
-                testKit.authRedis.get(
+                testKit.redisAuth.get(
                     `session:${getSidFromCookie(sessionCookie)}`,
                 ),
             ).resolves.toBeNull();

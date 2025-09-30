@@ -1,7 +1,7 @@
-import { signOutAll } from '@utils/operations/auth/sign-out-all.operation';
+import { signOutAll } from '@commontestutils/operations/auth/sign-out-all.operation';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signIn } from '@utils/operations/auth/sign-in.operation';
+import { signIn } from '@commontestutils/operations/auth/sign-in.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
@@ -29,10 +29,10 @@ describe('signOutAll', () => {
 
             // check both sids exist in redis
             await expect(
-                testKit.authRedis.get(`session:${sid1}`),
+                testKit.redisAuth.get(`session:${sid1}`),
             ).resolves.not.toBeNull();
             await expect(
-                testKit.authRedis.get(`session:${sid2}`),
+                testKit.redisAuth.get(`session:${sid2}`),
             ).resolves.not.toBeNull();
 
             // sign out all
@@ -45,10 +45,10 @@ describe('signOutAll', () => {
 
             // sids don't exist anymore
             await expect(
-                testKit.authRedis.get(`session:${sid1}`),
+                testKit.redisAuth.get(`session:${sid1}`),
             ).resolves.toBeNull();
             await expect(
-                testKit.authRedis.get(`session:${sid2}`),
+                testKit.redisAuth.get(`session:${sid2}`),
             ).resolves.toBeNull();
         });
     });

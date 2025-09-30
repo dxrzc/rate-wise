@@ -4,7 +4,6 @@ import { appValidationPipe } from './providers/pipes/app-validation.pipe.provide
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
-import { DbConfigService } from 'src/config/services/db.config.service';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -14,6 +13,7 @@ import { LoggingModule } from 'src/logging/logging.module';
 import { ConfigModule } from 'src/config/config.module';
 import { UsersModule } from 'src/users/users.module';
 import { ItemsModule } from 'src/items/items.module';
+import { RedisModule } from 'src/redis/redis.module';
 import { ConditionalModule } from '@nestjs/config';
 import { AuthModule } from 'src/auth/auth.module';
 import { SeedModule } from 'src/seed/seed.module';
@@ -30,12 +30,8 @@ import { ClsModule } from 'nestjs-cls';
     ],
     imports: [
         ConfigModule,
-        SessionsModule.forRootAsync({
-            inject: [DbConfigService],
-            useFactory: (dbConfig: DbConfigService) => ({
-                redisUri: dbConfig.redisAuthUri,
-            }),
-        }),
+        RedisModule,
+        SessionsModule,
         ClsModule.forRoot({
             global: true,
             middleware: { mount: true },

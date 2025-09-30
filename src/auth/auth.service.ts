@@ -28,7 +28,7 @@ export class AuthService {
             this.authConfig.passwordSaltRounds,
         );
         const user = await this.userService.createOne(signUpInput);
-        await this.sessionService.newSession(req, user.id);
+        await this.sessionService.create(req, user.id);
         this.logger.info(`Account ${user.id} created`);
         return user;
     }
@@ -46,20 +46,20 @@ export class AuthService {
             throw HttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
-        const sessions = await this.sessionService.activeSessions(user.id);
-        if (sessions === this.authConfig.maxUserSessions) {
+        const sessions = await this.sessionService.count(user.id);
+        if (sessions >= this.authConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${user.id}`);
             throw HttpError.BadRequest(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         }
 
-        await this.sessionService.newSession(req, user.id);
+        await this.sessionService.create(req, user.id);
         this.logger.info(`User ${user.id} signed in`);
         return user;
     }
 
     async signOut(req: RequestContext): Promise<void> {
         const userId = req.session.userId;
-        await this.sessionService.deleteSession(req);
+        await this.sessionService.delete(req);
         this.logger.info(`User ${userId} signed out`);
     }
 
@@ -76,7 +76,7 @@ export class AuthService {
             this.logger.warn(`Invalid credentials for userId: ${userId}`);
             throw HttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
-        await this.sessionService.deleteAllSessions(userId);
+        await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
     }
 }

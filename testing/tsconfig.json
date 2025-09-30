@@ -1,12 +1,32 @@
 {
     "extends": "../tsconfig.json",
     "include": [
-        "utils/**/*"
+        "./**/*"
     ],
     "compilerOptions": {
         "types": [
-            "jest",
-            "node"
-        ]
+            "node",
+            "jest"
+        ],
+        "paths": {
+            "src/*": [
+                "./src/*"
+            ],            
+            "@unit/*": [
+                "./testing/unit/*"
+            ],
+            "@components/*": [
+                "./testing/components/*"
+            ],
+            "@integration/*": [
+                "./testing/integration/*"
+            ],
+            "@e2e/*": [
+                "./testing/e2e/*"
+            ],
+            "@commontestutils/*": [
+                "./testing/common/utils/*",
+            ]
+        }
     }
 }
