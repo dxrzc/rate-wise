@@ -8,14 +8,16 @@ import { TOKENS_OPTIONS } from './constants/tokens.constants';
 @Injectable()
 export class TokensService {
     constructor(
-        @Inject(REDIS_AUTH)
-        private readonly redisService: RedisService,
-        @Inject(TOKENS_OPTIONS)
-        private readonly tokensOpts: ITokensOptions,
+        @Inject(REDIS_AUTH) private readonly redisService: RedisService,
+        @Inject(TOKENS_OPTIONS) private readonly tokensOpts: ITokensOptions,
         private readonly jwtService: JwtService,
     ) {}
 
-    get options() {
-        return this.tokensOpts;
+    generate(payload: object): string {
+        const token = this.jwtService.sign({
+            purpose: this.tokensOpts.type,
+            ...payload,
+        });
+        return token;
     }
 }
