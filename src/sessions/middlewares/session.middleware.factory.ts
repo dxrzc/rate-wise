@@ -1,7 +1,8 @@
-import { ISessionsModuleOptions } from '../interface/sessions-module-options.interface';
-import { REDIS_SESSIONS_CLIENT } from '../constants/redis-sess-client.token.constant';
-import { SESS_MODULE_OPTS } from '../constants/sess-module-opts.token.constant';
-import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { ServerConfigService } from 'src/config/services/server.config.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
+import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
+import { Environment } from 'src/common/enum/environment.enum';
+import { RedisService } from 'src/redis/redis.service';
 import { Inject, Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
@@ -9,24 +10,24 @@ import { RedisStore } from 'connect-redis';
 @Injectable()
 export class SessionMiddlewareFactory {
     constructor(
-        @Inject(REDIS_SESSIONS_CLIENT)
-        private readonly redis: RedisAdapter,
-        @Inject(SESS_MODULE_OPTS)
-        private readonly sessOpts: ISessionsModuleOptions,
+        @Inject(REDIS_AUTH)
+        private readonly redis: RedisService,
+        private readonly serverConfig: ServerConfigService,
+        private readonly authConfig: AuthConfigService,
     ) {}
 
     create() {
         const middleware = session({
-            name: this.sessOpts.cookieName,
+            name: this.authConfig.sessCookieName,
             resave: false,
             saveUninitialized: false,
-            secret: this.sessOpts.cookieSecret,
+            secret: this.authConfig.sessCookieSecret,
             unset: 'destroy',
             rolling: true,
             cookie: {
                 httpOnly: true,
-                maxAge: this.sessOpts.cookieMaxAgeMs,
-                secure: this.sessOpts.secure,
+                maxAge: this.authConfig.sessCookieMaxAgeMs,
+                secure: this.serverConfig.env === Environment.PRODUCTION,
             },
             store: new RedisStore({
                 client: <unknown>this.redis.client,

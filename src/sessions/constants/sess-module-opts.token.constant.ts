@@ -1,1 +1,0 @@
-export const SESS_MODULE_OPTS = 'SESS_MODULE_OPTS';
