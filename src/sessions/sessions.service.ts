@@ -3,15 +3,15 @@ import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/functions/utils/promisify.util';
-import { REDIS_SESSIONS_CLIENT } from './constants/redis-sess-client.token.constant';
-import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
+import { RedisService } from 'src/redis/redis.service';
 import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SessionsService {
     constructor(
-        @Inject(REDIS_SESSIONS_CLIENT)
-        private readonly redis: RedisAdapter,
+        @Inject(REDIS_AUTH)
+        private readonly redisService: RedisService,
         private readonly logger: HttpLoggerService,
     ) {}
 
@@ -21,7 +21,7 @@ export class SessionsService {
     }
 
     private async linkToUser(sessionId: string, userId: string) {
-        await this.redis
+        await this.redisService
             .transaction()
             .store(userAndSessionRelationKey(sessionId), userId)
             .setAdd(userSessionsSetKey(userId), sessionId)
@@ -30,9 +30,9 @@ export class SessionsService {
 
     async deleteAll(userId: string): Promise<void> {
         const indexKey = userSessionsSetKey(userId);
-        const sessionsIds = await this.redis.setMembers(indexKey);
+        const sessionsIds = await this.redisService.setMembers(indexKey);
         const deletions = sessionsIds.map((sId) =>
-            this.redis.delete(`session:${sId}`),
+            this.redisService.delete(`session:${sId}`),
         );
         await Promise.all(deletions);
         this.logger.debug(`All user ${userId} sessions deleted`);
@@ -40,7 +40,7 @@ export class SessionsService {
 
     async count(userId: string): Promise<number> {
         const setkey = userSessionsSetKey(userId);
-        return await this.redis.setSize(setkey);
+        return await this.redisService.setSize(setkey);
     }
 
     async delete(req: RequestContext) {
