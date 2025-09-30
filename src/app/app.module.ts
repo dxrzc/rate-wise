@@ -16,6 +16,7 @@ import { LoggingModule } from 'src/logging/logging.module';
 import { ConfigModule } from 'src/config/config.module';
 import { UsersModule } from 'src/users/users.module';
 import { ItemsModule } from 'src/items/items.module';
+import { RedisModule } from 'src/redis/redis.module';
 import { ConditionalModule } from '@nestjs/config';
 import { AuthModule } from 'src/auth/auth.module';
 import { SeedModule } from 'src/seed/seed.module';
@@ -32,6 +33,7 @@ import { ClsModule } from 'nestjs-cls';
     ],
     imports: [
         ConfigModule,
+        RedisModule,
         SessionsModule.forRootAsync({
             inject: [DbConfigService, AuthConfigService, ServerConfigService],
             useFactory: (
