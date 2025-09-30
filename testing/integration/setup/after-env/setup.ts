@@ -6,15 +6,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from '@integration/custom/matchers/to-contain-cookie';
-import { REDIS_SESSIONS_CLIENT } from 'src/sessions/constants/redis-sess-client.token.constant';
-import { REDIS_TOKENS_CLIENT } from 'src/tokens/constants/redis-tokens-client.token.constant';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { toFailWith } from '@integration/custom/matchers/to-fail-with';
 import { notToFail } from '@integration/custom/matchers/not-to-fail';
 import { cloneDatabase } from './helpers/clone-database.helper';
 import { Environment } from 'src/common/enum/environment.enum';
-import { RedisAdapter } from 'src/common/redis/redis.adapter';
+import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
+import { RedisService } from 'src/redis/redis.service';
 import { testKit } from '@integration/utils/test-kit.util';
 import * as request from 'supertest';
 import { readFileSync } from 'fs';
@@ -68,11 +67,7 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-        testKit.sessRedisClient = nestApp.get<RedisAdapter>(
-            REDIS_SESSIONS_CLIENT,
-        );
-        testKit.tokensRedisClient =
-            nestApp.get<RedisAdapter>(REDIS_TOKENS_CLIENT);
+        testKit.redisAuth = nestApp.get<RedisService>(REDIS_AUTH);
         Object.defineProperty(testKit, 'request', {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
@@ -82,15 +77,5 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    try {
-        if (nestApp) {
-            await Promise.all([
-                testKit.sessRedisClient.connection.disconnect(),
-                testKit.tokensRedisClient.connection.disconnect(),
-            ]);
-            await redisContainer.stop();
-        }
-    } catch (error) {
-        console.error(error);
-    }
+    await nestApp.close();
 });

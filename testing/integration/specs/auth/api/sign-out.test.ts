@@ -27,7 +27,7 @@ describe('signOut', () => {
             expect(res).notToFail();
             // cookie should be removed from redis
             await expect(
-                testKit.sessRedisClient.get(
+                testKit.redisAuth.get(
                     `session:${getSidFromCookie(sessionCookie)}`,
                 ),
             ).resolves.toBeNull();
