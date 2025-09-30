@@ -1,4 +1,4 @@
-import { AsyncConfigModule } from 'src/common/types/modules/config-async-module.type';
+import { AsyncConfigModuleWithCustomProvider } from 'src/common/types/modules/async-config.module.type';
 import { ITokensOptions } from './interfaces/tokens.options.interface';
 import { TOKENS_OPTIONS } from './constants/tokens.constants';
 import { DynamicModule, Module } from '@nestjs/common';
@@ -8,7 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({})
 export class TokensModule {
     static forFeature(
-        options: AsyncConfigModule<ITokensOptions>,
+        options: AsyncConfigModuleWithCustomProvider<ITokensOptions>,
     ): DynamicModule {
         if (!options.useFactory)
             throw new Error('TokensModule requires useFactory option');
@@ -31,8 +31,15 @@ export class TokensModule {
                     }),
                 }),
             ],
-            providers: [TokensService, moduleOptionsProvider],
-            exports: [TokensService],
+            providers: [
+                TokensService,
+                moduleOptionsProvider,
+                {
+                    provide: options.provide,
+                    useExisting: TokensService,
+                },
+            ],
+            exports: [TokensService, options.provide],
         };
     }
 }
