@@ -43,8 +43,15 @@ export class TokensService {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
-    async verify<T extends TokenPayload>(token: string): Promise<T> {
+    async blacklist(jti: string, expDateUnix: number): Promise<void> {
+        await this.redisService.store(
+            jti,
+            '1',
+            calculateTokenTTLSeconds(expDateUnix),
+        );
+    }
+
+    async verify<T extends object>(token: string): Promise<JwtPayload<T>> {
         // JwtModule verification
         const payload = this.verifyTokenOrThrow<T>(token);
 
@@ -56,7 +63,9 @@ export class TokensService {
         if (payload.purpose !== this.tokensOpts.purpose)
             throw new InvalidTokenPurpose();
 
-        // is not blacklisted...
+        // is not blacklisted
+        if (await this.redisService.get(payload.jti))
+            throw new TokenIsBlacklisted();
 
         return payload;
     }
