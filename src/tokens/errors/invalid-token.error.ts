@@ -21,3 +21,11 @@ export class InvalidTokenPurpose extends InvalidToken {
         Object.setPrototypeOf(this, InvalidTokenPurpose.prototype);
     }
 }
+
+export class TokenIsBlacklisted extends InvalidToken {
+    constructor() {
+        super('Invalid token purpose');
+        this.name = 'TokenIsBlacklisted';
+        Object.setPrototypeOf(this, TokenIsBlacklisted.prototype);
+    }
+}
