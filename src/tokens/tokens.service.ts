@@ -4,11 +4,12 @@ import { ITokensOptions } from './interfaces/tokens.options.interface';
 import { isSubset } from 'src/common/functions/utils/is-subset.util';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { TOKENS_OPTIONS } from './constants/tokens.constants';
-import { JwtPurpose } from 'src/common/enum/jwt.purpose.enum';
+import { calculateTokenTTLSeconds } from './functions/calculate-token-ttl';
 import {
     InvalidDataInToken,
     InvalidToken,
     InvalidTokenPurpose,
+    TokenIsBlacklisted,
 } from './errors/invalid-token.error';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -16,14 +17,11 @@ import {
     Injectable,
     InternalServerErrorException,
 } from '@nestjs/common';
-
-type TokenPayload = {
-    purpose: JwtPurpose;
-    [prop: string]: any;
-};
+import { JwtPayload } from './types/jwt-payload.type';
+import { blacklistTokenKey } from './functions/blacklist-token-key';
 
 @Injectable()
-export class TokensService {
+export class TokensService<CustomData extends object> {
     constructor(
         @Inject(REDIS_AUTH) private readonly redisService: RedisService,
         @Inject(TOKENS_OPTIONS) private readonly tokensOpts: ITokensOptions,
@@ -70,7 +68,13 @@ export class TokensService {
         return payload;
     }
 
-    generate(payload: object): string {
+    async consume<T extends object>(token: string): Promise<JwtPayload<T>> {
+        const payload = await this.verify<T>(token);
+        await this.blacklist(payload.jti, payload.exp);
+        return payload;
+    }
+
+    generate(payload: CustomData): string {
         const token = this.jwtService.sign({
             purpose: this.tokensOpts.purpose,
             jti: uuidv4(),
