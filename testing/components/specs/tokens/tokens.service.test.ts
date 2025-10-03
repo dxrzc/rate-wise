@@ -4,17 +4,19 @@ import { JwtPurpose } from 'src/common/enum/jwt.purpose.enum';
 import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisModule } from 'src/redis/redis.module';
 import { RedisService } from 'src/redis/redis.service';
+import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { TokensModule } from 'src/tokens/tokens.module';
+import { TokensService } from 'src/tokens/tokens.service';
 import {
     InvalidDataInToken,
     InvalidToken,
     InvalidTokenPurpose,
     TokenIsBlacklisted,
 } from 'src/tokens/errors/invalid-token.error';
-import { TokensModule } from 'src/tokens/tokens.module';
-import { TokensService } from 'src/tokens/tokens.service';
 
 describe('Tokens Service ', () => {
-    let tokensService: TokensService;
+    // allow any data when generating token
+    let tokensService: TokensService<{ [prop: string]: any }>;
     let redisService: RedisService;
     let testingModule: TestingModule;
 
@@ -49,8 +51,8 @@ describe('Tokens Service ', () => {
             ],
         }).compile();
 
-        tokensService = testingModule.get<TokensService>('TEST_TOKEN_SERVICE');
         redisService = testingModule.get<RedisService>(REDIS_AUTH);
+        tokensService = testingModule.get('TEST_TOKEN_SERVICE');
     });
 
     afterAll(async () => {
@@ -156,7 +158,16 @@ describe('Tokens Service ', () => {
         });
     });
 
-    // describe('consume', () => {
-
-    // });
+    describe('consume', () => {
+        test('verify token and blacklist it', async () => {
+            const token = tokensService.generate({
+                email: '',
+            });
+            const payload = await tokensService.consume(token);
+            const jtiInRedis = await redisService.get(
+                blacklistTokenKey(payload.jti),
+            );
+            expect(jtiInRedis).toBe(1);
+        });
+    });
 });
