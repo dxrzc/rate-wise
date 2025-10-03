@@ -6,7 +6,7 @@ export class InvalidToken extends Error {
     }
 }
 
-export class InvalidDataInToken extends Error {
+export class InvalidDataInToken extends InvalidToken {
     constructor() {
         super('Token payload does not contain expected data');
         this.name = 'InvalidDataInToken';
@@ -14,7 +14,7 @@ export class InvalidDataInToken extends Error {
     }
 }
 
-export class InvalidTokenPurpose extends Error {
+export class InvalidTokenPurpose extends InvalidToken {
     constructor() {
         super('Invalid token purpose');
         this.name = 'InvalidTokenPurpose';
