@@ -1,7 +1,7 @@
-import { TokenType } from '../enum/token-type.enum';
+import { JwtType } from 'src/common/enum/jwt.type.enum';
 
 export interface ITokensOptions {
     secret: string;
     expiresIn: string;
-    type: TokenType;
+    type: JwtType;
 }
