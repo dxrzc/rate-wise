@@ -63,7 +63,7 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@unit/*", "@e2e/*"],
+              group: ["@unit/*", "@e2e/*", "@components/*"],
               message: "Imports from another tests folder are not allowed",
             },
             {
@@ -83,7 +83,27 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@integration/*", "@e2e/*"],
+              group: ["@integration/*", "@e2e/*","@components/*"],
+              message: "Imports from another tests folder are not allowed",
+            },
+            {
+              group: ["testing/*"],
+              message: "Use aliases instead of relative imports",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["testing/components/**/*.{ts,js}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@integration/*", "@e2e/*", "@unit/*"],
               message: "Imports from another tests folder are not allowed",
             },
             {
