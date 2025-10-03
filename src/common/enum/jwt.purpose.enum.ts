@@ -1,0 +1,4 @@
+export enum JwtPurpose {
+    EMAIL_CONFIRMATION = 'EMAIL_CONFIRMATION',
+    PASSWORD_RESET = 'PASSWORD_RESET',
+}

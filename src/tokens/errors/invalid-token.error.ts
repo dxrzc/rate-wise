@@ -1,0 +1,31 @@
+export class InvalidToken extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'InvalidToken';
+        Object.setPrototypeOf(this, InvalidToken.prototype);
+    }
+}
+
+export class InvalidDataInToken extends InvalidToken {
+    constructor() {
+        super('Token payload does not contain expected data');
+        this.name = 'InvalidDataInToken';
+        Object.setPrototypeOf(this, InvalidDataInToken.prototype);
+    }
+}
+
+export class InvalidTokenPurpose extends InvalidToken {
+    constructor() {
+        super('Invalid token purpose');
+        this.name = 'InvalidTokenPurpose';
+        Object.setPrototypeOf(this, InvalidTokenPurpose.prototype);
+    }
+}
+
+export class TokenIsBlacklisted extends InvalidToken {
+    constructor() {
+        super('Invalid token purpose');
+        this.name = 'TokenIsBlacklisted';
+        Object.setPrototypeOf(this, TokenIsBlacklisted.prototype);
+    }
+}
