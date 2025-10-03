@@ -1,7 +1,8 @@
-import { JwtType } from 'src/common/enum/jwt.type.enum';
+import { JwtPurpose } from 'src/common/enum/jwt.purpose.enum';
 
 export interface ITokensOptions {
     secret: string;
     expiresIn: string;
-    type: JwtType;
+    purpose: JwtPurpose;
+    dataInToken: string[];
 }
