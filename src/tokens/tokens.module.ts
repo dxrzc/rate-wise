@@ -10,9 +10,6 @@ export class TokensModule {
     static forFeatureAsync(
         options: FactoryConfigModuleWithCustomToken<ITokensOptions>,
     ): DynamicModule {
-        if (!options.useFactory)
-            throw new Error('TokensModule requires useFactory option');
-
         const moduleOptionsProvider = {
             provide: TOKENS_OPTIONS,
             useFactory: options.useFactory,
