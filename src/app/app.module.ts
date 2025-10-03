@@ -20,6 +20,7 @@ import { SeedModule } from 'src/seed/seed.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ClsModule } from 'nestjs-cls';
+import { DbConfigService } from 'src/config/services/db.config.service';
 
 @Module({
     providers: [
@@ -30,7 +31,12 @@ import { ClsModule } from 'nestjs-cls';
     ],
     imports: [
         ConfigModule,
-        RedisModule,
+        RedisModule.forRootAsync({
+            inject: [DbConfigService],
+            useFactory: (dbConfig: DbConfigService) => ({
+                redisAuth: dbConfig.redisAuthUri,
+            }),
+        }),
         SessionsModule,
         ClsModule.forRoot({
             global: true,
