@@ -22,6 +22,7 @@ export class TokensModule {
         return {
             module: TokensModule,
             imports: [
+                ...(options.imports || []),
                 JwtModule.registerAsync({
                     extraProviders: [moduleOptionsProvider],
                     inject: [TOKENS_OPTIONS],
