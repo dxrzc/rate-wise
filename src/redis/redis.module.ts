@@ -1,10 +1,10 @@
+import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
 import { IRedisOptions } from './interface/redis.options.interface';
 import { REDIS_AUTH } from './constants/redis.constants';
 import { RedisService } from './redis.service';
 import { createClient } from '@redis/client';
 import { ModuleRef } from '@nestjs/core';
 import {
-    ConfigurableModuleAsyncOptions,
     DynamicModule,
     Global,
     Module,
@@ -42,11 +42,8 @@ export class RedisModule implements OnApplicationShutdown {
     }
 
     static forRootAsync(
-        options: ConfigurableModuleAsyncOptions<IRedisOptions>,
+        options: FactoryConfigModule<IRedisOptions>,
     ): DynamicModule {
-        if (!options.useFactory)
-            throw new Error('RedisModule requires useFactory option');
-
         return {
             module: RedisModule,
             imports: [...(options.imports || [])],
