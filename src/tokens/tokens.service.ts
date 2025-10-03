@@ -45,7 +45,7 @@ export class TokensService {
 
     async blacklist(jti: string, expDateUnix: number): Promise<void> {
         await this.redisService.store(
-            jti,
+            blacklistTokenKey(jti),
             '1',
             calculateTokenTTLSeconds(expDateUnix),
         );
@@ -64,7 +64,7 @@ export class TokensService {
             throw new InvalidTokenPurpose();
 
         // is not blacklisted
-        if (await this.redisService.get(payload.jti))
+        if (await this.redisService.get(blacklistTokenKey(payload.jti)))
             throw new TokenIsBlacklisted();
 
         return payload;
