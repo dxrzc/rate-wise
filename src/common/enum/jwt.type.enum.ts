@@ -1,4 +1,4 @@
-export enum TokenType {
+export enum JwtType {
     EMAIL_CONFIRMATION = 'EMAIL_CONFIRMATION',
     PASSWORD_RESET = 'PASSWORD_RESET',
 }
