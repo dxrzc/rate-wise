@@ -32,9 +32,9 @@ export class TokensService {
         this.tokensOpts.dataInToken.push('purpose', 'jti');
     }
 
-    private verifyTokenOrThrow<T extends TokenPayload>(token: string): T {
+    private verifyTokenOrThrow<T extends object>(token: string): JwtPayload<T> {
         try {
-            return this.jwtService.verify<T>(token);
+            return this.jwtService.verify<JwtPayload<T>>(token);
         } catch (error) {
             if (error instanceof JsonWebTokenError) {
                 throw new InvalidToken(error.message);
