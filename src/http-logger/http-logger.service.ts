@@ -16,6 +16,12 @@ export class HttpLoggerService {
     constructor(
         @Inject(HTTP_LOGGER_OPTIONS) loggerOptions: IHttpLoggerOptions,
     ) {
+        if (loggerOptions.silentAll) {
+            loggerOptions.messages.console.silent = true;
+            loggerOptions.messages.filesystem.silent = true;
+            loggerOptions.requests.silent = true;
+        }
+
         const mssgConsole = consoleTransportFactory(
             loggerOptions.messages.console,
         );

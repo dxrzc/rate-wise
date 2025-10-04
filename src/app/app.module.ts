@@ -40,6 +40,7 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
                     ? 'logs/prod'
                     : 'logs/dev';
                 return {
+                    silentAll: serverConfig.isTesting,
                     requests: {
                         dir: logsDir,
                         filename: 'request.log',
