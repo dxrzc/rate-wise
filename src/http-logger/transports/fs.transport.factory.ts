@@ -3,6 +3,7 @@ import * as winston from 'winston';
 import { HttpFileSystemLogOptions } from '../types/log.type';
 
 export function fileSystemTransportFactory(options: HttpFileSystemLogOptions) {
+    if (options.silent) return new winston.transports.Console({ silent: true });
     return new winston.transports.File({
         silent: options.silent,
         level: options.minLevel,
