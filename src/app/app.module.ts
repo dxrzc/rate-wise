@@ -33,6 +33,32 @@ import { ServerConfigService } from 'src/config/services/server.config.service';
     ],
     imports: [
         ConfigModule,
+        LoggingModule.forRootAsync({
+            inject: [ServerConfigService],
+            useFactory: (serverConfig: ServerConfigService) => {
+                const logsDir = serverConfig.isProduction
+                    ? 'logs/prod'
+                    : 'logs/dev';
+                return {
+                    requests: {
+                        dir: logsDir,
+                        filename: 'request.log',
+                    },
+                    messages: {
+                        filesystem: {
+                            filename: 'messages.log',
+                            minLevel: 'info',
+                            dir: logsDir,
+                        },
+                        console: {
+                            minLevel: serverConfig.isDevelopment
+                                ? 'debug'
+                                : 'info',
+                        },
+                    },
+                };
+            },
+        }),
         RedisModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: (dbConfig: DbConfigService) => ({
@@ -66,7 +92,6 @@ import { ServerConfigService } from 'src/config/services/server.config.service';
             SeedModule,
             (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.PRODUCTION,
         ),
-        LoggingModule,
         UsersModule,
         ItemsModule,
         AuthModule,
