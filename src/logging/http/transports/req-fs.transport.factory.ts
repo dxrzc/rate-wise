@@ -1,13 +1,10 @@
-import { Environment } from 'src/common/enum/environment.enum';
+import { RequestLogOptions } from 'src/logging/types/log.type';
 import * as winston from 'winston';
 
-export function reqFsTransportFactory(env: Environment) {
-    const devFolder = 'logs/dev';
-    const prodFolder = 'logs/prod';
-    const folder = env === Environment.PRODUCTION ? prodFolder : devFolder;
+export function reqFsTransportFactory(options: RequestLogOptions) {
     return new winston.transports.File({
-        silent: env === Environment.INTEGRATION,
-        filename: `${folder}/request.log`,
+        silent: options.silent,
+        filename: `${options.dir}/${options.filename}`,
         level: 'info',
         format: winston.format.combine(
             winston.format.timestamp(),

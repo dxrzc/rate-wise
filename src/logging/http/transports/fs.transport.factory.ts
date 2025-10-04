@@ -1,15 +1,12 @@
-import { Environment } from 'src/common/enum/environment.enum';
 import { ClsServiceManager } from 'nestjs-cls';
 import * as winston from 'winston';
+import { FileSystemLogOptions } from 'src/logging/types/log.type';
 
-export function fileSystemTransportFactory(env: Environment) {
-    const devFolder = 'logs/dev';
-    const prodFolder = 'logs/prod';
-    const folder = env === Environment.PRODUCTION ? prodFolder : devFolder;
+export function fileSystemTransportFactory(options: FileSystemLogOptions) {
     return new winston.transports.File({
-        silent: env === Environment.INTEGRATION,
-        level: 'info', // No debug messages in fs
-        filename: `${folder}/messages.log`,
+        silent: options.silent,
+        level: options.minLevel,
+        filename: `${options.dir}/${options.filename}`,
         format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf((info) => {
