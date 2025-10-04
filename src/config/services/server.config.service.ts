@@ -24,4 +24,8 @@ export class ServerConfigService {
     get isDevelopment(): boolean {
         return this.env === Environment.DEVELOPMENT;
     }
+
+    get isTesting(): boolean {
+        return this.env === Environment.INTEGRATION;
+    }
 }

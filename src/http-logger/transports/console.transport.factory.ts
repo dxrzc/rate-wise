@@ -1,13 +1,11 @@
-import { Environment } from 'src/common/enum/environment.enum';
 import { ClsServiceManager } from 'nestjs-cls';
 import * as winston from 'winston';
+import { HttpConsoleLogOptions } from '../types/log.type';
 
-export function consoleTransportFactory(env: Environment) {
-    const mssgsLvl = env === Environment.PRODUCTION ? 'info' : 'debug';
-
+export function consoleTransportFactory(options: HttpConsoleLogOptions) {
     return new winston.transports.Console({
-        silent: env === Environment.INTEGRATION,
-        level: mssgsLvl,
+        silent: options.silent,
+        level: options.minLevel,
         format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.ms(),

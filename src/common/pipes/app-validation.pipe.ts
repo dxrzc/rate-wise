@@ -3,8 +3,8 @@ import {
     Injectable,
     ValidationPipe,
 } from '@nestjs/common';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { COMMON_MESSAGES } from '../messages/common.messages';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Injectable()
 export class AppValidationPipe extends ValidationPipe {
