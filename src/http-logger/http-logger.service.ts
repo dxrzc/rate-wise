@@ -1,11 +1,11 @@
+import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
+import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
+import { IRequestLog } from './interfaces/request-log.interface';
 import { consoleTransportFactory } from './transports/console.transport.factory';
 import { fileSystemTransportFactory } from './transports/fs.transport.factory';
 import { reqFsTransportFactory } from './transports/req-fs.transport.factory';
-import { IRequestLog } from './interfaces/request-log.interface';
 import { Inject, Injectable } from '@nestjs/common';
 import * as winston from 'winston';
-import { LOGGING_OPTIONS } from '../constants/logging.options.constants';
-import { ILoggingOptions } from '../interfaces/logging.options.interface';
 
 @Injectable()
 export class HttpLoggerService {
@@ -13,22 +13,24 @@ export class HttpLoggerService {
     private reqLogger: winston.Logger;
     private fsLogger: winston.Logger;
 
-    constructor(@Inject(LOGGING_OPTIONS) loggingOptions: ILoggingOptions) {
+    constructor(
+        @Inject(HTTP_LOGGER_OPTIONS) loggerOptions: IHttpLoggerOptions,
+    ) {
         const mssgConsole = consoleTransportFactory(
-            loggingOptions.messages.console,
+            loggerOptions.messages.console,
         );
         this.consoleLogger = winston.createLogger({
             transports: [mssgConsole],
         });
 
         const mssgFs = fileSystemTransportFactory(
-            loggingOptions.messages.filesystem,
+            loggerOptions.messages.filesystem,
         );
         this.fsLogger = winston.createLogger({
             transports: [mssgFs],
         });
 
-        const reqFs = reqFsTransportFactory(loggingOptions.requests);
+        const reqFs = reqFsTransportFactory(loggerOptions.requests);
         this.reqLogger = winston.createLogger({
             transports: [reqFs],
         });

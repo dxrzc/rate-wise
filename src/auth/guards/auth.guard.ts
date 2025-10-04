@@ -1,12 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { IGraphQLContext } from '../interfaces/graphql-context.interface';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AUTH_MESSAGES } from '../messages/auth.messages';
 import { HttpError } from 'src/common/errors/http.errors';
 import { UsersService } from 'src/users/users.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

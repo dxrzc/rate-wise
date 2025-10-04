@@ -1,11 +1,11 @@
 import { userAndSessionRelationKey } from './functions/user-session-relation-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/functions/utils/promisify.util';
 import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisService } from 'src/redis/redis.service';
 import { Inject, Injectable } from '@nestjs/common';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Injectable()
 export class SessionsService {

@@ -5,11 +5,11 @@ import {
     GraphQLRequestContextWillSendResponse,
 } from '@apollo/server';
 import { IGraphQLContext } from 'src/auth/interfaces/graphql-context.interface';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { Plugin } from '@nestjs/apollo';
 import { v4 as uuidv4 } from 'uuid';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Plugin()
 @Injectable()

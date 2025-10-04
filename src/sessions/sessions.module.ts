@@ -1,5 +1,4 @@
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
-import { LoggingModule } from 'src/logging/logging.module';
 import { SessionsService } from './sessions.service';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { SessionsEventsService } from './events/sessions.events.service';
@@ -15,7 +14,7 @@ export class SessionsModule {
     ): DynamicModule {
         return {
             module: SessionsModule,
-            imports: [...(options.imports || []), LoggingModule],
+            imports: [...(options.imports || [])],
             providers: [
                 {
                     provide: SESSION_OPTIONS,

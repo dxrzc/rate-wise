@@ -6,17 +6,17 @@ export type DisableOnSilent<Props> =
           silent: true;
       } & { [K in keyof Props]?: never });
 
-export type ConsoleLogOptions = DisableOnSilent<{
+export type HttpConsoleLogOptions = DisableOnSilent<{
     minLevel: 'info' | 'debug';
 }>;
 
-export type FileSystemLogOptions = DisableOnSilent<{
+export type HttpFileSystemLogOptions = DisableOnSilent<{
     minLevel: 'info' | 'debug';
     filename: string;
     dir: string;
 }>;
 
-export type RequestLogOptions = DisableOnSilent<{
+export type HttpRequestLogOptions = DisableOnSilent<{
     filename: string;
     dir: string;
 }>;

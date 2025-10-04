@@ -1,8 +1,8 @@
 import { ClsServiceManager } from 'nestjs-cls';
-import { ConsoleLogOptions } from 'src/logging/types/log.type';
 import * as winston from 'winston';
+import { HttpConsoleLogOptions } from '../types/log.type';
 
-export function consoleTransportFactory(options: ConsoleLogOptions) {
+export function consoleTransportFactory(options: HttpConsoleLogOptions) {
     return new winston.transports.Console({
         silent: options.silent,
         level: options.minLevel,

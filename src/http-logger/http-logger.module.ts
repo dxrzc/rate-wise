@@ -1,22 +1,22 @@
 import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
-import { HttpLoggerService } from './http/http-logger.service';
+import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
+import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { ILoggingOptions } from './interfaces/logging.options.interface';
-import { LOGGING_OPTIONS } from './constants/logging.options.constants';
+import { HttpLoggerService } from './http-logger.service';
 
 @Global()
 @Module({})
-export class LoggingModule {
+export class HttpLoggerModule {
     static forRootAsync(
-        options: FactoryConfigModule<ILoggingOptions>,
+        options: FactoryConfigModule<IHttpLoggerOptions>,
     ): DynamicModule {
         return {
-            module: LoggingModule,
+            module: HttpLoggerModule,
             imports: [...(options.imports || [])],
             providers: [
                 HttpLoggerService,
                 {
-                    provide: LOGGING_OPTIONS,
+                    provide: HTTP_LOGGER_OPTIONS,
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },

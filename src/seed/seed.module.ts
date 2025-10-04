@@ -4,10 +4,9 @@ import { SeedResolver } from './seed.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from './services/user-seed.service';
-import { LoggingModule } from 'src/logging/logging.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User]), LoggingModule],
+    imports: [TypeOrmModule.forFeature([User])],
     providers: [SeedResolver, SeedService, UserSeedService],
 })
 export class SeedModule {}

@@ -9,7 +9,6 @@ import { GqlConfigService } from './imports/graphql/graphql.import';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Environment } from 'src/common/enum/environment.enum';
 import { SessionsModule } from 'src/sessions/sessions.module';
-import { LoggingModule } from 'src/logging/logging.module';
 import { ConfigModule } from 'src/config/config.module';
 import { UsersModule } from 'src/users/users.module';
 import { ItemsModule } from 'src/items/items.module';
@@ -23,6 +22,7 @@ import { ClsModule } from 'nestjs-cls';
 import { DbConfigService } from 'src/config/services/db.config.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { ServerConfigService } from 'src/config/services/server.config.service';
+import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 
 @Module({
     providers: [
@@ -33,7 +33,7 @@ import { ServerConfigService } from 'src/config/services/server.config.service';
     ],
     imports: [
         ConfigModule,
-        LoggingModule.forRootAsync({
+        HttpLoggerModule.forRootAsync({
             inject: [ServerConfigService],
             useFactory: (serverConfig: ServerConfigService) => {
                 const logsDir = serverConfig.isProduction

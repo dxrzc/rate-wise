@@ -1,8 +1,8 @@
 import { ClsServiceManager } from 'nestjs-cls';
 import * as winston from 'winston';
-import { FileSystemLogOptions } from 'src/logging/types/log.type';
+import { HttpFileSystemLogOptions } from '../types/log.type';
 
-export function fileSystemTransportFactory(options: FileSystemLogOptions) {
+export function fileSystemTransportFactory(options: HttpFileSystemLogOptions) {
     return new winston.transports.File({
         silent: options.silent,
         level: options.minLevel,
