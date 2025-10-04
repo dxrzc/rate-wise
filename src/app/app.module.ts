@@ -21,6 +21,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ClsModule } from 'nestjs-cls';
 import { DbConfigService } from 'src/config/services/db.config.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
+import { ServerConfigService } from 'src/config/services/server.config.service';
 
 @Module({
     providers: [
@@ -37,7 +39,18 @@ import { DbConfigService } from 'src/config/services/db.config.service';
                 redisAuth: dbConfig.redisAuthUri,
             }),
         }),
-        SessionsModule,
+        SessionsModule.forRootAsync({
+            inject: [AuthConfigService, ServerConfigService],
+            useFactory: (
+                authConfig: AuthConfigService,
+                serverConfig: ServerConfigService,
+            ) => ({
+                cookieMaxAgeMs: authConfig.sessCookieMaxAgeMs,
+                cookieName: authConfig.sessCookieName,
+                cookieSecret: authConfig.sessCookieSecret,
+                secure: serverConfig.isDevelopment,
+            }),
+        }),
         ClsModule.forRoot({
             global: true,
             middleware: { mount: true },
