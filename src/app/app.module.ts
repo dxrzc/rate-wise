@@ -75,7 +75,7 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
                 cookieMaxAgeMs: authConfig.sessCookieMaxAgeMs,
                 cookieName: authConfig.sessCookieName,
                 cookieSecret: authConfig.sessCookieSecret,
-                secure: serverConfig.isDevelopment,
+                secure: serverConfig.isProduction,
             }),
         }),
         ClsModule.forRoot({
