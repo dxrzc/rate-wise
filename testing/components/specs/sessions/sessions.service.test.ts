@@ -110,4 +110,27 @@ describe('Sessions Service ', () => {
             expect(sessionOwner).toBe(userId);
         });
     });
+
+    describe('count', () => {
+        test('should return the number of sessions associated with the user', async () => {
+            const userId = faker.string.alpha(10);
+
+            // session1
+            mockRequest.sessionID = faker.string.uuid();
+            await sessionsService.create(<any>mockRequest, userId);
+            // session2
+            mockRequest.sessionID = faker.string.uuid();
+            await sessionsService.create(<any>mockRequest, userId);
+
+            const userSessions = await sessionsService.count(userId);
+            expect(userSessions).toBe(2);
+        });
+    });
+
+    describe('delete', () => {
+        test('req.session.destroy should be called', async () => {
+            await sessionsService.delete(<any>mockRequest);
+            expect(mockRequest.session.destroy).toHaveBeenCalledTimes(1);
+        });
+    });
 });
