@@ -1,7 +1,12 @@
+import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisContainer } from '@testcontainers/redis';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
+import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisModule } from 'src/redis/redis.module';
+import { RedisService } from 'src/redis/redis.service';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
+import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { SessionsService } from 'src/sessions/sessions.service';
 
@@ -18,6 +23,7 @@ describe('Sessions Service ', () => {
     let testingModule: TestingModule;
     let sessionsService: SessionsService;
     let mockRequest: MockRequestType;
+    let redisService: RedisService;
 
     beforeEach(() => {
         mockRequest = {
@@ -74,9 +80,34 @@ describe('Sessions Service ', () => {
         }).compile();
 
         sessionsService = testingModule.get(SessionsService);
+        redisService = testingModule.get<RedisService>(REDIS_AUTH);
     });
 
     afterAll(async () => {
         await testingModule.close();
+    });
+
+    describe('create', () => {
+        test('req.session.regenerate should be called', async () => {
+            await sessionsService.create(<any>mockRequest, '123');
+            expect(mockRequest.session.regenerate).toHaveBeenCalledTimes(1);
+        });
+
+        test('should create user-sessions index redis set', async () => {
+            const userId = faker.string.alpha(10);
+            await sessionsService.create(<any>mockRequest, userId);
+            const key = userSessionsSetKey(userId);
+            const sessSet = await redisService.setMembers(key);
+            expect(sessSet.length).toBe(1);
+            expect(sessSet[0]).toBe(mockRequest.sessionID);
+        });
+
+        test('should create session-user relation record in redis', async () => {
+            const userId = faker.string.alpha(10);
+            await sessionsService.create(<any>mockRequest, userId);
+            const key = userAndSessionRelationKey(mockRequest.sessionID);
+            const sessionOwner = await redisService.get(key);
+            expect(sessionOwner).toBe(userId);
+        });
     });
 });
