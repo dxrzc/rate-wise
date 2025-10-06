@@ -29,7 +29,6 @@ export class RequestContextPlugin implements ApolloServerPlugin {
 
             this.cls.set('ip', reqIp);
             this.cls.set('requestId', reqId);
-            this.cls.set('method', method);
 
             return {
                 willSendResponse: async (
@@ -42,7 +41,6 @@ export class RequestContextPlugin implements ApolloServerPlugin {
                         responseTime: `${responseTime}ms`,
                         requestId: reqId,
                         ip: reqIp,
-                        method,
                         error,
                     });
                 },
