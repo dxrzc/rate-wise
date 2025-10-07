@@ -2,7 +2,10 @@ import { ClsServiceManager } from 'nestjs-cls';
 import * as winston from 'winston';
 import { HttpFileSystemLogOptions } from '../types/log.type';
 
-export function fileSystemTransportFactory(options: HttpFileSystemLogOptions) {
+export function fileSystemTransportFactory(
+    options: HttpFileSystemLogOptions,
+    context: string,
+) {
     if (options.silent) return new winston.transports.Console({ silent: true });
     return new winston.transports.File({
         silent: options.silent,
@@ -18,9 +21,9 @@ export function fileSystemTransportFactory(options: HttpFileSystemLogOptions) {
                     timestamp: info.timestamp,
                     level: info.level,
                     message: info.message,
-                    context: info.context,
                     requestId: reqId,
                     ip: ip,
+                    context,
                 });
             }),
         ),

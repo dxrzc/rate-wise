@@ -1,4 +1,7 @@
-import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
+import {
+    HTTP_LOGGER_CONTEXT,
+    HTTP_LOGGER_OPTIONS,
+} from './constants/http-logger.options.constants';
 import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
 import { IRequestLog } from './interfaces/request-log.interface';
 import { consoleTransportFactory } from './transports/console.transport.factory';
@@ -15,6 +18,7 @@ export class HttpLoggerService {
 
     constructor(
         @Inject(HTTP_LOGGER_OPTIONS) loggerOptions: IHttpLoggerOptions,
+        @Inject(HTTP_LOGGER_CONTEXT) context: string,
     ) {
         if (loggerOptions.silentAll) {
             loggerOptions.messages.console.silent = true;
@@ -24,6 +28,7 @@ export class HttpLoggerService {
 
         const mssgConsole = consoleTransportFactory(
             loggerOptions.messages.console,
+            context,
         );
         this.consoleLogger = winston.createLogger({
             transports: [mssgConsole],
@@ -31,6 +36,7 @@ export class HttpLoggerService {
 
         const mssgFs = fileSystemTransportFactory(
             loggerOptions.messages.filesystem,
+            context,
         );
         this.fsLogger = winston.createLogger({
             transports: [mssgFs],

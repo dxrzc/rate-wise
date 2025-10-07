@@ -2,7 +2,10 @@ import { ClsServiceManager } from 'nestjs-cls';
 import * as winston from 'winston';
 import { HttpConsoleLogOptions } from '../types/log.type';
 
-export function consoleTransportFactory(options: HttpConsoleLogOptions) {
+export function consoleTransportFactory(
+    options: HttpConsoleLogOptions,
+    context: string,
+) {
     return new winston.transports.Console({
         silent: options.silent,
         level: options.minLevel,
@@ -22,12 +25,13 @@ export function consoleTransportFactory(options: HttpConsoleLogOptions) {
                 const coloredTimestamp = colorizer(level, `[${timestamp}]`);
                 const coloredRequest = colorizer(level, `[${requestId}]`);
                 const formattedMssg = mssg[0].toUpperCase() + mssg.slice(1);
+                const coloredContext = colorizer(level, `[${context}]`);
                 const coloredLevel = colorizer(
                     level,
                     `[${level.toUpperCase()}]`,
                 );
 
-                return `${coloredTimestamp} ${coloredRequest} ${coloredLevel}: ${formattedMssg} ${colorizedMs}`;
+                return `${coloredTimestamp} ${coloredRequest} ${coloredLevel} ${coloredContext}: ${formattedMssg} ${colorizedMs}`;
             }),
         ),
     });
