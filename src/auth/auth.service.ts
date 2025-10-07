@@ -1,5 +1,5 @@
 import { AuthConfigService } from 'src/config/services/auth.config.service';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { HashingService } from 'src/common/services/hashing.service';
 import { SessionsService } from 'src/sessions/sessions.service';

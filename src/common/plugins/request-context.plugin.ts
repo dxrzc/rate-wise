@@ -5,11 +5,11 @@ import {
     GraphQLRequestContextWillSendResponse,
 } from '@apollo/server';
 import { IGraphQLContext } from 'src/auth/interfaces/graphql-context.interface';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { Plugin } from '@nestjs/apollo';
 import { v4 as uuidv4 } from 'uuid';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Plugin()
 @Injectable()
@@ -20,16 +20,17 @@ export class RequestContextPlugin implements ApolloServerPlugin {
     ) {}
 
     async requestDidStart(reqCtx: GraphQLRequestContext<IGraphQLContext>) {
-        const method = reqCtx.request.operationName!;
-        if (method !== 'IntrospectionQuery') {
+        if (reqCtx.request.operationName! !== 'IntrospectionQuery') {
             const request = reqCtx.contextValue.req;
             const now = Date.now();
             const reqIp = request.ip!;
             const reqId = uuidv4();
+            const query = reqCtx.request.query!;
+            const variables = reqCtx.request.variables;
 
+            // Used in future logs
             this.cls.set('ip', reqIp);
             this.cls.set('requestId', reqId);
-            this.cls.set('method', method);
 
             return {
                 willSendResponse: async (
@@ -41,8 +42,9 @@ export class RequestContextPlugin implements ApolloServerPlugin {
                     this.logger.request({
                         responseTime: `${responseTime}ms`,
                         requestId: reqId,
+                        query,
+                        variables,
                         ip: reqIp,
-                        method,
                         error,
                     });
                 },

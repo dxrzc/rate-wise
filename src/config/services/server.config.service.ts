@@ -16,4 +16,16 @@ export class ServerConfigService {
     get env(): Environment {
         return this.configService.get('NODE_ENV');
     }
+
+    get isProduction(): boolean {
+        return this.env === Environment.PRODUCTION;
+    }
+
+    get isDevelopment(): boolean {
+        return this.env === Environment.DEVELOPMENT;
+    }
+
+    get isTesting(): boolean {
+        return this.env === Environment.INTEGRATION;
+    }
 }

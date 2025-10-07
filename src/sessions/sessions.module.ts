@@ -1,17 +1,31 @@
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
-import { LoggingModule } from 'src/logging/logging.module';
 import { SessionsService } from './sessions.service';
-import { Global, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { SessionsEventsService } from './events/sessions.events.service';
+import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
+import { ISessionsOptions } from './interfaces/sessions.options.interface';
+import { SESSION_OPTIONS } from './constants/sessions.constants';
 
 @Global()
-@Module({
-    imports: [LoggingModule],
-    providers: [
-        SessionsService,
-        SessionMiddlewareFactory,
-        SessionsEventsService,
-    ],
-    exports: [SessionsService, SessionMiddlewareFactory],
-})
-export class SessionsModule {}
+@Module({})
+export class SessionsModule {
+    static forRootAsync(
+        options: FactoryConfigModule<ISessionsOptions>,
+    ): DynamicModule {
+        return {
+            module: SessionsModule,
+            imports: [...(options.imports || [])],
+            providers: [
+                {
+                    provide: SESSION_OPTIONS,
+                    useFactory: options.useFactory,
+                    inject: options.inject,
+                },
+                SessionsService,
+                SessionMiddlewareFactory,
+                SessionsEventsService,
+            ],
+            exports: [SessionsService, SessionMiddlewareFactory],
+        };
+    }
+}

@@ -1,7 +1,8 @@
 export interface IRequestLog {
-    method: string;
     requestId: string;
     responseTime: string;
     ip: string;
+    query: string;
+    variables?: { [name: string]: any };
     error?: string;
 }

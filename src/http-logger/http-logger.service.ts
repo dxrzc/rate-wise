@@ -1,10 +1,11 @@
+import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
+import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
+import { IRequestLog } from './interfaces/request-log.interface';
 import { consoleTransportFactory } from './transports/console.transport.factory';
 import { fileSystemTransportFactory } from './transports/fs.transport.factory';
 import { reqFsTransportFactory } from './transports/req-fs.transport.factory';
-import { IRequestLog } from './interfaces/request-log.interface';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as winston from 'winston';
-import { ServerConfigService } from 'src/config/services/server.config.service';
 
 @Injectable()
 export class HttpLoggerService {
@@ -12,20 +13,30 @@ export class HttpLoggerService {
     private reqLogger: winston.Logger;
     private fsLogger: winston.Logger;
 
-    constructor(private readonly serverConfig: ServerConfigService) {
-        const env = this.serverConfig.env;
+    constructor(
+        @Inject(HTTP_LOGGER_OPTIONS) loggerOptions: IHttpLoggerOptions,
+    ) {
+        if (loggerOptions.silentAll) {
+            loggerOptions.messages.console.silent = true;
+            loggerOptions.messages.filesystem.silent = true;
+            loggerOptions.requests.silent = true;
+        }
 
-        const mssgConsole = consoleTransportFactory(env);
+        const mssgConsole = consoleTransportFactory(
+            loggerOptions.messages.console,
+        );
         this.consoleLogger = winston.createLogger({
             transports: [mssgConsole],
         });
 
-        const mssgFs = fileSystemTransportFactory(env);
+        const mssgFs = fileSystemTransportFactory(
+            loggerOptions.messages.filesystem,
+        );
         this.fsLogger = winston.createLogger({
             transports: [mssgFs],
         });
 
-        const reqFs = reqFsTransportFactory(env);
+        const reqFs = reqFsTransportFactory(loggerOptions.requests);
         this.reqLogger = winston.createLogger({
             transports: [reqFs],
         });

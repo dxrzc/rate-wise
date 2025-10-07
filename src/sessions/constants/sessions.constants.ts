@@ -1,0 +1,1 @@
+export const SESSION_OPTIONS = 'SESSIONS_OPTIONS';

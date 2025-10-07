@@ -1,5 +1,4 @@
-export interface ISessionsModuleOptions {
-    redisUri: string;
+export interface ISessionsOptions {
     cookieName: string;
     cookieSecret: string;
     cookieMaxAgeMs: number;
