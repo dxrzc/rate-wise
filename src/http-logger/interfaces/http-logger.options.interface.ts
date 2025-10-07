@@ -12,3 +12,7 @@ export interface IHttpLoggerOptions {
         console: HttpConsoleLogOptions;
     };
 }
+
+export interface IHttpLoggerForFeatureOptions {
+    context: string;
+}
