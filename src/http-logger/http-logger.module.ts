@@ -9,6 +9,9 @@ import {
 } from './interfaces/http-logger.options.interface';
 import { DynamicModule, Module } from '@nestjs/common';
 import { HttpLoggerService } from './http-logger.service';
+import { ConsoleLoggerService } from './console.logger.service';
+import { FileSystemLoggerService } from './file-system.logger.service';
+import { RequestLoggerService } from './request.logger.service';
 
 @Module({})
 export class HttpLoggerModule {
@@ -20,13 +23,21 @@ export class HttpLoggerModule {
             module: HttpLoggerModule,
             imports: [...(options.imports || [])],
             providers: [
+                ConsoleLoggerService,
+                FileSystemLoggerService,
+                RequestLoggerService,
                 {
                     provide: HTTP_LOGGER_OPTIONS,
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },
             ],
-            exports: [HTTP_LOGGER_OPTIONS],
+            exports: [
+                HTTP_LOGGER_OPTIONS,
+                ConsoleLoggerService,
+                FileSystemLoggerService,
+                RequestLoggerService,
+            ],
         };
     }
 
