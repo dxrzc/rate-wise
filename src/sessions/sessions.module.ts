@@ -5,6 +5,7 @@ import { SessionsEventsService } from './events/sessions.events.service';
 import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
 import { ISessionsOptions } from './interfaces/sessions.options.interface';
 import { SESSION_OPTIONS } from './constants/sessions.constants';
+import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 
 @Global()
 @Module({})
@@ -14,7 +15,10 @@ export class SessionsModule {
     ): DynamicModule {
         return {
             module: SessionsModule,
-            imports: [...(options.imports || [])],
+            imports: [
+                ...(options.imports || []),
+                HttpLoggerModule.forFeature({ context: SessionsService.name }),
+            ],
             providers: [
                 {
                     provide: SESSION_OPTIONS,

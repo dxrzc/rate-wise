@@ -60,6 +60,7 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
                 };
             },
         }),
+        HttpLoggerModule.forFeature({ context: 'App' }),
         RedisModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: (dbConfig: DbConfigService) => ({
