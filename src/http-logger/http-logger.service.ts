@@ -17,8 +17,9 @@ export class HttpLoggerService {
     private fsLogger: winston.Logger;
 
     constructor(
-        @Inject(HTTP_LOGGER_OPTIONS) loggerOptions: IHttpLoggerOptions,
-        @Inject(HTTP_LOGGER_CONTEXT) context: string,
+        @Inject(HTTP_LOGGER_OPTIONS)
+        private readonly loggerOptions: IHttpLoggerOptions,
+        @Inject(HTTP_LOGGER_CONTEXT) private readonly context: string,
     ) {
         if (loggerOptions.silentAll) {
             loggerOptions.messages.console.silent = true;
