@@ -7,23 +7,22 @@ EXPOSE 3000
 
 FROM base AS dev-deps
 COPY package*.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM base AS prod-deps
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 
 FROM base AS builder
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
 COPY src ./src
-COPY package.json . 
-COPY tsconfig*.json ./
+COPY package.json tsconfig*.json ./
 RUN npm run build
 
 FROM base AS development
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
 COPY src ./src
-COPY tsconfig.json ./tsconfig.json
+COPY tsconfig.json ./
 ENV NODE_ENV=development
 CMD ["npx", "nest", "start", "-w"] 
 
