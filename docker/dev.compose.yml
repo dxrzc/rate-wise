@@ -44,13 +44,15 @@ services:
       - redisinsight:/data
     ports:
       - ${REDIS_INSIGHT-5540}:5540  
-
+  
   redis_auth:        
     extends: 
       file: ./compose.yml
       service: redis_auth
-    volumes:
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:    
       - redis_auth:/data
+      - ../redis/redis-auth.conf:/usr/local/etc/redis/redis.conf
 
   mailpit:        
     extends: 

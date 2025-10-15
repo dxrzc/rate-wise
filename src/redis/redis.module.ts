@@ -35,7 +35,6 @@ export class RedisModule implements OnApplicationShutdown {
                 });
                 const redisService = new RedisService(client);
                 await redisService.connection.connect();
-                await client.configSet('notify-keyspace-events', 'ExgK');
                 return redisService;
             },
         };
