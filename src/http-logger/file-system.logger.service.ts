@@ -27,8 +27,6 @@ export class FileSystemLoggerService {
                       format: winston.format.combine(
                           winston.format.timestamp(),
                           winston.format.printf((info: InfoType) => {
-                              console.log({ info });
-                              console.log(info.context);
                               const context = <string>info.context;
                               const cls = ClsServiceManager.getClsService();
                               const reqId = cls.get<string>('requestId');
