@@ -1,8 +1,8 @@
-import { createLightweightRedisContainer } from '../../../common/utils/containers/create-lightweight-redis.util';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { runMigration } from './helpers/run-migration.helper';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { GenericContainer } from 'testcontainers';
 
 export default async function () {
     // POSTGRES
@@ -18,10 +18,30 @@ export default async function () {
     globalThis.psqlContainer = psqlContainer;
 
     // REDIS
-    const authRedisContainer = await createLightweightRedisContainer().start();
+    const redisConf =
+        (await fs.readFile(
+            join(process.cwd(), 'redis/redis-auth.conf'),
+            'utf8',
+        )) +
+        `
+        appendonly no
+        save ""
+        `;
+
+    const authRedisContainer = await new GenericContainer('redis:8.0-alpine')
+        .withExposedPorts(6379)
+        .withCopyContentToContainer([
+            {
+                content: redisConf,
+                target: '/usr/local/etc/redis/redis.conf',
+            },
+        ])
+        .withCommand(['redis-server', '/usr/local/etc/redis/redis.conf'])
+        .start();
+
     await fs.writeFile(
         join(__dirname, 'redis-auth-uri.txt'),
-        authRedisContainer.getConnectionUrl(),
+        `redis://${authRedisContainer.getHost()}:${authRedisContainer.getMappedPort(6379)}`,
     );
     globalThis.authRedisContainer = authRedisContainer;
 }
