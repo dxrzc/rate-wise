@@ -6,7 +6,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from '@integration/custom/matchers/to-contain-cookie';
-import { createLightweightRedisContainer } from '@commontestutils/containers/create-lightweight-redis.util';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { toFailWith } from '@integration/custom/matchers/to-fail-with';
 import { notToFail } from '@integration/custom/matchers/not-to-fail';
@@ -39,10 +38,10 @@ beforeAll(async () => {
             'utf8',
         );
         process.env.POSTGRES_URI = await cloneDatabase(templatePostgresDb);
-
-        const authRedis = await createLightweightRedisContainer().start();
-        process.env.REDIS_AUTH_URI = authRedis.getConnectionUrl();
-
+        process.env.REDIS_AUTH_URI = readFileSync(
+            join(__dirname, '../global/redis-auth-uri.txt'),
+            'utf8',
+        );
         // Application
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
