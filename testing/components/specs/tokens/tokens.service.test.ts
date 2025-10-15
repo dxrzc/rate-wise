@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedisContainer } from '@testcontainers/redis';
 import { JwtPurpose } from 'src/common/enum/jwt.purpose.enum';
 import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisModule } from 'src/redis/redis.module';
@@ -13,6 +12,7 @@ import {
     InvalidTokenPurpose,
     TokenIsBlacklisted,
 } from 'src/tokens/errors/invalid-token.error';
+import { createLightweightRedisContainer } from '@commontestutils/containers/create-lightweight-redis.util';
 
 describe('Tokens Service ', () => {
     // allow any data when generating token
@@ -21,17 +21,7 @@ describe('Tokens Service ', () => {
     let testingModule: TestingModule;
 
     beforeAll(async () => {
-        const redisContainer = await new RedisContainer('redis:8.0-alpine')
-            .withCommand([
-                'redis-server',
-                '--appendonly',
-                'no', // AOF persistence
-                '--save',
-                '""', // disables snapshots
-            ])
-            .withTmpFs({ '/data': 'rw' })
-            .start();
-
+        const redisContainer = await createLightweightRedisContainer().start();
         testingModule = await Test.createTestingModule({
             imports: [
                 RedisModule.forRootAsync({

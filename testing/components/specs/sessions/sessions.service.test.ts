@@ -1,7 +1,7 @@
+import { createLightweightRedisContainer } from '@commontestutils/containers/create-lightweight-redis.util';
 import { sleep } from '@components/utils/sleep.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedisContainer } from '@testcontainers/redis';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisModule } from 'src/redis/redis.module';
@@ -48,17 +48,7 @@ describe('Sessions Service ', () => {
     });
 
     beforeAll(async () => {
-        const redisContainer = await new RedisContainer('redis:8.0-alpine')
-            .withCommand([
-                'redis-server',
-                '--appendonly',
-                'no', // AOF persistence
-                '--save',
-                '""', // disables snapshots
-            ])
-            .withTmpFs({ '/data': 'rw' })
-            .start();
-
+        const redisContainer = await createLightweightRedisContainer().start();
         testingModule = await Test.createTestingModule({
             imports: [
                 HttpLoggerModule.forRootAsync({
