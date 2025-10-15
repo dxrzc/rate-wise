@@ -12,7 +12,7 @@ import {
     InvalidTokenPurpose,
     TokenIsBlacklisted,
 } from 'src/tokens/errors/invalid-token.error';
-import { createLightweightRedisContainer } from '@commontestutils/containers/create-lightweight-redis.util';
+import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 
 describe('Tokens Service ', () => {
     // allow any data when generating token
@@ -21,12 +21,11 @@ describe('Tokens Service ', () => {
     let testingModule: TestingModule;
 
     beforeAll(async () => {
-        const redisContainer = await createLightweightRedisContainer().start();
         testingModule = await Test.createTestingModule({
             imports: [
                 RedisModule.forRootAsync({
-                    useFactory: () => ({
-                        redisAuth: redisContainer.getConnectionUrl(),
+                    useFactory: async () => ({
+                        redisAuth: await createLightweightRedisContainer(),
                     }),
                 }),
                 TokensModule.forFeatureAsync({

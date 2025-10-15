@@ -1,4 +1,4 @@
-import { createLightweightRedisContainer } from '@commontestutils/containers/create-lightweight-redis.util';
+import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { sleep } from '@components/utils/sleep.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -48,7 +48,6 @@ describe('Sessions Service ', () => {
     });
 
     beforeAll(async () => {
-        const redisContainer = await createLightweightRedisContainer().start();
         testingModule = await Test.createTestingModule({
             imports: [
                 HttpLoggerModule.forRootAsync({
@@ -65,8 +64,10 @@ describe('Sessions Service ', () => {
                     }),
                 }),
                 RedisModule.forRootAsync({
-                    useFactory: () => ({
-                        redisAuth: redisContainer.getConnectionUrl(),
+                    useFactory: async () => ({
+                        redisAuth: await createLightweightRedisContainer([
+                            'notify-keyspace-events ExgK',
+                        ]),
                     }),
                 }),
                 SessionsModule.forRootAsync({
