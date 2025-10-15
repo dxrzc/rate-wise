@@ -34,12 +34,12 @@ beforeAll(async () => {
     try {
         // Connections
         const templatePostgresDb = readFileSync(
-            join(__dirname, '../global/postgres-uri.txt'),
+            join(__dirname, '../global/containers/postgres-uri.txt'),
             'utf8',
         );
         process.env.POSTGRES_URI = await cloneDatabase(templatePostgresDb);
         process.env.REDIS_AUTH_URI = readFileSync(
-            join(__dirname, '../global/redis-auth-uri.txt'),
+            join(__dirname, '../global/containers/redis-auth-uri.txt'),
             'utf8',
         );
         // Application
