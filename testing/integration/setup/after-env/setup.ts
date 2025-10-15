@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { toContainCookie } from '@integration/custom/matchers/to-contain-cookie';
-import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
+import { createLightweightRedisContainer } from '@commontestutils/containers/create-lightweight-redis.util';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { toFailWith } from '@integration/custom/matchers/to-fail-with';
 import { notToFail } from '@integration/custom/matchers/not-to-fail';
@@ -24,7 +24,6 @@ config({ path: '.env.test' });
 process.env.NODE_ENV = Environment.INTEGRATION;
 
 let nestApp: INestApplication<App>;
-let redisContainer: StartedRedisContainer;
 
 expect.extend({
     toContainCookie,
@@ -39,19 +38,10 @@ beforeAll(async () => {
             join(__dirname, '../global/postgres-uri.txt'),
             'utf8',
         );
-        redisContainer = await new RedisContainer('redis:8.0-alpine')
-            .withCommand([
-                'redis-server',
-                '--appendonly',
-                'no', // AOF persistence
-                '--save',
-                '""', // disables snapshots
-            ])
-            .withTmpFs({ '/data': 'rw' })
-            .start();
-
         process.env.POSTGRES_URI = await cloneDatabase(templatePostgresDb);
-        process.env.REDIS_AUTH_URI = redisContainer.getConnectionUrl();
+
+        const authRedis = await createLightweightRedisContainer().start();
+        process.env.REDIS_AUTH_URI = authRedis.getConnectionUrl();
 
         // Application
         const moduleFixture: TestingModule = await Test.createTestingModule({
