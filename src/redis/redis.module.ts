@@ -1,6 +1,6 @@
 import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
 import { IRedisOptions } from './interface/redis.options.interface';
-import { REDIS_AUTH } from './constants/redis.constants';
+import { REDIS_AUTH, REDIS_QUEUES } from './constants/redis.constants';
 import { RedisService } from './redis.service';
 import { createClient } from '@redis/client';
 import { ModuleRef } from '@nestjs/core';
@@ -42,6 +42,16 @@ export class RedisModule implements OnApplicationShutdown {
         };
     }
 
+    private static provideRedisForQueues() {
+        return {
+            provide: REDIS_QUEUES,
+            inject: [this.optionsProviderToken],
+            useFactory: async (opts: IRedisOptions): Promise<RedisService> => {
+                return this.createAndConnectClient(opts.redisQueues);
+            },
+        };
+    }
+
     static forRootAsync(
         options: FactoryConfigModule<IRedisOptions>,
     ): DynamicModule {
@@ -55,6 +65,7 @@ export class RedisModule implements OnApplicationShutdown {
                     inject: options.inject || [],
                 },
                 this.provideRedisForAuth(),
+                this.provideRedisForQueues(),
             ],
             exports: [REDIS_AUTH],
         };
