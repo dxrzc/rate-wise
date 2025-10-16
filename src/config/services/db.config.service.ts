@@ -15,4 +15,8 @@ export class DbConfigService {
     get redisAuthUri(): string {
         return this.configService.get('REDIS_AUTH_URI');
     }
+
+    get redisQueuesUri(): string {
+        return this.configService.get('REDIS_QUEUES_URI');
+    }
 }
