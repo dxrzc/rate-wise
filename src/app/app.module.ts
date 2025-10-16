@@ -65,6 +65,7 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
             inject: [DbConfigService],
             useFactory: (dbConfig: DbConfigService) => ({
                 redisAuth: dbConfig.redisAuthUri,
+                redisQueues: dbConfig.redisQueuesUri,
             }),
         }),
         SessionsModule.forRootAsync({
