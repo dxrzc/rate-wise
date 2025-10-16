@@ -23,19 +23,21 @@ export class RedisModule implements OnApplicationShutdown {
         await Promise.all([redisAuth.connection.disconnect()]);
     }
 
+    private static async createAndConnectClient(redisUri: string) {
+        const client = createClient({
+            url: redisUri,
+        });
+        const redisService = new RedisService(client);
+        await redisService.connection.connect();
+        return redisService;
+    }
+
     private static provideRedisForAuth() {
         return {
             provide: REDIS_AUTH,
             inject: [this.optionsProviderToken],
-            useFactory: async (
-                options: IRedisOptions,
-            ): Promise<RedisService> => {
-                const client = createClient({
-                    url: options.redisAuth,
-                });
-                const redisService = new RedisService(client);
-                await redisService.connection.connect();
-                return redisService;
+            useFactory: async (opts: IRedisOptions): Promise<RedisService> => {
+                return this.createAndConnectClient(opts.redisAuth);
             },
         };
     }
