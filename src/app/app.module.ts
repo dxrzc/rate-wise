@@ -26,6 +26,15 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { EmailsModule } from 'src/emails/emails.module';
 import { BullModule } from '@nestjs/bullmq';
 
+/**
+ * NOTE: Non-api modules are configured explictly here using forRootAsync.
+ * This keeps the modules isolated. It is important to follow this pattern
+ * in order to test the modules in `components` tests and abstract all the
+ * configurations in this module.
+ * In a nutshell, every non-api module MUST be able to be constructed
+ * without relying on global configurations.
+ */
+
 @Module({
     providers: [
         RequestContextPlugin,
