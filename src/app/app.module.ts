@@ -23,6 +23,8 @@ import { DbConfigService } from 'src/config/services/db.config.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
+import { EmailsModule } from 'src/emails/emails.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
     providers: [
@@ -33,6 +35,15 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
     ],
     imports: [
         ConfigModule,
+        EmailsModule,
+        BullModule.forRootAsync({
+            inject: [DbConfigService],
+            useFactory: (dbConfig: DbConfigService) => ({
+                connection: {
+                    url: dbConfig.redisQueuesUri,
+                },
+            }),
+        }),
         HttpLoggerModule.forRootAsync({
             inject: [ServerConfigService],
             useFactory: (serverConfig: ServerConfigService) => {
