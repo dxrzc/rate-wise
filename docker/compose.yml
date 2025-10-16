@@ -13,6 +13,7 @@ services:
     environment:      
       POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
       REDIS_AUTH_URI: redis://redis_auth:6379
+      REDIS_QUEUES_URI: redis://redis_queues:6378
 
   mailpit:
     image: axllent/mailpit:v1.27.6     
@@ -29,6 +30,12 @@ services:
     restart: always
     ports: 
       - 6379
+
+  redis_queues:
+    image: redis:8.0-alpine    
+    restart: always
+    ports: 
+      - 6378  
 
   postgres:
     image: postgres:17.5-alpine          

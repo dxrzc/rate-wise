@@ -54,6 +54,15 @@ services:
       - redis_auth:/data
       - ../redis/redis-auth.conf:/usr/local/etc/redis/redis.conf
 
+  redis_queues:        
+    extends: 
+      file: ./compose.yml
+      service: redis_queues
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6378"]
+    volumes:    
+      - redis_queues:/data
+      - ../redis/redis-queues.conf:/usr/local/etc/redis/redis.conf      
+
   mailpit:        
     extends: 
       file: ./compose.yml
@@ -71,6 +80,9 @@ volumes:
   redis_auth: 
     name: rate-wise-redis-auth
     external: false
+  redis_queues: 
+    name: rate-wise-redis-queues
+    external: false    
   postgres:
     name: rate-wise-postgres
     external: false
