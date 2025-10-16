@@ -11,6 +11,12 @@ import {
     OnApplicationShutdown,
 } from '@nestjs/common';
 
+/**
+ * Provides injectable redis connections.
+ * Do note this module should not be used at all in modules where
+ * connection is handling by library like BullModule or CacheModule
+ * unless you need to access the database using your own connection.
+ */
 @Global()
 @Module({})
 export class RedisModule implements OnApplicationShutdown {
