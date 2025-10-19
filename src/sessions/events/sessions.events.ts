@@ -5,7 +5,7 @@ import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
-export class SessionsEventsService implements OnModuleInit {
+export class SessionsEvents implements OnModuleInit {
     constructor(
         @Inject(REDIS_AUTH)
         private readonly redisService: RedisService,

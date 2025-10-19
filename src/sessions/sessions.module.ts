@@ -1,7 +1,7 @@
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { SessionsService } from './sessions.service';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { SessionsEventsService } from './events/sessions.events.service';
+import { SessionsEvents } from './events/sessions.events';
 import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
 import { ISessionsOptions } from './interfaces/sessions.options.interface';
 import { SESSION_OPTIONS } from './constants/sessions.constants';
@@ -27,7 +27,7 @@ export class SessionsModule {
                 },
                 SessionsService,
                 SessionMiddlewareFactory,
-                SessionsEventsService,
+                SessionsEvents,
             ],
             exports: [SessionsService, SessionMiddlewareFactory],
         };
