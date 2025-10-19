@@ -1,4 +1,4 @@
-import { JwtPurpose } from 'src/common/enum/jwt.purpose.enum';
+import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
 
 export type JwtPayload<T extends object> = {
     jti: string;
