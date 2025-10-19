@@ -11,10 +11,9 @@ export type FactoryConfigModule<T> = Required<
 /**
  * Forces "useFactory" and optionally, "imports", "inject" and "extraProviders"
  */
-export type FactoryConfigModuleWithExtraProvider<T> =
-    ConfigurableModuleAsyncOptions<T> & {
-        extraProviders?: Provider[];
-    };
+export type FactoryConfigModuleWithExtraProvider<T> = FactoryConfigModule<T> & {
+    extraProviders?: Provider[];
+};
 
 /**
  * Forces "useFactory" and a custom exported token in "provide".
