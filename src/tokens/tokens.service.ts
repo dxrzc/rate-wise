@@ -30,9 +30,11 @@ export class TokensService<CustomData extends object> {
         this.tokensOpts.dataInToken.push('purpose', 'jti');
     }
 
-    private verifyTokenOrThrow<T extends object>(token: string): JwtPayload<T> {
+    private async verifyTokenOrThrow<T extends object>(
+        token: string,
+    ): Promise<JwtPayload<T>> {
         try {
-            return this.jwtService.verify<JwtPayload<T>>(token);
+            return await this.jwtService.verifyAsync<JwtPayload<T>>(token);
         } catch (error) {
             if (error instanceof JsonWebTokenError) {
                 throw new InvalidToken(error.message);
@@ -51,7 +53,7 @@ export class TokensService<CustomData extends object> {
 
     async verify<T extends object>(token: string): Promise<JwtPayload<T>> {
         // JwtModule verification
-        const payload = this.verifyTokenOrThrow<T>(token);
+        const payload = await this.verifyTokenOrThrow<T>(token);
 
         // expected custom data in token (jti, purpose, tokenOpts.dataInToken)
         if (!isSubset(Object.keys(payload), this.tokensOpts.dataInToken))
@@ -74,8 +76,8 @@ export class TokensService<CustomData extends object> {
         return payload;
     }
 
-    generate(payload: CustomData): string {
-        const token = this.jwtService.sign({
+    async generate(payload: CustomData): Promise<string> {
+        const token = await this.jwtService.signAsync({
             purpose: this.tokensOpts.purpose,
             jti: uuidv4(),
             ...payload,
