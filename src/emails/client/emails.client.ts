@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
-export class EmailService {
+export class EmailsClient {
     private transporter: nodemailer.Transporter;
 
     constructor(private readonly emailConfig: SmtpConfigService) {
@@ -19,6 +19,7 @@ export class EmailService {
     }
 
     async sendMail(options: nodemailer.SendMailOptions) {
+        // TODO: what does this throw
         await this.transporter.sendMail({
             from: this.emailConfig.user,
             ...options,
