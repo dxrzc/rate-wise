@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { HashingService } from './services/hashing.service';
-import { EmailService } from './services/email.service';
 
 @Module({
-    providers: [HashingService, EmailService],
-    exports: [HashingService, EmailService],
+    providers: [HashingService],
+    exports: [HashingService],
 })
 export class CommonModule {}
