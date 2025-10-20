@@ -18,6 +18,11 @@ export class EmailsService {
             removeOnComplete: true,
             removeOnFail: true,
             deduplication,
+            attempts: 3,
+            backoff: {
+                type: 'exponential',
+                delay: 1000,
+            },
         });
     }
 }
