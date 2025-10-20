@@ -11,6 +11,8 @@ import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { Injectable } from '@nestjs/common';
+import { EmailNotifications } from './notifications/emails.notifications';
+import { IUserInfo } from 'src/common/interfaces/user/user-info.interface';
 
 @Injectable()
 export class AuthService {
@@ -20,10 +22,18 @@ export class AuthService {
         private readonly sessionService: SessionsService,
         private readonly userService: UsersService,
         private readonly logger: HttpLoggerService,
+        private readonly emailNotifications: EmailNotifications,
     ) {}
 
+    async verifyAccount(userInfo: IUserInfo) {
+        await this.emailNotifications.sendAccountVerificationEmail({
+            userId: userInfo.id,
+            userEmail: userInfo.email,
+        });
+    }
+
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
-        signUpInput.password = this.hashingService.hash(
+        signUpInput.password = await this.hashingService.hash(
             signUpInput.password,
             this.authConfig.passwordSaltRounds,
         );
@@ -41,7 +51,11 @@ export class AuthService {
             throw HttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
-        if (!this.hashingService.compare(credentials.password, user.password)) {
+        const passwordMatch = await this.hashingService.compare(
+            credentials.password,
+            user.password,
+        );
+        if (!passwordMatch) {
             this.logger.error('Password does not match');
             throw HttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
@@ -68,7 +82,7 @@ export class AuthService {
         userId: string,
     ): Promise<void> {
         const user = await this.userService.findOneByIdOrThrow(userId);
-        const passwordMatches = this.hashingService.compare(
+        const passwordMatches = await this.hashingService.compare(
             auth.password,
             user.password,
         );
