@@ -3,12 +3,12 @@ import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class HashingService {
-    hash(data: string, saltRounds: number): string {
+    async hash(data: string, saltRounds: number): Promise<string> {
         const salt = bcrypt.genSaltSync(saltRounds);
-        return bcrypt.hashSync(data, salt);
+        return await bcrypt.hash(data, salt);
     }
 
-    compare(data: string, hash: string): boolean {
-        return bcrypt.compareSync(data, hash);
+    async compare(data: string, hash: string): Promise<boolean> {
+        return await bcrypt.compare(data, hash);
     }
 }
