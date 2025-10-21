@@ -25,6 +25,7 @@ import { ServerConfigService } from 'src/config/services/server.config.service';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { EmailsModule } from 'src/emails/emails.module';
 import { BullModule } from '@nestjs/bullmq';
+import { SmtpConfigService } from 'src/config/services/smtp.config.service';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -45,6 +46,15 @@ import { BullModule } from '@nestjs/bullmq';
     imports: [
         ConfigModule,
         EmailsModule,
+        EmailsModule.forRootAsync({
+            inject: [SmtpConfigService],
+            useFactory: (smtpConfig: SmtpConfigService) => ({
+                port: smtpConfig.port,
+                host: smtpConfig.host,
+                user: smtpConfig.user,
+                pass: smtpConfig.pass,
+            }),
+        }),
         BullModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: (dbConfig: DbConfigService) => ({
