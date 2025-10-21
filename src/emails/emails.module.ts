@@ -47,7 +47,7 @@ export class EmailsModule {
                 BullModule.registerQueueAsync({
                     name: EMAILS_QUEUE,
                 }),
-                HttpLoggerModule.forFeature({ context: 'QUEUES' }),
+                HttpLoggerModule.forFeature({ context: EmailsService.name }),
             ],
             providers: [
                 {
