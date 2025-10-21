@@ -7,6 +7,7 @@ import { UsersService } from 'src/users/users.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -36,7 +37,12 @@ export class AuthGuard implements CanActivate {
 
         this.logger.info(`Access granted for user ${user.id} (${userRole})`);
 
-        // TODO: attach to request object
+        const userInfo: AuthenticatedUser = {
+            id: user.id,
+            role: user.role,
+            email: user.email,
+        };
+        Object.assign(reqContext.req, { user: userInfo });
 
         return true;
     }
