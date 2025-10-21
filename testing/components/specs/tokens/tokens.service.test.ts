@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtPurpose } from 'src/common/enum/jwt.purpose.enum';
 import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisModule } from 'src/redis/redis.module';
 import { RedisService } from 'src/redis/redis.service';
@@ -13,6 +12,7 @@ import {
     TokenIsBlacklisted,
 } from 'src/tokens/errors/invalid-token.error';
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
+import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
 
 describe('Tokens Service ', () => {
     // allow any data when generating token
@@ -68,7 +68,7 @@ describe('Tokens Service ', () => {
 
         describe('Invalid token purpose', () => {
             test('throw InvalidTokenPurpose error', async () => {
-                const token = tokensService.generate({
+                const token = await tokensService.generate({
                     email: '',
                     purpose: JwtPurpose.PASSWORD_RESET,
                 });
@@ -80,7 +80,7 @@ describe('Tokens Service ', () => {
 
         describe('Purpose not in token', () => {
             test('throw InvalidDataInToken error', async () => {
-                const token = tokensService.generate({
+                const token = await tokensService.generate({
                     email: '',
                     purpose: undefined,
                 });
@@ -92,7 +92,7 @@ describe('Tokens Service ', () => {
 
         describe('Jti not in token', () => {
             test('throw InvalidDataInToken error', async () => {
-                const token = tokensService.generate({
+                const token = await tokensService.generate({
                     email: '',
                     jti: undefined,
                 });
@@ -104,7 +104,7 @@ describe('Tokens Service ', () => {
 
         describe('Missing expected data in token', () => {
             test('throw InvalidDataInToken error', async () => {
-                const token = tokensService.generate({
+                const token = await tokensService.generate({
                     anotherData: 'data123',
                 });
                 await expect(tokensService.verify(token)).rejects.toThrow(
@@ -115,7 +115,7 @@ describe('Tokens Service ', () => {
 
         describe('Token is blacklisted', () => {
             test('throw TokenIsBlacklisted error', async () => {
-                const token = tokensService.generate({
+                const token = await tokensService.generate({
                     email: '',
                 });
                 const payload = await tokensService.verify(token);
@@ -130,7 +130,7 @@ describe('Tokens Service ', () => {
         describe('Token is valid', () => {
             test('return payload containing jti, iat, exp, correct purpose and data in token provided', async () => {
                 const email = 'test_email@gmail.com';
-                const token = tokensService.generate({
+                const token = await tokensService.generate({
                     email,
                 });
                 const payload = await tokensService.verify<{ email: string }>(
@@ -149,7 +149,7 @@ describe('Tokens Service ', () => {
 
     describe('consume', () => {
         test('verify token and blacklist it', async () => {
-            const token = tokensService.generate({
+            const token = await tokensService.generate({
                 email: '',
             });
             const payload = await tokensService.consume(token);

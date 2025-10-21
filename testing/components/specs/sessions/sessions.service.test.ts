@@ -1,8 +1,8 @@
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
+import { createSilentHttpLogger } from '@components/utils/silent-http-logger.util';
 import { sleep } from '@components/utils/sleep.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
 import { RedisModule } from 'src/redis/redis.module';
 import { RedisService } from 'src/redis/redis.service';
@@ -50,19 +50,7 @@ describe('Sessions Service ', () => {
     beforeAll(async () => {
         testingModule = await Test.createTestingModule({
             imports: [
-                HttpLoggerModule.forRootAsync({
-                    useFactory: () => ({
-                        messages: {
-                            console: { silent: true },
-                            filesystem: {
-                                silent: true,
-                            },
-                        },
-                        requests: {
-                            silent: true,
-                        },
-                    }),
-                }),
+                createSilentHttpLogger(),
                 RedisModule.forRootAsync({
                     useFactory: async () => ({
                         redisAuth: await createLightweightRedisContainer([
