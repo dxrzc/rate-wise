@@ -12,9 +12,9 @@ import {
 } from './constants/emails.constants';
 import { EmailsConsumer } from './consumers/emails.consumer';
 import { EmailsService } from './emails.service';
-import { EmailsEventsListener } from './events/emails.events';
 import { IEmailsQueueOptions } from './interface/emails-queue.options.interface';
 import { ISmtpConnectionOptions } from './interface/smtp.connection.options.interface';
+import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 
 @Module({})
 export class EmailsModule {
@@ -47,6 +47,7 @@ export class EmailsModule {
                 BullModule.registerQueueAsync({
                     name: EMAILS_QUEUE,
                 }),
+                HttpLoggerModule.forFeature({ context: 'QUEUES' }),
             ],
             providers: [
                 {
@@ -54,7 +55,6 @@ export class EmailsModule {
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },
-                EmailsEventsListener,
                 EmailsService,
                 EmailsConsumer,
             ],
