@@ -1,3 +1,3 @@
 export interface IEmailsQueueOptions {
-    globalConcurrency: number;
+    retryAttempts: number;
 }
