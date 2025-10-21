@@ -1,27 +1,39 @@
-import { SmtpConfigService } from 'src/config/services/smtp.config.service';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import { IEmailInfo } from '../interface/email-info.interface';
+import { ISmtpConnectionOptions } from '../interface/smtp.connection.options.interface';
+import { SMPT_CONNECTION_OPTIONS } from '../constants/emails.constants';
 
 @Injectable()
-export class EmailsClient {
+export class EmailsClient implements OnModuleInit {
     private transporter: nodemailer.Transporter;
 
-    constructor(private readonly emailConfig: SmtpConfigService) {
+    constructor(
+        @Inject(SMPT_CONNECTION_OPTIONS)
+        private readonly emailOpts: ISmtpConnectionOptions,
+    ) {
         this.transporter = nodemailer.createTransport({
-            host: emailConfig.host,
-            port: emailConfig.port,
-            secure: emailConfig.port === 465,
+            host: emailOpts.host,
+            port: emailOpts.port,
+            secure: emailOpts.port === 465,
             auth: {
-                user: emailConfig.user,
-                pass: emailConfig.pass,
+                user: emailOpts.user,
+                pass: emailOpts.pass,
             },
         });
     }
 
-    async sendMail(options: nodemailer.SendMailOptions) {
-        // TODO: what does this throw
+    async onModuleInit() {
+        try {
+            await this.transporter.verify();
+        } catch (error) {
+            // TODO: take the server down
+            console.error('Smtp error:', error);
+        }
+    }
+
+    async sendMail(options: IEmailInfo) {
         await this.transporter.sendMail({
-            from: this.emailConfig.user,
             ...options,
         });
     }
