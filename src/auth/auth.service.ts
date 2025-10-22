@@ -11,8 +11,6 @@ import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { Injectable } from '@nestjs/common';
-import { EmailNotifications } from './notifications/emails.notifications';
-import { IUserInfo } from 'src/common/interfaces/user/user-info.interface';
 
 @Injectable()
 export class AuthService {
@@ -22,15 +20,7 @@ export class AuthService {
         private readonly sessionService: SessionsService,
         private readonly userService: UsersService,
         private readonly logger: HttpLoggerService,
-        private readonly emailNotifications: EmailNotifications,
     ) {}
-
-    async verifyAccount(userInfo: IUserInfo) {
-        await this.emailNotifications.sendAccountVerificationEmail({
-            userId: userInfo.id,
-            userEmail: userInfo.email,
-        });
-    }
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
         signUpInput.password = await this.hashingService.hash(
