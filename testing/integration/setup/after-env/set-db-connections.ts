@@ -1,6 +1,8 @@
 import { cloneDatabase } from './helpers/clone-database.helper';
 import { readDbUrl } from './helpers/read-db-url';
 
+// Same redis instance for all the tests
+// Postgres db is cloned before each test file
 beforeAll(async () => {
     try {
         const [postgresUrl, redisAuthUrl, redisQueueUrl] = await Promise.all([
