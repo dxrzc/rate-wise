@@ -30,7 +30,7 @@
     "dev:migration:revert": "docker compose -f docker/dev.compose.yml exec app npx typeorm -d dist/db/data-source.js migration:revert"
   },
   "dependencies": {
-    "@apollo/server": "^5.0.0",
+    "@apollo/server": "^4.12.2",
     "@nestjs/apollo": "^13.1.0",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
