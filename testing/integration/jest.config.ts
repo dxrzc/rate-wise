@@ -10,7 +10,10 @@ const config: Config = {
     globalSetup: '<rootDir>/testing/integration/setup/global/setup.ts',
     globalTeardown: '<rootDir>/testing/integration/setup/global/teardown.ts',
     setupFilesAfterEnv: [
-        '<rootDir>/testing/integration/setup/after-env/setup.ts',
+        '<rootDir>/testing/integration/setup/after-env/set-environment.ts',
+        '<rootDir>/testing/integration/setup/after-env/set-jest.ts',
+        '<rootDir>/testing/integration/setup/after-env/set-db-connections.ts',
+        '<rootDir>/testing/integration/setup/after-env/set-app.ts',
     ],
 
     collectCoverage: true,
