@@ -18,7 +18,9 @@ export class GqlConfigService implements GqlOptionsFactory {
 
         return {
             playground: false,
-            plugins: [ApolloServerPluginLandingPageLocalDefault()],
+            plugins: this.serverConfig.isDevelopment
+                ? [ApolloServerPluginLandingPageLocalDefault()]
+                : [],
             formatError: (error) => {
                 const code = error.extensions?.code || 'INTERNAL_SERVER_ERROR';
                 const dev = environment === Environment.DEVELOPMENT;
