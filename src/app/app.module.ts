@@ -26,6 +26,7 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { EmailsModule } from 'src/emails/emails.module';
 import { BullModule } from '@nestjs/bullmq';
 import { SmtpConfigService } from 'src/config/services/smtp.config.service';
+import { SystemLoggerModule } from 'src/system-logger/system-logger.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -61,6 +62,14 @@ import { SmtpConfigService } from 'src/config/services/smtp.config.service';
                 connection: {
                     url: dbConfig.redisQueuesUri,
                 },
+            }),
+        }),
+        SystemLoggerModule.forRootAsync({
+            inject: [ServerConfigService],
+            useFactory: (serverConfig: ServerConfigService) => ({
+                dir: serverConfig.isProduction ? 'logs/prod' : 'logs/dev',
+                silent: serverConfig.isTesting,
+                filename: 'system.log',
             }),
         }),
         HttpLoggerModule.forRootAsync({
