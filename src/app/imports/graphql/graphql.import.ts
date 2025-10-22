@@ -6,12 +6,14 @@ import { ApolloDriverConfig } from '@nestjs/apollo';
 import { GqlOptionsFactory } from '@nestjs/graphql';
 import { Injectable } from '@nestjs/common';
 import { join } from 'path';
-
-// TODO: add system logging for internal server errors
+import { SystemLoggerService } from 'src/system-logger/system-logger.service';
 
 @Injectable()
 export class GqlConfigService implements GqlOptionsFactory {
-    constructor(private readonly serverConfig: ServerConfigService) {}
+    constructor(
+        private readonly serverConfig: ServerConfigService,
+        private readonly systemLogger: SystemLoggerService,
+    ) {}
 
     createGqlOptions(): ApolloDriverConfig {
         const environment = this.serverConfig.env;
@@ -36,6 +38,7 @@ export class GqlConfigService implements GqlOptionsFactory {
                     };
                 }
 
+                this.systemLogger.error(error.message, <string>stackTrace);
                 return {
                     message: INTERNAL_SERVER_ERROR, // suppress raw server errors
                     code,
