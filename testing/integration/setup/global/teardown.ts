@@ -1,11 +1,12 @@
-import { deleteFile } from './helpers/delete-file.helper';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 export default async function () {
     try {
         await Promise.all([
-            deleteFile('containers/postgres-uri.txt'),
-            deleteFile('containers/redis-auth-uri.txt'),
-            deleteFile('containers/redis-queues-uri.txt'),
+            await fs.rm(join(__dirname, 'containers/postgres-uri.txt')),
+            await fs.rm(join(__dirname, 'containers/redis-auth-uri.txt')),
+            await fs.rm(join(__dirname, 'containers/redis-queues-uri.txt')),
         ]);
     } catch (error) {
         console.error(error);
