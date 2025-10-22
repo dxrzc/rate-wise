@@ -42,6 +42,12 @@ beforeAll(async () => {
             join(__dirname, '../global/containers/redis-auth-uri.txt'),
             'utf8',
         );
+
+        process.env.REDIS_QUEUES_URI = readFileSync(
+            join(__dirname, '../global/containers/redis-queues-uri.txt'),
+            'utf8',
+        );
+
         // Application
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [

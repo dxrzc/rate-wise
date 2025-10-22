@@ -11,8 +11,12 @@ export default async function () {
             fs.rm(join(__dirname, 'containers/redis-auth-uri.txt'), {
                 force: true,
             }),
+            fs.rm(join(__dirname, 'containers/redis-queues-uri.txt'), {
+                force: true,
+            }),
             (globalThis.psqlContainer as StartedTestContainer).stop(),
             (globalThis.redisAuthContainer as StartedTestContainer).stop(),
+            (globalThis.redisQueuesContainer as StartedTestContainer).stop(),
         ]);
     } catch (error) {
         console.error(error);
