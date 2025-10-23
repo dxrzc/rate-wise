@@ -2,7 +2,10 @@ import { DynamicModule, Module, OnApplicationShutdown } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { RedisConnection } from 'src/common/redis/redis.connection';
-import { FactoryConfigModuleWithCustomToken } from 'src/common/types/modules/factory-config.module.type';
+import {
+    FactoryConfigModule,
+    FactoryConfigModuleWithCustomToken,
+} from 'src/common/types/modules/factory-config.module.type';
 import {
     TOKENS_FEATURE_OPTIONS,
     TOKENS_REDIS_CONNECTION,
@@ -21,7 +24,7 @@ export class TokensModule implements OnApplicationShutdown {
     }
 
     static forRootAsync(
-        options: FactoryConfigModuleWithCustomToken<ITokensRootOptions>,
+        options: FactoryConfigModule<ITokensRootOptions>,
     ): DynamicModule {
         return {
             module: TokensModule,
