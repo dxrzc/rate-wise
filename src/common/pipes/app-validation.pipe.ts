@@ -1,10 +1,7 @@
-import {
-    BadRequestException,
-    Injectable,
-    ValidationPipe,
-} from '@nestjs/common';
-import { COMMON_MESSAGES } from '../messages/common.messages';
+import { Injectable, ValidationPipe } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { GraphQLHttpError } from '../errors/graphql-http.error';
+import { COMMON_MESSAGES } from '../messages/common.messages';
 
 @Injectable()
 export class AppValidationPipe extends ValidationPipe {
@@ -21,7 +18,9 @@ export class AppValidationPipe extends ValidationPipe {
                     this.logger.error('Unexpeced validation error');
                     // TODO: system logger (full error)
                 }
-                return new BadRequestException(COMMON_MESSAGES.INVALID_INPUT);
+                throw GraphQLHttpError.BadRequest(
+                    COMMON_MESSAGES.INVALID_INPUT,
+                );
             },
         });
     }
