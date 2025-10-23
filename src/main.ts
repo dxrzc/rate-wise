@@ -57,7 +57,7 @@ async function bootstrap() {
     await app.listen(serverConfig.port);
     SystemLogger.getInstance().log(
         `Running in ${serverConfig.env} mode`,
-        'Bootstrap',
+        'NestApplication',
     );
 }
 
