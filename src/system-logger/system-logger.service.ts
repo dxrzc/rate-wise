@@ -1,50 +1,22 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConsoleLogger, Inject, Injectable } from '@nestjs/common';
 import * as winston from 'winston';
 import { SYSTEM_LOGGER_OPTIONS } from './constants/system-logger.constants';
 import { ISystemLoggerOptions } from './interfaces/system-logger.options.interface';
 
-type LogInfo = winston.Logform.TransformableInfo & {
-    [prop: string]: any;
-};
-
 @Injectable()
-export class SystemLoggerService {
-    private readonly logger: winston.Logger;
+export class SystemLoggerService extends ConsoleLogger {
+    private readonly fsLogger: winston.Logger;
     constructor(
         @Inject(SYSTEM_LOGGER_OPTIONS)
-        private readonly options: ISystemLoggerOptions,
+        private readonly loggingOpts: ISystemLoggerOptions,
     ) {
-        this.logger = winston.createLogger({
+        super();
+        this.fsLogger = winston.createLogger({
             transports: [
-                new winston.transports.Console({
-                    silent: options.silent,
-                    format: winston.format.combine(
-                        winston.format.timestamp(),
-                        winston.format.printf((logInfo: LogInfo) => {
-                            const colorizer =
-                                winston.format.colorize().colorize;
-                            const coloredLevel = colorizer(
-                                logInfo.level,
-                                `[${logInfo.level.toUpperCase()}]`,
-                            );
-                            const coloredTimestamp = colorizer(
-                                logInfo.level,
-                                `[${logInfo.timestamp}]`,
-                            );
-                            const coloredMessage = colorizer(
-                                logInfo.level,
-                                <string>logInfo.message,
-                            );
-                            if (logInfo.stackTrace)
-                                return `${coloredTimestamp} ${coloredLevel}: ${coloredMessage} ${logInfo.stackTrace}`;
-                            return `${coloredTimestamp} ${coloredLevel}: ${coloredMessage}`;
-                        }),
-                    ),
-                }),
-                options.silent
+                loggingOpts.silent
                     ? new winston.transports.Console({ silent: true })
                     : new winston.transports.File({
-                          filename: `${this.options.dir}/${this.options.filename}`,
+                          filename: `${this.loggingOpts.dir}/${this.loggingOpts.filename}`,
                           format: winston.format.combine(
                               winston.format.timestamp(),
                           ),
@@ -53,23 +25,20 @@ export class SystemLoggerService {
         });
     }
 
-    info(message: string) {
-        this.logger.info(message);
+    error(...args: Parameters<ConsoleLogger['error']>) {
+        console.log('Calling error method');
+        const [message, stack] = args as string[];
+        this.fsLogger.log({
+            level: 'error',
+            message,
+            stack,
+        });
+        super.error(...args);
     }
 
-    error(message: string, stackTrace?: string) {
-        try {
-            this.logger.log({
-                level: 'error',
-                message,
-                stackTrace,
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    warn(message: string) {
-        this.logger.warn(message);
+    warn(...args: Parameters<ConsoleLogger['warn']>) {
+        const [message] = args as string[];
+        this.fsLogger.warn(message);
+        super.error(...args);
     }
 }
