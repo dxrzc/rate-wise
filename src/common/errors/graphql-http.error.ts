@@ -1,7 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { Code } from '../enum/code.enum';
 
-export class HttpError {
+export class GraphQLHttpError {
     static BadRequest(message: string) {
         return new GraphQLError(message, {
             extensions: { code: Code.BAD_REQUEST },
