@@ -16,17 +16,17 @@ import { SmtpConfigService } from 'src/config/services/smtp.config.service';
 import { EmailsModule } from 'src/emails/emails.module';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { ItemsModule } from 'src/items/items.module';
-import { RedisModule } from 'src/redis/redis.module';
 import { SeedModule } from 'src/seed/seed.module';
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { UsersModule } from 'src/users/users.module';
 import { GqlConfigService } from './imports/graphql/graphql.import';
+import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
 import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
-import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
+import { TokensModule } from 'src/tokens/tokens.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -50,10 +50,12 @@ import { HttpLoggerConfigService } from './imports/http-logger/http-logger.impor
         EmailsModule.forRootAsync({
             inject: [SmtpConfigService],
             useFactory: (smtpConfig: SmtpConfigService) => ({
-                port: smtpConfig.port,
-                host: smtpConfig.host,
-                user: smtpConfig.user,
-                pass: smtpConfig.pass,
+                smtp: {
+                    port: smtpConfig.port,
+                    host: smtpConfig.host,
+                    user: smtpConfig.user,
+                    pass: smtpConfig.pass,
+                },
             }),
         }),
         BullModule.forRootAsync({
@@ -68,23 +70,28 @@ import { HttpLoggerConfigService } from './imports/http-logger/http-logger.impor
             useClass: HttpLoggerConfigService,
         }),
         HttpLoggerModule.forFeature({ context: 'App' }),
-        RedisModule.forRootAsync({
+        TokensModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: (dbConfig: DbConfigService) => ({
-                redisAuth: dbConfig.redisAuthUri,
-                redisQueues: dbConfig.redisQueuesUri,
+                connection: {
+                    redisUri: dbConfig.redisAuthUri,
+                },
             }),
         }),
         SessionsModule.forRootAsync({
-            inject: [AuthConfigService, ServerConfigService],
+            inject: [AuthConfigService, ServerConfigService, DbConfigService],
             useFactory: (
                 authConfig: AuthConfigService,
                 serverConfig: ServerConfigService,
+                dbConfig: DbConfigService,
             ) => ({
                 cookieMaxAgeMs: authConfig.sessCookieMaxAgeMs,
                 cookieName: authConfig.sessCookieName,
                 cookieSecret: authConfig.sessCookieSecret,
                 secure: serverConfig.isProduction,
+                connection: {
+                    redisUri: dbConfig.redisAuthUri,
+                },
             }),
         }),
         ClsModule.forRoot({

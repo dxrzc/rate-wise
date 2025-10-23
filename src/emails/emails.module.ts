@@ -6,20 +6,20 @@ import {
 } from 'src/common/types/modules/factory-config.module.type';
 import { EmailsClient } from './client/emails.client';
 import {
+    EMAILS_FEATURE_OPTIONS,
     EMAILS_QUEUE,
-    EMAILS_QUEUE_OPTIONS,
-    SMPT_CONNECTION_OPTIONS,
+    EMAILS_ROOT_OPTIONS,
 } from './constants/emails.constants';
 import { EmailsConsumer } from './consumers/emails.consumer';
 import { EmailsService } from './emails.service';
-import { IEmailsQueueOptions } from './interface/emails-queue.options.interface';
-import { ISmtpConnectionOptions } from './interface/smtp.connection.options.interface';
+import { IEmailsFeatureOptions } from './interface/emails.feature.options.interface';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
+import { IEmailsRootOptions } from './interface/emails.root.options.interface';
 
 @Module({})
 export class EmailsModule {
     static forRootAsync(
-        options: FactoryConfigModule<ISmtpConnectionOptions>,
+        options: FactoryConfigModule<IEmailsRootOptions>,
     ): DynamicModule {
         return {
             module: EmailsModule,
@@ -27,7 +27,7 @@ export class EmailsModule {
             global: true,
             providers: [
                 {
-                    provide: SMPT_CONNECTION_OPTIONS,
+                    provide: EMAILS_ROOT_OPTIONS,
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },
@@ -38,7 +38,7 @@ export class EmailsModule {
     }
 
     static forFeature(
-        options: FactoryConfigModuleWithExtraProvider<IEmailsQueueOptions>,
+        options: FactoryConfigModuleWithExtraProvider<IEmailsFeatureOptions>,
     ): DynamicModule {
         return {
             module: EmailsModule,
@@ -51,7 +51,7 @@ export class EmailsModule {
             ],
             providers: [
                 {
-                    provide: EMAILS_QUEUE_OPTIONS,
+                    provide: EMAILS_FEATURE_OPTIONS,
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },

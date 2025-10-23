@@ -1,7 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
-import { RedisModule } from 'src/redis/redis.module';
-import { RedisService } from 'src/redis/redis.service';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { TokensModule } from 'src/tokens/tokens.module';
 import { TokensService } from 'src/tokens/tokens.service';
@@ -13,34 +10,34 @@ import {
 } from 'src/tokens/errors/invalid-token.error';
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { TOKENS_REDIS_CONNECTION } from 'src/tokens/constants/tokens.constants';
 
 describe('Tokens Service ', () => {
     // allow any data when generating token
     let tokensService: TokensService<{ [prop: string]: any }>;
-    let redisService: RedisService;
+    let redisClient: RedisClientAdapter;
     let testingModule: TestingModule;
 
     beforeAll(async () => {
         testingModule = await Test.createTestingModule({
             imports: [
-                RedisModule.forRootAsync({
-                    useFactory: async () => ({
-                        redisAuth: await createLightweightRedisContainer(),
-                    }),
-                }),
                 TokensModule.forFeatureAsync({
                     provide: 'TEST_TOKEN_SERVICE',
-                    useFactory: () => ({
+                    useFactory: async () => ({
                         purpose: JwtPurpose.EMAIL_CONFIRMATION,
                         expiresIn: '3m',
                         secret: '123EMAIL',
                         dataInToken: ['email'],
+                        connection: {
+                            redisUri: await createLightweightRedisContainer(),
+                        },
                     }),
                 }),
             ],
         }).compile();
 
-        redisService = testingModule.get<RedisService>(REDIS_AUTH);
+        redisClient = testingModule.get(TOKENS_REDIS_CONNECTION);
         tokensService = testingModule.get('TEST_TOKEN_SERVICE');
     });
 
@@ -153,7 +150,7 @@ describe('Tokens Service ', () => {
                 email: '',
             });
             const payload = await tokensService.consume(token);
-            const jtiInRedis = await redisService.get(
+            const jtiInRedis = await redisClient.get(
                 blacklistTokenKey(payload.jti),
             );
             expect(jtiInRedis).toBe(1);

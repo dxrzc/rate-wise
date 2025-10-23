@@ -1,11 +1,11 @@
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
-import { createSilentHttpLogger } from '@components/utils/silent-http-logger.util';
+import { SilentHttpLogger } from '@components/utils/silent-http-logger.util';
 import { sleep } from '@components/utils/sleep.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
-import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
-import { RedisModule } from 'src/redis/redis.module';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
+import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
@@ -24,7 +24,7 @@ describe('Sessions Service ', () => {
     let testingModule: TestingModule;
     let sessionsService: SessionsService;
     let mockRequest: MockRequestType;
-    let redisService: RedisService;
+    let redisClient: RedisClientAdapter;
 
     beforeEach(() => {
         mockRequest = {
@@ -35,7 +35,7 @@ describe('Sessions Service ', () => {
                     // creates a real session simulating async behavior
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     setImmediate(async () => {
-                        await redisService.store(
+                        await redisClient.store(
                             `session:${mockRequest.sessionID}`,
                             {},
                         );
@@ -50,20 +50,20 @@ describe('Sessions Service ', () => {
     beforeAll(async () => {
         testingModule = await Test.createTestingModule({
             imports: [
-                createSilentHttpLogger(),
-                RedisModule.forRootAsync({
-                    useFactory: async () => ({
-                        redisAuth: await createLightweightRedisContainer([
-                            'notify-keyspace-events ExgK',
-                        ]),
-                    }),
+                HttpLoggerModule.forRootAsync({
+                    useClass: SilentHttpLogger,
                 }),
                 SessionsModule.forRootAsync({
-                    useFactory: () => ({
+                    useFactory: async () => ({
                         cookieMaxAgeMs: 60000,
                         cookieName: 'ssid',
                         cookieSecret: '123',
                         secure: false,
+                        connection: {
+                            redisUri: await createLightweightRedisContainer([
+                                'notify-keyspace-events ExgK',
+                            ]),
+                        },
                     }),
                 }),
             ],
@@ -71,7 +71,7 @@ describe('Sessions Service ', () => {
 
         await testingModule.init(); // triggers onModuleInit
         sessionsService = testingModule.get(SessionsService);
-        redisService = testingModule.get<RedisService>(REDIS_AUTH);
+        redisClient = testingModule.get(SESSIONS_REDIS_CONNECTION);
     });
 
     afterAll(async () => {
@@ -93,7 +93,7 @@ describe('Sessions Service ', () => {
 
             // user-sessions index
             const key = userSessionsSetKey(userId);
-            const sessSet = await redisService.setMembers(key);
+            const sessSet = await redisClient.setMembers(key);
             expect(sessSet.length).toBe(1);
             expect(sessSet[0]).toBe(mockRequest.sessionID);
         });
@@ -107,7 +107,7 @@ describe('Sessions Service ', () => {
 
             // session-user relation
             const key = userAndSessionRelationKey(sid);
-            const sessionOwner = await redisService.get(key);
+            const sessionOwner = await redisClient.get(key);
             expect(sessionOwner).toBe(userId);
         });
     });
@@ -150,19 +150,19 @@ describe('Sessions Service ', () => {
 
             // sessions created
             await expect(
-                redisService.get(`session:${sess1Id}`),
+                redisClient.get(`session:${sess1Id}`),
             ).resolves.not.toBeNull();
             await expect(
-                redisService.get(`session:${sess2Id}`),
+                redisClient.get(`session:${sess2Id}`),
             ).resolves.not.toBeNull();
 
             // sessions deleted
             await sessionsService.deleteAll(userId);
             await expect(
-                redisService.get(`session:${sess1Id}`),
+                redisClient.get(`session:${sess1Id}`),
             ).resolves.toBeNull();
             await expect(
-                redisService.get(`session:${sess2Id}`),
+                redisClient.get(`session:${sess2Id}`),
             ).resolves.toBeNull();
         });
     });
@@ -177,14 +177,14 @@ describe('Sessions Service ', () => {
 
             // sid in index
             const indexKey = userSessionsSetKey(userId);
-            expect(await redisService.setSize(indexKey)).toBe(1);
+            expect(await redisClient.setSize(indexKey)).toBe(1);
 
             // delete session from redis, this will trigger the cleanup
-            await redisService.delete(`session:${sid}`);
+            await redisClient.delete(`session:${sid}`);
             await sleep(1000); // redis subscriber works async
 
             // session should not exist in sessions-index anymore
-            const index = await redisService.setMembers(indexKey);
+            const index = await redisClient.setMembers(indexKey);
             expect(index.length).toBe(0);
         });
 
@@ -197,14 +197,14 @@ describe('Sessions Service ', () => {
 
             // sid-user relation exists
             const relationKey = userAndSessionRelationKey(sid);
-            await expect(redisService.get(relationKey)).resolves.not.toBeNull();
+            await expect(redisClient.get(relationKey)).resolves.not.toBeNull();
 
             // delete session from redis, this will trigger the cleanup
-            await redisService.delete(`session:${sid}`);
+            await redisClient.delete(`session:${sid}`);
             await sleep(1000); // redis subscriber works async
 
             // sid-user relation should not exists anymore
-            const relation = await redisService.get(relationKey);
+            const relation = await redisClient.get(relationKey);
             expect(relation).toBeNull();
         });
     });

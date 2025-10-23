@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
-import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
+import { Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import * as winston from 'winston';
 import { ClsServiceManager } from 'nestjs-cls';
-import { InfoType } from './types/info.type';
+import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
+import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
+import { InfoType } from '../types/info.type';
 
 // Messages in console
 @Injectable()
@@ -11,12 +12,12 @@ export class ConsoleLoggerService {
     private consoleLogger: winston.Logger;
 
     constructor(
-        @Inject(HTTP_LOGGER_OPTIONS)
-        private readonly loggerOptions: IHttpLoggerOptions,
+        @Inject(HTTP_LOGGER_ROOT_OPTIONS)
+        private readonly options: IHttpLoggerRootOptions,
     ) {
-        const consoleOptions = this.loggerOptions.messages.console;
+        const consoleOptions = this.options.messages.console;
         const transport = new winston.transports.Console({
-            silent: loggerOptions.silentAll || consoleOptions.silent,
+            silent: options.silentAll || consoleOptions.silent,
             level: consoleOptions.minLevel,
             format: winston.format.combine(
                 winston.format.timestamp(),

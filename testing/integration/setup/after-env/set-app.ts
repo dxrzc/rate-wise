@@ -1,21 +1,19 @@
-import { DataSource } from 'typeorm';
-import { App } from 'supertest/types';
+import { testKit } from '@integration/utils/test-kit.util';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { User } from 'src/users/entities/user.entity';
-import { UserSeedService } from 'src/seed/services/user-seed.service';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
-import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
-import { RedisService } from 'src/redis/redis.service';
-import { testKit } from '@integration/utils/test-kit.util';
+import { UserSeedService } from 'src/seed/services/user-seed.service';
+import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
+import { User } from 'src/users/entities/user.entity';
 import * as request from 'supertest';
+import { App } from 'supertest/types';
+import { DataSource } from 'typeorm';
 
 let nestApp: INestApplication<App>;
 
 beforeAll(async () => {
     try {
-        console.log(process.env);
-
         // Application
         const testingModule: TestingModule = await Test.createTestingModule({
             imports: [
@@ -30,7 +28,9 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-        testKit.redisAuth = nestApp.get<RedisService>(REDIS_AUTH);
+        testKit.sessionsRedisClient = nestApp.get<RedisClientAdapter>(
+            SESSIONS_REDIS_CONNECTION,
+        );
         Object.defineProperty(testKit, 'request', {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
