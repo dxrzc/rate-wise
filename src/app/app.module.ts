@@ -127,8 +127,9 @@ import { catchEverythingFiler } from './providers/filters/catch-everything.filte
             useClass: TypeOrmConfigService,
         }),
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
-            driver: ApolloDriver,
+            imports: [HttpLoggerModule.forFeature({ context: 'GraphQL' })],
             useClass: GqlConfigService,
+            driver: ApolloDriver,
         }),
         ConditionalModule.registerWhen(
             SeedModule,

@@ -6,13 +6,13 @@ import { ApolloDriverConfig } from '@nestjs/apollo';
 import { GqlOptionsFactory } from '@nestjs/graphql';
 import { Injectable } from '@nestjs/common';
 import { join } from 'path';
-import { SystemLoggerService } from 'src/system-logger/system-logger.service';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Injectable()
 export class GqlConfigService implements GqlOptionsFactory {
     constructor(
         private readonly serverConfig: ServerConfigService,
-        private readonly systemLogger: SystemLoggerService,
+        private readonly httpLogger: HttpLoggerService,
     ) {}
 
     createGqlOptions(): ApolloDriverConfig {
@@ -30,17 +30,18 @@ export class GqlConfigService implements GqlOptionsFactory {
                     ? error.extensions?.stacktrace
                     : undefined;
 
-                if (code !== 'INTERNAL_SERVER_ERROR') {
+                if (code === 'INTERNAL_SERVER_ERROR') {
+                    this.httpLogger.error('Internal server error');
                     return {
-                        message: error.message,
+                        // suppress raw server errors
+                        message: INTERNAL_SERVER_ERROR,
                         code,
                         stackTrace,
                     };
                 }
 
-                // this.systemLogger.error(error.message, <string>stackTrace);
                 return {
-                    message: INTERNAL_SERVER_ERROR, // suppress raw server errors
+                    message: error.message,
                     code,
                     stackTrace,
                 };
