@@ -1,4 +1,3 @@
-import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
 import {
     HTTP_LOGGER_CONTEXT,
     HTTP_LOGGER_OPTIONS,
@@ -12,11 +11,13 @@ import { HttpLoggerService } from './http-logger.service';
 import { ConsoleLoggerService } from './console.logger.service';
 import { FileSystemLoggerService } from './file-system.logger.service';
 import { RequestLoggerService } from './request.logger.service';
+import { HttpLoggerConfigService } from 'src/app/imports/http-logger/http-logger.import';
+import { ClassConfigModule } from 'src/common/types/modules/class-config.module.type';
 
 @Module({})
 export class HttpLoggerModule {
     static forRootAsync(
-        options: FactoryConfigModule<IHttpLoggerOptions>,
+        options: ClassConfigModule<IHttpLoggerOptions>,
     ): DynamicModule {
         return {
             global: true,
@@ -27,9 +28,14 @@ export class HttpLoggerModule {
                 FileSystemLoggerService,
                 RequestLoggerService,
                 {
+                    provide: HttpLoggerConfigService,
+                    useClass: options.useClass,
+                },
+                {
                     provide: HTTP_LOGGER_OPTIONS,
-                    useFactory: options.useFactory,
-                    inject: options.inject,
+                    useFactory: (httpLoggerConfig: HttpLoggerConfigService) =>
+                        httpLoggerConfig.create(),
+                    inject: [HttpLoggerConfigService],
                 },
             ],
             exports: [

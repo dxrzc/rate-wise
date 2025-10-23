@@ -26,6 +26,7 @@ import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
 import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
+import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -64,31 +65,7 @@ import { appValidationPipe } from './providers/pipes/app-validation.pipe.provide
             }),
         }),
         HttpLoggerModule.forRootAsync({
-            inject: [ServerConfigService],
-            useFactory: (serverConfig: ServerConfigService) => {
-                const logsDir = serverConfig.isProduction
-                    ? 'logs/prod'
-                    : 'logs/dev';
-                return {
-                    silentAll: serverConfig.isTesting,
-                    requests: {
-                        dir: logsDir,
-                        filename: 'request.log',
-                    },
-                    messages: {
-                        filesystem: {
-                            filename: 'messages.log',
-                            minLevel: 'info',
-                            dir: logsDir,
-                        },
-                        console: {
-                            minLevel: serverConfig.isDevelopment
-                                ? 'debug'
-                                : 'info',
-                        },
-                    },
-                };
-            },
+            useClass: HttpLoggerConfigService,
         }),
         HttpLoggerModule.forFeature({ context: 'App' }),
         RedisModule.forRootAsync({
