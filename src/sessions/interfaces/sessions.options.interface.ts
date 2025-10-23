@@ -3,4 +3,7 @@ export interface ISessionsOptions {
     cookieSecret: string;
     cookieMaxAgeMs: number;
     secure: boolean;
+    connection: {
+        redisUri: string;
+    };
 }
