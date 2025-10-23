@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ServerConfigService } from 'src/config/services/server.config.service';
+import { HttpLoggerOptionsFactory } from 'src/http-logger/interfaces/http-logger.options.factory.interface';
 import { IHttpLoggerOptions } from 'src/http-logger/interfaces/http-logger.options.interface';
 
 @Injectable()
-export class HttpLoggerConfigService {
+export class HttpLoggerConfigService implements HttpLoggerOptionsFactory {
     constructor(private readonly serverConfig: ServerConfigService) {}
 
     create(): IHttpLoggerOptions {
