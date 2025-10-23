@@ -9,7 +9,7 @@ async function bootstrap() {
     const serverConfig = app.get(ServerConfigService);
     await app.listen(serverConfig.port);
     const systemLogger = app.get(SystemLoggerService);
-    systemLogger.info(`Running in ${serverConfig.env.toUpperCase()} mode`);
+    systemLogger.log(`Running in ${serverConfig.env.toUpperCase()} mode`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
