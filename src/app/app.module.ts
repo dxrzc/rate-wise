@@ -50,10 +50,12 @@ import { TokensModule } from 'src/tokens/tokens.module';
         EmailsModule.forRootAsync({
             inject: [SmtpConfigService],
             useFactory: (smtpConfig: SmtpConfigService) => ({
-                port: smtpConfig.port,
-                host: smtpConfig.host,
-                user: smtpConfig.user,
-                pass: smtpConfig.pass,
+                smtp: {
+                    port: smtpConfig.port,
+                    host: smtpConfig.host,
+                    user: smtpConfig.user,
+                    pass: smtpConfig.pass,
+                },
             }),
         }),
         BullModule.forRootAsync({

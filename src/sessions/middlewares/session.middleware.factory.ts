@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
-import { ISessionsOptions } from '../interfaces/sessions.options.interface';
+import { ISessionsRootOptions } from '../interfaces/sessions.root.options.interface';
 import {
-    SESSIONS_OPTIONS,
+    SESSIONS_ROOT_OPTIONS,
     SESSIONS_REDIS_CONNECTION,
 } from '../constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
@@ -11,7 +11,7 @@ import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 @Injectable()
 export class SessionMiddlewareFactory {
     constructor(
-        @Inject(SESSIONS_OPTIONS) private sessionOptions: ISessionsOptions,
+        @Inject(SESSIONS_ROOT_OPTIONS) private sessionOptions: ISessionsRootOptions,
         @Inject(SESSIONS_REDIS_CONNECTION)
         private readonly redisClient: RedisClientAdapter,
     ) {}

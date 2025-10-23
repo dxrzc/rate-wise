@@ -1,25 +1,25 @@
 import * as nodemailer from 'nodemailer';
 import { IEmailInfo } from '../interface/email-info.interface';
-import { ISmtpConnectionOptions } from '../interface/smtp.connection.options.interface';
-import { SMPT_CONNECTION_OPTIONS } from '../constants/emails.constants';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { SystemLogger } from 'src/common/logging/system.logger';
+import { EMAILS_ROOT_OPTIONS } from '../constants/emails.constants';
+import { IEmailsRootOptions } from '../interface/emails.root.options.interface';
 
 @Injectable()
 export class EmailsClient implements OnModuleInit {
     private transporter: nodemailer.Transporter;
 
     constructor(
-        @Inject(SMPT_CONNECTION_OPTIONS)
-        private readonly emailOpts: ISmtpConnectionOptions,
+        @Inject(EMAILS_ROOT_OPTIONS)
+        private readonly options: IEmailsRootOptions,
     ) {
         this.transporter = nodemailer.createTransport({
-            host: emailOpts.host,
-            port: emailOpts.port,
-            secure: emailOpts.port === 465,
+            host: options.smtp.host,
+            port: options.smtp.port,
+            secure: options.smtp.port === 465,
             auth: {
-                user: emailOpts.user,
-                pass: emailOpts.pass,
+                user: options.smtp.user,
+                pass: options.smtp.pass,
             },
         });
     }

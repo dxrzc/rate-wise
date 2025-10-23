@@ -8,11 +8,11 @@ import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import {
-    SESSIONS_OPTIONS,
+    SESSIONS_ROOT_OPTIONS,
     SESSIONS_REDIS_CONNECTION,
 } from './constants/sessions.constants';
 import { SessionsEvents } from './events/sessions.events';
-import { ISessionsOptions } from './interfaces/sessions.options.interface';
+import { ISessionsRootOptions } from './interfaces/sessions.root.options.interface';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { SessionsService } from './sessions.service';
 import { RedisConnection } from 'src/common/redis/redis.connection';
@@ -27,7 +27,7 @@ export class SessionsModule implements OnApplicationShutdown {
     }
 
     static forRootAsync(
-        options: FactoryConfigModule<ISessionsOptions>,
+        options: FactoryConfigModule<ISessionsRootOptions>,
     ): DynamicModule {
         return {
             module: SessionsModule,
@@ -37,13 +37,13 @@ export class SessionsModule implements OnApplicationShutdown {
             ],
             providers: [
                 {
-                    provide: SESSIONS_OPTIONS,
+                    provide: SESSIONS_ROOT_OPTIONS,
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },
                 {
                     provide: SESSIONS_REDIS_CONNECTION,
-                    useFactory: async (moduleOpts: ISessionsOptions) => {
+                    useFactory: async (moduleOpts: ISessionsRootOptions) => {
                         const redisUri = moduleOpts.connection.redisUri;
                         const redisClient = new RedisClientAdapter(
                             redisUri,
@@ -53,7 +53,7 @@ export class SessionsModule implements OnApplicationShutdown {
                         await redisClient.connection.connect();
                         return redisClient;
                     },
-                    inject: [SESSIONS_OPTIONS],
+                    inject: [SESSIONS_ROOT_OPTIONS],
                 },
                 SessionsService,
                 SessionMiddlewareFactory,
