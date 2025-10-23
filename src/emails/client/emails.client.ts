@@ -29,7 +29,7 @@ export class EmailsClient implements OnModuleInit {
             await this.transporter.verify();
         } catch (error) {
             // TODO: take the server down
-            SystemLogger.getInstance().error(error);
+            SystemLogger.getInstance().error(error, 'Nodemailer');
         }
     }
 
