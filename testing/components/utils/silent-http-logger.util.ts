@@ -1,9 +1,9 @@
-import { DynamicModule } from '@nestjs/common';
-import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
+import { HttpLoggerOptionsFactory } from 'src/http-logger/interfaces/http-logger.options.factory.interface';
+import { IHttpLoggerOptions } from 'src/http-logger/interfaces/http-logger.options.interface';
 
-export function createSilentHttpLogger(): DynamicModule {
-    return HttpLoggerModule.forRootAsync({
-        useFactory: () => ({
+export class SilentHttpLogger implements HttpLoggerOptionsFactory {
+    create(): IHttpLoggerOptions {
+        return {
             messages: {
                 console: { silent: true },
                 filesystem: {
@@ -13,6 +13,6 @@ export function createSilentHttpLogger(): DynamicModule {
             requests: {
                 silent: true,
             },
-        }),
-    });
+        };
+    }
 }
