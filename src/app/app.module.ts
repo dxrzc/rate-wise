@@ -26,6 +26,7 @@ import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
 import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
+import { TokensModule } from 'src/tokens/tokens.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -67,6 +68,14 @@ import { appValidationPipe } from './providers/pipes/app-validation.pipe.provide
             useClass: HttpLoggerConfigService,
         }),
         HttpLoggerModule.forFeature({ context: 'App' }),
+        TokensModule.forRootAsync({
+            inject: [DbConfigService],
+            useFactory: (dbConfig: DbConfigService) => ({
+                connection: {
+                    redisUri: dbConfig.redisAuthUri,
+                },
+            }),
+        }),
         SessionsModule.forRootAsync({
             inject: [AuthConfigService, ServerConfigService, DbConfigService],
             useFactory: (
