@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
-import { RedisConnection } from './redis.connection';
+import { RedisConnection } from './connections/redis.connection';
 
 export class RedisService {
     private readonly _connection: RedisConnection;
