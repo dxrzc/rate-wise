@@ -1,9 +1,10 @@
-import { REDIS_AUTH } from 'src/redis/constants/redis.constants';
-import { RedisService } from 'src/redis/redis.service';
 import { ITokensOptions } from './interfaces/tokens.options.interface';
 import { isSubset } from 'src/common/functions/utils/is-subset.util';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
-import { TOKENS_OPTIONS } from './constants/tokens.constants';
+import {
+    TOKENS_OPTIONS,
+    TOKENS_REDIS_CONNECTION,
+} from './constants/tokens.constants';
 import { calculateTokenTTLSeconds } from './functions/calculate-token-ttl';
 import {
     InvalidDataInToken,
@@ -19,11 +20,13 @@ import {
 } from '@nestjs/common';
 import { JwtPayload } from './types/jwt-payload.type';
 import { blacklistTokenKey } from './functions/blacklist-token-key';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 
 @Injectable()
 export class TokensService<CustomData extends object> {
     constructor(
-        @Inject(REDIS_AUTH) private readonly redisService: RedisService,
+        @Inject(TOKENS_REDIS_CONNECTION)
+        private readonly redisClient: RedisClientAdapter,
         @Inject(TOKENS_OPTIONS) private readonly tokensOpts: ITokensOptions,
         private readonly jwtService: JwtService,
     ) {
@@ -44,7 +47,7 @@ export class TokensService<CustomData extends object> {
     }
 
     async blacklist(jti: string, expDateUnix: number): Promise<void> {
-        await this.redisService.store(
+        await this.redisClient.store(
             blacklistTokenKey(jti),
             '1',
             calculateTokenTTLSeconds(expDateUnix),
@@ -64,7 +67,7 @@ export class TokensService<CustomData extends object> {
             throw new InvalidTokenPurpose();
 
         // is not blacklisted
-        if (await this.redisService.get(blacklistTokenKey(payload.jti)))
+        if (await this.redisClient.get(blacklistTokenKey(payload.jti)))
             throw new TokenIsBlacklisted();
 
         return payload;
