@@ -26,7 +26,6 @@ export class SystemLoggerService extends ConsoleLogger {
     }
 
     error(...args: Parameters<ConsoleLogger['error']>) {
-        console.log('Calling error method');
         const [message, stack] = args as string[];
         this.fsLogger.log({
             level: 'error',
