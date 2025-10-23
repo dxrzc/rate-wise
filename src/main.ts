@@ -6,21 +6,27 @@ import { ServerConfigService } from './config/services/server.config.service';
 
 let app: INestApplication | undefined;
 
-function tryToCloseApp(app: INestApplication) {
+function tryToCloseApp(app: INestApplication, context: string) {
+    const logger = SystemLogger.getInstance();
+    logger.warn('Closing nest application...', context);
     app.close()
         .finally(() => process.exit(1))
+        .then(() => {
+            logger.warn('Application closed', context);
+        })
         .catch((err: Error) => {
-            SystemLogger.getInstance().error(
+            logger.error(
                 `Error closing nest application: ${err.message}`,
                 err.stack,
+                context,
             );
         });
 }
 
 process.on('uncaughtException', ({ message, stack }: Error) => {
-    SystemLogger.getInstance().error(`uncaughtException: ${message}`, stack);
+    SystemLogger.getInstance().error(message, stack, 'uncaughtException');
     if (app) {
-        tryToCloseApp(app);
+        tryToCloseApp(app, 'uncaughtException');
         return;
     }
     process.exit(1);
@@ -29,12 +35,12 @@ process.on('uncaughtException', ({ message, stack }: Error) => {
 process.on('unhandledRejection', (reason: unknown) => {
     const logger = SystemLogger.getInstance();
     if (reason instanceof Error) {
-        logger.error(`unhandledRejection: ${reason.message}`, reason.stack);
+        logger.error(reason.message, reason.stack, 'unhandledRejection');
     } else {
-        logger.error(`unhandledRejection: ${String(reason)}`);
+        logger.error(String(reason), 'unhandledRejection');
     }
     if (app) {
-        tryToCloseApp(app);
+        tryToCloseApp(app, 'unhandledRejection');
         return;
     }
     process.exit(1);
