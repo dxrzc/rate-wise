@@ -9,12 +9,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
 import { RedisConnection } from './connections/redis.connection';
+import { RedisType } from './enum/redis-type.enum';
 
 export class RedisService {
     private readonly _connection: RedisConnection;
 
-    constructor(private readonly _client: any) {
-        this._connection = new RedisConnection(_client);
+    constructor(
+        private readonly _client: any,
+        private readonly type: RedisType,
+    ) {
+        this._connection = new RedisConnection(_client, type);
     }
 
     get client() {
