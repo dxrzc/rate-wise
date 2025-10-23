@@ -29,10 +29,10 @@ describe('signOutAll', () => {
 
             // check both sids exist in redis
             await expect(
-                testKit.redisAuth.get(`session:${sid1}`),
+                testKit.sessionsRedisClient.get(`session:${sid1}`),
             ).resolves.not.toBeNull();
             await expect(
-                testKit.redisAuth.get(`session:${sid2}`),
+                testKit.sessionsRedisClient.get(`session:${sid2}`),
             ).resolves.not.toBeNull();
 
             // sign out all
@@ -45,10 +45,10 @@ describe('signOutAll', () => {
 
             // sids don't exist anymore
             await expect(
-                testKit.redisAuth.get(`session:${sid1}`),
+                testKit.sessionsRedisClient.get(`session:${sid1}`),
             ).resolves.toBeNull();
             await expect(
-                testKit.redisAuth.get(`session:${sid2}`),
+                testKit.sessionsRedisClient.get(`session:${sid2}`),
             ).resolves.toBeNull();
         });
     });

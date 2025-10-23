@@ -57,7 +57,7 @@ describe('signIn', () => {
             expect(res).notToFail();
             const key = userSessionsSetKey(res.body.data.signIn.id);
             const sessId = getSidFromCookie(getSessionCookie(res));
-            const sessSet = await testKit.redisAuth.setMembers(key);
+            const sessSet = await testKit.sessionsRedisClient.setMembers(key);
             expect(sessSet.length).toBe(2); // signUp and signIn
             expect(sessSet.find((key) => key === sessId)).toBeDefined();
         });
@@ -73,7 +73,7 @@ describe('signIn', () => {
             expect(res).notToFail();
             const sid = getSidFromCookie(getSessionCookie(res));
             const key = userAndSessionRelationKey(sid);
-            const sessionOwner = await testKit.redisAuth.get(key);
+            const sessionOwner = await testKit.sessionsRedisClient.get(key);
             expect(sessionOwner).toBe(res.body.data.signIn.id);
         });
     });
@@ -171,7 +171,7 @@ describe('signIn', () => {
                     }),
                 );
                 await expect(
-                    testKit.redisAuth.get(`session:${oldSid}`),
+                    testKit.sessionsRedisClient.get(`session:${oldSid}`),
                 ).resolves.toBeNull();
             });
         });
