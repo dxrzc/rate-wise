@@ -14,7 +14,7 @@ export class SystemLogger extends ConsoleLogger {
         SystemLogger.fsLogger = winston.createLogger({
             transports: [
                 new winston.transports.File({
-                    filename: `${folder}/system2.log`,
+                    filename: `${folder}/system.log`,
                     format: winston.format.combine(winston.format.timestamp()),
                 }),
             ],
