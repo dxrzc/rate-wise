@@ -38,7 +38,7 @@ export class GqlConfigService implements GqlOptionsFactory {
                     };
                 }
 
-                this.systemLogger.error(error.message, <string>stackTrace);
+                // this.systemLogger.error(error.message, <string>stackTrace);
                 return {
                     message: INTERNAL_SERVER_ERROR, // suppress raw server errors
                     code,
