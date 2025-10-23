@@ -7,15 +7,31 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
+import { SystemLogger } from 'src/common/logging/system.logger';
+import { RedisType } from '../enum/redis-type.enum';
+
 export class RedisConnection {
     private subscribers = new Array<any>();
 
-    constructor(private readonly client: any) {}
+    constructor(
+        private readonly client: any,
+        private readonly context: RedisType,
+    ) {
+        this.configEvents();
+    }
 
-    private errorHandler = (err: string) => {
-        // TODO:
-        console.error(err);
+    private onError = (err: string) => {
+        SystemLogger.getInstance().error(`${err}`, this.context);
     };
+
+    private onReconnecting = () => {
+        SystemLogger.getInstance().warn(`Reconnecting...`, this.context);
+    };
+
+    configEvents() {
+        this.client.on('error', this.onError);
+        this.client.on('reconnecting', this.onReconnecting);
+    }
 
     async addSubscriber(
         channel: string,
@@ -28,7 +44,7 @@ export class RedisConnection {
     }
 
     async connect() {
-        await this.client.on('error', this.errorHandler).connect();
+        await this.client.connect();
     }
 
     async disconnect() {

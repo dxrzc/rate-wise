@@ -1,15 +1,16 @@
-import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
-import { IRedisOptions } from './interface/redis.options.interface';
-import { REDIS_AUTH } from './constants/redis.constants';
-import { RedisService } from './redis.service';
-import { createClient } from '@redis/client';
-import { ModuleRef } from '@nestjs/core';
 import {
     DynamicModule,
     Global,
     Module,
     OnApplicationShutdown,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { createClient } from '@redis/client';
+import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
+import { REDIS_AUTH } from './constants/redis.constants';
+import { RedisType } from './enum/redis-type.enum';
+import { IRedisOptions } from './interface/redis.options.interface';
+import { RedisService } from './redis.service';
 
 /**
  * Provides injectable redis connections.
@@ -29,11 +30,14 @@ export class RedisModule implements OnApplicationShutdown {
         await Promise.all([redisAuth.connection.disconnect()]);
     }
 
-    private static async createAndConnectClient(redisUri: string) {
+    private static async createAndConnectClient(
+        redisUri: string,
+        type: RedisType,
+    ) {
         const client = createClient({
             url: redisUri,
         });
-        const redisService = new RedisService(client);
+        const redisService = new RedisService(client, type);
         await redisService.connection.connect();
         return redisService;
     }
@@ -43,7 +47,10 @@ export class RedisModule implements OnApplicationShutdown {
             provide: REDIS_AUTH,
             inject: [this.optionsProviderToken],
             useFactory: async (opts: IRedisOptions): Promise<RedisService> => {
-                return this.createAndConnectClient(opts.redisAuth);
+                return this.createAndConnectClient(
+                    opts.redisAuth,
+                    RedisType.auth,
+                );
             },
         };
     }
