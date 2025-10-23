@@ -1,4 +1,3 @@
-import { appGraphqlExceptionFilter } from './providers/filters/app-graphql-exception.filter.provider';
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
@@ -27,6 +26,7 @@ import { EmailsModule } from 'src/emails/emails.module';
 import { BullModule } from '@nestjs/bullmq';
 import { SmtpConfigService } from 'src/config/services/smtp.config.service';
 import { SystemLoggerModule } from 'src/system-logger/system-logger.module';
+import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -40,7 +40,7 @@ import { SystemLoggerModule } from 'src/system-logger/system-logger.module';
 @Module({
     providers: [
         RequestContextPlugin,
-        appGraphqlExceptionFilter,
+        catchEverythingFiler,
         appValidationPipe,
         appAuthGuard,
     ],
