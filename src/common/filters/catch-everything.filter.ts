@@ -4,7 +4,7 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SystemLoggerService } from 'src/system-logger/system-logger.service';
 
 @Catch(Error)
-export class CatchEverythingFiler implements ExceptionFilter {
+export class CatchEverythingFilter implements ExceptionFilter {
     constructor(
         private readonly httpLogger: HttpLoggerService,
         private readonly systemLoggerService: SystemLoggerService,
