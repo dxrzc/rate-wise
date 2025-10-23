@@ -14,8 +14,6 @@ let nestApp: INestApplication<App>;
 
 beforeAll(async () => {
     try {
-        console.log(process.env);
-
         // Application
         const testingModule: TestingModule = await Test.createTestingModule({
             imports: [
