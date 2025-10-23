@@ -1,8 +1,8 @@
-import { ITokensOptions } from './interfaces/tokens.options.interface';
+import { ITokensFeatureOptions } from './interfaces/tokens.feature.options.interface';
 import { isSubset } from 'src/common/functions/utils/is-subset.util';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import {
-    TOKENS_OPTIONS,
+    TOKENS_FEATURE_OPTIONS,
     TOKENS_REDIS_CONNECTION,
 } from './constants/tokens.constants';
 import { calculateTokenTTLSeconds } from './functions/calculate-token-ttl';
@@ -27,7 +27,8 @@ export class TokensService<CustomData extends object> {
     constructor(
         @Inject(TOKENS_REDIS_CONNECTION)
         private readonly redisClient: RedisClientAdapter,
-        @Inject(TOKENS_OPTIONS) private readonly tokensOpts: ITokensOptions,
+        @Inject(TOKENS_FEATURE_OPTIONS)
+        private readonly tokensOpts: ITokensFeatureOptions,
         private readonly jwtService: JwtService,
     ) {
         this.tokensOpts.dataInToken.push('purpose', 'jti');
