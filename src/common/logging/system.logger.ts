@@ -29,18 +29,23 @@ export class SystemLogger extends ConsoleLogger {
     }
 
     error(...args: Parameters<ConsoleLogger['error']>) {
-        const [message, stack] = args as string[];
+        const [message, stack, context] = args as string[];
         SystemLogger.fsLogger.log({
             level: 'error',
             message,
             stack,
+            context,
         });
         super.error(...args);
     }
 
     warn(...args: Parameters<ConsoleLogger['warn']>) {
-        const [message] = args as string[];
-        SystemLogger.fsLogger.warn(message);
+        const [message, context] = args as string[];
+        SystemLogger.fsLogger.log({
+            level: 'warn',
+            message,
+            context,
+        });
         super.error(...args);
     }
 }
