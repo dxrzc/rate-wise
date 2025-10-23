@@ -46,6 +46,6 @@ export class SystemLogger extends ConsoleLogger {
             message,
             context,
         });
-        super.error(...args);
+        super.warn(...args);
     }
 }
