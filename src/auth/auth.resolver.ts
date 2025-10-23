@@ -54,6 +54,4 @@ export class AuthResolver {
         this.clearCookie(res);
         return true;
     }
-
-    // TODO: send user data downstream from AuthGuard
 }
