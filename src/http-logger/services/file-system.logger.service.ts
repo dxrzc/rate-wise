@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
-import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
 import * as winston from 'winston';
 import { ClsServiceManager } from 'nestjs-cls';
-import { createDummyTransport } from './functions/create-dummy-transport';
-import { InfoType } from './types/info.type';
+import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
+import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
+import { createDummyTransport } from '../functions/create-dummy-transport';
+import { InfoType } from '../types/info.type';
 
 // Messages in filesystem
 @Injectable()
@@ -13,12 +13,12 @@ export class FileSystemLoggerService {
     private fsLogger: winston.Logger;
 
     constructor(
-        @Inject(HTTP_LOGGER_OPTIONS)
-        private readonly loggerOptions: IHttpLoggerOptions,
+        @Inject(HTTP_LOGGER_ROOT_OPTIONS)
+        private readonly options: IHttpLoggerRootOptions,
     ) {
-        const fsOptions = loggerOptions.messages.filesystem;
+        const fsOptions = options.messages.filesystem;
         const transport =
-            loggerOptions.silentAll || fsOptions.silent
+            options.silentAll || fsOptions.silent
                 ? createDummyTransport()
                 : new winston.transports.File({
                       silent: fsOptions.silent,

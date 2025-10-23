@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { IHttpLoggerOptionsFactory } from 'src/http-logger/interfaces/http-logger.options.factory.interface';
-import { IHttpLoggerOptions } from 'src/http-logger/interfaces/http-logger.options.interface';
+import { IHttpLoggerRootOptions } from 'src/http-logger/interfaces/http-logger.root.options.interface';
 
 @Injectable()
 export class HttpLoggerConfigService implements IHttpLoggerOptionsFactory {
     constructor(private readonly serverConfig: ServerConfigService) {}
 
-    create(): IHttpLoggerOptions {
+    create(): IHttpLoggerRootOptions {
         const logsDir = this.serverConfig.isProduction
             ? 'logs/prod'
             : 'logs/dev';

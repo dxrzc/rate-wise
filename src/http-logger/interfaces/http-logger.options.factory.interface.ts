@@ -1,5 +1,5 @@
-import { IHttpLoggerOptions } from './http-logger.options.interface';
+import { IHttpLoggerRootOptions } from './http-logger.root.options.interface';
 
 export interface IHttpLoggerOptionsFactory {
-    create(): Promise<IHttpLoggerOptions> | IHttpLoggerOptions;
+    create(): Promise<IHttpLoggerRootOptions> | IHttpLoggerRootOptions;
 }

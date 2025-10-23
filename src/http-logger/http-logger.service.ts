@@ -1,22 +1,24 @@
-import { ConsoleLoggerService } from './console.logger.service';
-import { HTTP_LOGGER_CONTEXT } from './constants/http-logger.options.constants';
-import { FileSystemLoggerService } from './file-system.logger.service';
+import { HTTP_LOGGER_FEATURE_OPTIONS } from './constants/http-logger.options.constants';
 import { IRequestLog } from './interfaces/request-log.interface';
-import { RequestLoggerService } from './request.logger.service';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConsoleLoggerService } from './services/console.logger.service';
+import { FileSystemLoggerService } from './services/file-system.logger.service';
+import { RequestLoggerService } from './services/request.logger.service';
+import { IHttpLoggerFeatureOptions } from './interfaces/http-logger.feature.options.interface';
 
 @Injectable()
 export class HttpLoggerService {
     constructor(
-        @Inject(HTTP_LOGGER_CONTEXT) private readonly context: string,
+        @Inject(HTTP_LOGGER_FEATURE_OPTIONS)
+        private readonly options: IHttpLoggerFeatureOptions,
         private readonly consoleLogger: ConsoleLoggerService,
         private readonly fsLogger: FileSystemLoggerService,
         private readonly requestLogger: RequestLoggerService,
     ) {}
 
     private log(level: string, message: string) {
-        this.consoleLogger.log(level, message, this.context);
-        this.fsLogger.log(level, message, this.context);
+        this.consoleLogger.log(level, message, this.options.context);
+        this.fsLogger.log(level, message, this.options.context);
     }
 
     request(data: IRequestLog) {

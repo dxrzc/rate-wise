@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { HTTP_LOGGER_OPTIONS } from './constants/http-logger.options.constants';
-import { IHttpLoggerOptions } from './interfaces/http-logger.options.interface';
 import * as winston from 'winston';
-import { createDummyTransport } from './functions/create-dummy-transport';
-import { IRequestLog } from './interfaces/request-log.interface';
+import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
+import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
+import { createDummyTransport } from '../functions/create-dummy-transport';
+import { IRequestLog } from '../interfaces/request-log.interface';
 
 // Request logs fs
 @Injectable()
@@ -12,12 +12,12 @@ export class RequestLoggerService {
     private requestLogger: winston.Logger;
 
     constructor(
-        @Inject(HTTP_LOGGER_OPTIONS)
-        private readonly loggerOptions: IHttpLoggerOptions,
+        @Inject(HTTP_LOGGER_ROOT_OPTIONS)
+        private readonly options: IHttpLoggerRootOptions,
     ) {
-        const reqLoggingOpts = loggerOptions.requests;
+        const reqLoggingOpts = options.requests;
         const transport =
-            reqLoggingOpts.silent || loggerOptions.silentAll
+            reqLoggingOpts.silent || options.silentAll
                 ? createDummyTransport()
                 : new winston.transports.File({
                       filename: `${reqLoggingOpts.dir}/${reqLoggingOpts.filename}`,
