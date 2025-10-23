@@ -2,11 +2,11 @@ import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { ClsService } from 'nestjs-cls';
 import { IAls } from 'src/common/interfaces/others/async-local-storage.interface';
+import { SystemLogger } from 'src/common/logging/system.logger';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { EmailsClient } from '../client/emails.client';
 import { EMAILS_QUEUE } from '../constants/emails.constants';
 import { IEmailInfo } from '../interface/email-info.interface';
-import { SystemLoggerService } from 'src/system-logger/system-logger.service';
 
 // requestId + email info
 type JobData = IAls & IEmailInfo;
@@ -16,7 +16,6 @@ type JobData = IAls & IEmailInfo;
 })
 export class EmailsConsumer extends WorkerHost {
     constructor(
-        private readonly systemLogger: SystemLoggerService,
         private readonly client: EmailsClient,
         private readonly logger: HttpLoggerService,
         private readonly cls: ClsService<IAls>,
@@ -59,7 +58,7 @@ export class EmailsConsumer extends WorkerHost {
 
     @OnWorkerEvent('error')
     onError(error: Error) {
-        this.systemLogger.error(error);
+        SystemLogger.getInstance().error(error);
     }
 
     @OnWorkerEvent('completed')
