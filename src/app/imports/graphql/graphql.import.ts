@@ -20,6 +20,7 @@ export class GqlConfigService implements GqlOptionsFactory {
 
         return {
             playground: false,
+            introspection: this.serverConfig.isDevelopment,
             plugins: this.serverConfig.isDevelopment
                 ? [ApolloServerPluginLandingPageLocalDefault()]
                 : [],
