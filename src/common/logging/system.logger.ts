@@ -7,18 +7,31 @@ export class SystemLogger extends ConsoleLogger {
     private static instance: SystemLogger;
 
     static {
-        const folder =
-            process.env.NODE_ENV === Environment.DEVELOPMENT
-                ? 'logs/dev'
-                : 'logs/prod';
-        SystemLogger.fsLogger = winston.createLogger({
-            transports: [
-                new winston.transports.File({
-                    filename: `${folder}/system.log`,
-                    format: winston.format.combine(winston.format.timestamp()),
-                }),
-            ],
-        });
+        const isTesting =
+            process.env.NODE_ENV !== Environment.DEVELOPMENT &&
+            process.env.NODE_ENV !== Environment.PRODUCTION;
+
+        if (isTesting) {
+            // dummy transport disables logs in fs in test environment
+            SystemLogger.fsLogger = winston.createLogger({
+                transports: [new winston.transports.Console({ silent: true })],
+            });
+        } else {
+            const folder =
+                process.env.NODE_ENV === Environment.DEVELOPMENT
+                    ? 'logs/dev'
+                    : 'logs/prod';
+            SystemLogger.fsLogger = winston.createLogger({
+                transports: [
+                    new winston.transports.File({
+                        filename: `${folder}/system.log`,
+                        format: winston.format.combine(
+                            winston.format.timestamp(),
+                        ),
+                    }),
+                ],
+            });
+        }
     }
 
     public static getInstance(): SystemLogger {
