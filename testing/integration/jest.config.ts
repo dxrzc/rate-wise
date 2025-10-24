@@ -12,7 +12,7 @@ const config: Config = {
     setupFilesAfterEnv: [
         '<rootDir>/testing/integration/setup/after-env/set-environment.ts',
         '<rootDir>/testing/integration/setup/after-env/set-jest.ts',
-        '<rootDir>/testing/integration/setup/after-env/set-db-connections.ts',
+        '<rootDir>/testing/integration/setup/after-env/set-services.ts',
         '<rootDir>/testing/integration/setup/after-env/set-app.ts',
     ],
 
