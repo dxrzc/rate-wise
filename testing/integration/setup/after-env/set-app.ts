@@ -35,8 +35,8 @@ beforeAll(async () => {
             get: () => request(testKit.app.getHttpServer()).post('/graphql'),
         });
     } catch (error) {
-        await nestApp.close();
         console.error(error);
+        if (nestApp) await nestApp.close();
         process.exit(1);
     }
 });
