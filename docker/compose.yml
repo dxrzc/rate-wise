@@ -14,11 +14,16 @@ services:
       POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
       REDIS_AUTH_URI: redis://redis_auth:6379
       REDIS_QUEUES_URI: redis://redis_queues:6378
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_USER: dev
+      SMTP_PASS: devPass
 
   mailpit:
     image: axllent/mailpit:v1.27.6     
     restart: always
     environment:
+      # https://mailpit.axllent.org/docs/configuration/runtime-options/
       MP_MAX_MESSAGES: 5000
       MP_DATABASE: /data/mailpit.db
       MP_SMTP_AUTH_ACCEPT_ANY: 1
