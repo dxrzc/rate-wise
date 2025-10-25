@@ -12,7 +12,6 @@
 - [ ] **Refactor** 
 - [ ] **Test** 
 - [ ] **Documentation**
----
 
 ## Test Coverage
 - [ ] Unit tests
