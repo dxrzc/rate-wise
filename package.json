@@ -27,7 +27,8 @@
     "docker:dev": "docker compose --env-file .env.dev --profile dev up -d",
     "migration:generate": "docker compose -f docker/dev.compose.yml exec app node scripts/generate-migration.js",
     "dev:migration:run": "docker compose -f docker/dev.compose.yml run --rm migrate",
-    "dev:migration:revert": "docker compose -f docker/dev.compose.yml exec app npx typeorm -d dist/db/data-source.js migration:revert"
+    "dev:migration:revert": "docker compose -f docker/dev.compose.yml exec app npx typeorm -d dist/db/data-source.js migration:revert",
+    "prepare": "husky"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
