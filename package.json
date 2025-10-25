@@ -6,11 +6,11 @@
   "private": true,
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=22.16.0"
+    "node": "22.19.0"
   },
   "scripts": {
     "dev": "docker compose -f docker/dev.compose.yml up --attach migrate --attach app",
-    "int": "jest --config testing/integration/jest.config.ts",
+    "test:integration": "jest --config testing/integration/jest.config.ts",
     "test:components": "jest --config testing/components/jest.config.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
