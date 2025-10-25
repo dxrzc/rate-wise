@@ -8,7 +8,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { SystemLogger } from 'src/common/logging/system.logger';
-import { createClient } from '@redis/client';
+import { createClient, SocketTimeoutError } from '@redis/client';
+
+const MAX_RETRIES = 5;
 
 export class RedisConnection {
     private readonly subscribers = new Array<any>();
@@ -20,6 +22,20 @@ export class RedisConnection {
     ) {
         this._client = createClient({
             url: redisUri,
+            socket: {
+                reconnectStrategy: (retries, cause) => {
+                    if (
+                        cause instanceof SocketTimeoutError ||
+                        retries > MAX_RETRIES
+                    ) {
+                        // stop reconnecting
+                        return false;
+                    }
+                    const jitter = Math.floor(Math.random() * 200);
+                    const delay = Math.min(Math.pow(2, retries) * 50, 2000);
+                    return delay + jitter;
+                },
+            },
         });
         this.configEvents();
     }
