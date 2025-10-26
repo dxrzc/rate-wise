@@ -1,23 +1,24 @@
 name: Lint
+
 on:  
   pull_request:
     branches:
-      - development
-  push:
-    branches:
-      - "github-actions/lint"    
+      - development      
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true        
 
 permissions:
   checks: write
   contents: write
 
 jobs:
-  run-linters:
-    name: Run linters
+  linter:
+    name: ESLint
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out Git repository
+      - name: Check out repository
         uses: actions/checkout@v5
 
       - name: Set up Node.js
