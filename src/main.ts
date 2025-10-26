@@ -59,6 +59,7 @@ async function bootstrap() {
         `Running in ${serverConfig.env} mode`,
         'NestApplication',
     );
+    console.log('Adding test commit');
 }
 
 bootstrap().catch((error) => {
