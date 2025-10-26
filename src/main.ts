@@ -61,6 +61,7 @@ async function bootstrap() {
     );
 
     console.log('Add test logging message 1');
+    console.log('Add test logging message 2');
 }
 
 bootstrap().catch((error) => {
