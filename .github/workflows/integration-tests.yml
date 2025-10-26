@@ -1,21 +1,32 @@
-name: Integration Tests
+name: Integration
+
 on:
   pull_request:
     branches:
       - development
+
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true        
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true       
+
 jobs: 
-  integration:
+  tests:
+    name: Integration Tests    
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - name: Use Node.js
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22.19.0'
+          node-version: 22.19.0
           cache: 'npm'
-      - run: npm ci
-      - run: npm run test:integration     
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run Integration Tests
+        run: npm run test:integration     
+    
     
