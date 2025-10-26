@@ -9,6 +9,7 @@ export default tseslint.config(
     ignores: [
       'eslint.config.mjs',      
       'scripts/*.js',
+      'commitlint.config.js'
     ],
   },
   eslint.configs.recommended,
