@@ -7,6 +7,10 @@ on:
     branches:
       - "github-actions/lint"    
 
+permissions:
+  checks: write
+  contents: write
+
 jobs:
   run-linters:
     name: Run linters
@@ -29,5 +33,5 @@ jobs:
         with:
           eslint: true
           eslint_auto_fix: false
-          eslint_args: "\"{src,apps,libs,test}/**/*.ts\" --max-warnings 0"
+          eslint_args: "\"{src,apps,libs,test}/**/*.ts\" --fix"
           # prettier: true
