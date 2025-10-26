@@ -60,7 +60,7 @@ async function bootstrap() {
         'NestApplication',
     );
 
-    console.log('Test log');    
+    console.log('Test log');
 }
 
 bootstrap().catch((error) => {
