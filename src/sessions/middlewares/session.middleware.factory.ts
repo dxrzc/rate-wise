@@ -11,8 +11,7 @@ import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 @Injectable()
 export class SessionMiddlewareFactory {
     constructor(
-        @Inject(SESSIONS_ROOT_OPTIONS)
-        private sessionOptions: ISessionsRootOptions,
+        @Inject(SESSIONS_ROOT_OPTIONS) private sessionOptions: ISessionsRootOptions,
         @Inject(SESSIONS_REDIS_CONNECTION)
         private readonly redisClient: RedisClientAdapter,
     ) {}
