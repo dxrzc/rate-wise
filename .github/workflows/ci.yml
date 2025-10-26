@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - development
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true        
+
+jobs: 
+  run-linter:
+    name: ESLint
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          continue_on_error: false
+          eslint: true
+          eslint_auto_fix: false
+          eslint_args: "\"{src,apps,libs,test}/**/*.ts\" --max-warnings 0"    
+
+  run-integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: run-linter
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run integration tests
+        run: npm run test:integration     
+    
