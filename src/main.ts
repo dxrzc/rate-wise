@@ -59,6 +59,8 @@ async function bootstrap() {
         `Running in ${serverConfig.env} mode`,
         'NestApplication',
     );
+
+    console.log('Add test logging message 1');
 }
 
 bootstrap().catch((error) => {
