@@ -9,7 +9,7 @@ import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
-import { GraphQLHttpError } from 'src/common/errors/graphql-http.error';
+import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { USER_MESSAGES } from './messages/user.messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -52,12 +52,12 @@ export class UsersService {
     async findOneByIdOrThrow(id: string): Promise<User> {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
-            throw GraphQLHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
         }
         const userFound = await this.userRepository.findOneBy({ id });
         if (!userFound) {
             this.logger.error(`User with id ${id} not found`);
-            throw GraphQLHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
         }
         return userFound;
     }
@@ -71,7 +71,7 @@ export class UsersService {
         const userFound = await this.findOneByEmail(email);
         if (!userFound) {
             this.logger.error(`User with email ${email} not found`);
-            throw GraphQLHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
         }
         return userFound;
     }
@@ -84,7 +84,7 @@ export class UsersService {
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
-                throw GraphQLHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
+                throw GqlHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }
