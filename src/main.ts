@@ -61,4 +61,6 @@ async function bootstrap() {
     );
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+    throw error;
+});
