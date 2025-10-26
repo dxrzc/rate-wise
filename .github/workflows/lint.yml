@@ -1,0 +1,30 @@
+name: Lint
+on:  
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.19.0
+      
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          eslint: true
+          eslint_auto_fix: false
+          eslint_args: "\"{src,apps,libs,test}/**/*.ts\" --max-warnings 0"
+          # prettier: true
