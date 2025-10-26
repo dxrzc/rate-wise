@@ -60,6 +60,7 @@ async function bootstrap() {
         'NestApplication',
     );
     console.log('Adding test commit');
+    console.log('Adding test commit2');
 }
 
 bootstrap().catch((error) => {
