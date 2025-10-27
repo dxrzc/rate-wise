@@ -4,7 +4,7 @@ import type { Config } from 'jest';
 const config: Config = {
     ...baseJestConfig,
     testTimeout: 20000,
-    maxWorkers: 2,
+    maxWorkers: 4,
 
     roots: ['<rootDir>/testing/integration/specs'],
     globalSetup: '<rootDir>/testing/integration/setup/global/setup.ts',
