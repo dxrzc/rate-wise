@@ -11,6 +11,8 @@ import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { Injectable } from '@nestjs/common';
+import { AUTH_LIMITS } from './constants/auth.constants';
+import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +36,11 @@ export class AuthService {
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
+        if (!matchesConstraints(credentials.password, AUTH_LIMITS.PASSWORD)) {
+            this.logger.error('Invalid password length');
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+
         const user = await this.userService.findOneByEmail(credentials.email);
 
         if (!user) {
@@ -71,6 +78,11 @@ export class AuthService {
         auth: ReAuthenticationInput,
         userId: string,
     ): Promise<void> {
+        if (!matchesConstraints(auth.password, AUTH_LIMITS.PASSWORD)) {
+            this.logger.error('Invalid password length');
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+
         const user = await this.userService.findOneByIdOrThrow(userId);
         const passwordMatches = await this.hashingService.compare(
             auth.password,
