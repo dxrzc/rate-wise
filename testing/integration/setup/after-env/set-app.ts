@@ -1,5 +1,6 @@
+import { faker } from '@faker-js/faker/.';
 import { testKit } from '@integration/utils/test-kit.util';
-import { INestApplication } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
@@ -7,10 +8,9 @@ import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
 import { User } from 'src/users/entities/user.entity';
 import * as request from 'supertest';
-import { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
 
-let nestApp: INestApplication<App>;
+let nestApp: NestExpressApplication;
 
 beforeAll(async () => {
     try {
@@ -20,7 +20,9 @@ beforeAll(async () => {
                 await import('src/app/app.module').then((m) => m.AppModule),
             ],
         }).compile();
-        nestApp = testingModule.createNestApplication();
+
+        nestApp = testingModule.createNestApplication<NestExpressApplication>();
+        nestApp.set('trust proxy', 'loopback'); // allow X-Forwarded-For from localhost
         await nestApp.init();
 
         // Testkit
@@ -31,8 +33,14 @@ beforeAll(async () => {
         testKit.sessionsRedisClient = nestApp.get<RedisClientAdapter>(
             SESSIONS_REDIS_CONNECTION,
         );
+
+        // Returns a new a graphql request coming from a random ip address
+        // on each call
         Object.defineProperty(testKit, 'request', {
-            get: () => request(testKit.app.getHttpServer()).post('/graphql'),
+            get: () =>
+                request(testKit.app.getHttpServer())
+                    .post('/graphql')
+                    .set('X-Forwarded-For', faker.internet.ip()),
         });
     } catch (error) {
         console.error(error);
