@@ -79,6 +79,25 @@ describe('signIn', () => {
         });
     });
 
+    describe('Email is valid but too long', () => {
+        test('should return BAD REQUEST code and INVALID CREDENTIALS message', async () => {
+            const longEmail = `${faker.string.alpha(AUTH_LIMITS.EMAIL.MAX)}@gmail.com`;
+            const res = await testKit.request.send(
+                signIn({
+                    fields: ['id'],
+                    input: {
+                        email: longEmail,
+                        password: testKit.userSeed.password,
+                    },
+                }),
+            );
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                AUTH_MESSAGES.INVALID_CREDENTIALS,
+            );
+        });
+    });
+
     describe('Password is too long', () => {
         test('should return BAD REQUEST code and INVALID CREDENTIALS message', async () => {
             const longPassword = faker.internet.password({
