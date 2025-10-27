@@ -1,4 +1,5 @@
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
@@ -181,6 +182,31 @@ describe('signUp', () => {
                     testKit.sessionsRedisClient.get(`session:${oldSid}`),
                 ).resolves.toBeNull();
             });
+        });
+    });
+
+    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+        test('should return TOO MANY REQUESTS code and message', async () => {
+            const ip = faker.internet.ip();
+            const userData = testKit.userSeed.signUpInput;
+            for (let i = 0; i < THROTTLE_CONFIG.CRITICAL.limit; i++) {
+                await testKit.request.set('X-Forwarded-For', ip).send(
+                    signUp({
+                        input: userData,
+                        fields: ['id'],
+                    }),
+                );
+            }
+            const res = await testKit.request.set('X-Forwarded-For', ip).send(
+                signUp({
+                    input: userData,
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(
+                Code.TOO_MANY_REQUESTS,
+                COMMON_MESSAGES.TOO_MANY_REQUESTS,
+            );
         });
     });
 });
