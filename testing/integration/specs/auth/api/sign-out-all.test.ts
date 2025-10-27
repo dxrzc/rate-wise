@@ -69,21 +69,42 @@ describe('signOutAll', () => {
         });
     });
 
-    describe('Invalid password length (wiring test)', () => {
-        test('should return BAD REQUEST code and INVALID_INPUT message', async () => {
+    describe('Password too short', () => {
+        test('should return BAD REQUEST code and INVALID CREDENTIALS message', async () => {
+            const shortPassword = faker.internet.password({
+                length: AUTH_LIMITS.PASSWORD.MIN - 1,
+            });
             const { sessionCookie } = await createUser();
             const res = await testKit.request.set('Cookie', sessionCookie).send(
                 signOutAll({
                     input: {
-                        password: faker.internet.password({
-                            length: AUTH_LIMITS.PASSWORD.MAX + 1,
-                        }),
+                        password: shortPassword,
                     },
                 }),
             );
             expect(res).toFailWith(
                 Code.BAD_REQUEST,
-                COMMON_MESSAGES.INVALID_INPUT,
+                AUTH_MESSAGES.INVALID_CREDENTIALS,
+            );
+        });
+    });
+
+    describe('Password too long', () => {
+        test('should return BAD REQUEST code and INVALID CREDENTIALS message', async () => {
+            const longPassword = faker.internet.password({
+                length: AUTH_LIMITS.PASSWORD.MAX + 1,
+            });
+            const { sessionCookie } = await createUser();
+            const res = await testKit.request.set('Cookie', sessionCookie).send(
+                signOutAll({
+                    input: {
+                        password: longPassword,
+                    },
+                }),
+            );
+            expect(res).toFailWith(
+                Code.BAD_REQUEST,
+                AUTH_MESSAGES.INVALID_CREDENTIALS,
             );
         });
     });
