@@ -4,7 +4,7 @@ import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { HashingService } from 'src/common/services/hashing.service';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { RequestContext } from './types/request-context.type';
-import { GraphQLHttpError } from 'src/common/errors/graphql-http.error';
+import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/entities/user.entity';
@@ -38,9 +38,7 @@ export class AuthService {
 
         if (!user) {
             this.logger.error(`Email not found`);
-            throw GraphQLHttpError.BadRequest(
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
         const passwordMatch = await this.hashingService.compare(
@@ -49,17 +47,13 @@ export class AuthService {
         );
         if (!passwordMatch) {
             this.logger.error('Password does not match');
-            throw GraphQLHttpError.BadRequest(
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
         const sessions = await this.sessionService.count(user.id);
         if (sessions >= this.authConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${user.id}`);
-            throw GraphQLHttpError.BadRequest(
-                AUTH_MESSAGES.MAX_SESSIONS_REACHED,
-            );
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         }
 
         await this.sessionService.create(req, user.id);
@@ -84,9 +78,7 @@ export class AuthService {
         );
         if (!passwordMatches) {
             this.logger.warn(`Invalid credentials for userId: ${userId}`);
-            throw GraphQLHttpError.BadRequest(
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
         await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);

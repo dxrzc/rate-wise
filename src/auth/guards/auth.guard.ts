@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { IGraphQLContext } from '../interfaces/graphql-context.interface';
+import { IGraphQLContext } from '../../common/interfaces/graphql/graphql-context.interface';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AUTH_MESSAGES } from '../messages/auth.messages';
-import { GraphQLHttpError } from 'src/common/errors/graphql-http.error';
+import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { UsersService } from 'src/users/users.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
         const session = reqContext.req.session;
         if (!session || !session.userId) {
             this.logger.error('Authentication required');
-            throw GraphQLHttpError.Unauthorized(AUTH_MESSAGES.UNAUTHORIZED);
+            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.UNAUTHORIZED);
         }
 
         const userInSession = session.userId;

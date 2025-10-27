@@ -10,6 +10,7 @@ import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
+import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 
 describe('signIn', () => {
     describe('Successful sign-in', () => {
@@ -189,6 +190,34 @@ describe('signIn', () => {
             expect(res).toFailWith(
                 Code.GRAPHQL_VALIDATION_FAILED,
                 <string>expect.any(String),
+            );
+        });
+    });
+
+    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+        test('should return TOO MANY REQUESTS code and message', async () => {
+            const ip = faker.internet.ip();
+            const input = {
+                email: testKit.userSeed.email,
+                password: testKit.userSeed.password,
+            };
+            for (let i = 0; i < THROTTLE_CONFIG.CRITICAL.limit; i++) {
+                await testKit.request.set('X-Forwarded-For', ip).send(
+                    signIn({
+                        input,
+                        fields: ['id'],
+                    }),
+                );
+            }
+            const res = await testKit.request.set('X-Forwarded-For', ip).send(
+                signIn({
+                    input,
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(
+                Code.TOO_MANY_REQUESTS,
+                COMMON_MESSAGES.TOO_MANY_REQUESTS,
             );
         });
     });

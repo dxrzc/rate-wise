@@ -1,3 +1,7 @@
+import {
+    CriticalThrottle,
+    UltraCriticalThrottle,
+} from 'src/common/decorators/throttling.decorator';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -17,6 +21,7 @@ export class AuthResolver {
     }
 
     @Public()
+    @CriticalThrottle()
     @Mutation(() => UserModel, { name: 'signUp' })
     async signUp(
         @Args('user_data') user: SignUpInput,
@@ -26,6 +31,7 @@ export class AuthResolver {
     }
 
     @Public()
+    @CriticalThrottle()
     @Mutation(() => UserModel, { name: 'signIn' })
     async signIn(
         @Args('credentials') credentials: SignInInput,
@@ -34,6 +40,7 @@ export class AuthResolver {
         return await this.authService.signIn(credentials, req);
     }
 
+    @CriticalThrottle()
     @Mutation(() => Boolean, { name: 'signOut' })
     async signOut(
         @Context('req') req: RequestContext,
@@ -44,6 +51,7 @@ export class AuthResolver {
         return true;
     }
 
+    @UltraCriticalThrottle()
     @Mutation(() => Boolean, { name: 'signOutAll' })
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,

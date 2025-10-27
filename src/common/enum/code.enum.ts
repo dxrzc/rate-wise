@@ -4,4 +4,5 @@ export enum Code {
     BAD_REQUEST = 'BAD_REQUEST',
     NOT_FOUND = 'NOT_FOUND',
     FORBIDDEN = 'FORBIDDEN',
+    TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS',
 }

@@ -9,6 +9,7 @@ import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
+import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 
 describe('signOutAll', () => {
     describe('Successful signOutAll', () => {
@@ -99,6 +100,28 @@ describe('signOutAll', () => {
             ).resolves.toFailWith(
                 Code.BAD_REQUEST,
                 AUTH_MESSAGES.INVALID_CREDENTIALS,
+            );
+        });
+    });
+
+    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
+        test('should return TOO MANY REQUESTS code and message', async () => {
+            const ip = faker.internet.ip();
+            for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
+                await testKit.request.set('X-Forwarded-For', ip).send(
+                    signOutAll({
+                        input: { password: testKit.userSeed.password },
+                    }),
+                );
+            }
+            const res = await testKit.request.set('X-Forwarded-For', ip).send(
+                signOutAll({
+                    input: { password: testKit.userSeed.password },
+                }),
+            );
+            expect(res).toFailWith(
+                Code.TOO_MANY_REQUESTS,
+                COMMON_MESSAGES.TOO_MANY_REQUESTS,
             );
         });
     });

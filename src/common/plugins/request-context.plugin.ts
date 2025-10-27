@@ -4,7 +4,7 @@ import {
     GraphQLRequestContext,
     GraphQLRequestContextWillSendResponse,
 } from '@apollo/server';
-import { IGraphQLContext } from 'src/auth/interfaces/graphql-context.interface';
+import { IGraphQLContext } from 'src/common/interfaces/graphql/graphql-context.interface';
 import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { Plugin } from '@nestjs/apollo';
