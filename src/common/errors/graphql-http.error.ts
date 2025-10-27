@@ -19,4 +19,10 @@ export class GqlHttpError {
             extensions: { code: Code.UNAUTHORIZED },
         });
     }
+
+    static TooManyRequests(message: string) {
+        return new GraphQLError(message, {
+            extensions: { code: Code.TOO_MANY_REQUESTS },
+        });
+    }
 }
