@@ -27,6 +27,9 @@ import { catchEverythingFiler } from './providers/filters/catch-everything.filte
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { TokensModule } from 'src/tokens/tokens.module';
+import { gqlThrottlerGuard } from './providers/guards/graphql-throttler.guard.provider';
+import { minutes, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -42,11 +45,20 @@ import { TokensModule } from 'src/tokens/tokens.module';
         RequestContextPlugin,
         catchEverythingFiler,
         appValidationPipe,
+        gqlThrottlerGuard,
         appAuthGuard,
     ],
     imports: [
         ConfigModule,
         EmailsModule,
+        ThrottlerModule.forRootAsync({
+            inject: [DbConfigService],
+            useFactory: ({ redisAuthUri }: DbConfigService) => ({
+                // default policy, overrided with decorators
+                throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
+                storage: new ThrottlerStorageRedisService(redisAuthUri),
+            }),
+        }),
         EmailsModule.forRootAsync({
             inject: [SmtpConfigService],
             useFactory: (smtpConfig: SmtpConfigService) => ({
