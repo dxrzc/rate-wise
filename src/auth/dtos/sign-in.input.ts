@@ -11,7 +11,6 @@ export class SignInInput {
     email!: string;
 
     @IsString()
-    @MaxLength(AUTH_LIMITS.PASSWORD.MAX)
     @Field(() => String)
     password!: string;
 }
