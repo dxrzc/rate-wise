@@ -36,6 +36,11 @@ export class AuthService {
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
+        if (!matchesConstraints(credentials.email, AUTH_LIMITS.EMAIL)) {
+            this.logger.error('Invalid email length');
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+
         if (!matchesConstraints(credentials.password, AUTH_LIMITS.PASSWORD)) {
             this.logger.error('Invalid password length');
             throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
