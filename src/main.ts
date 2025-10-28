@@ -58,7 +58,7 @@ async function bootstrap() {
     const serverConfig = app.get(ServerConfigService);
     await app.listen(serverConfig.port);
     SystemLogger.getInstance().log(
-        `Running in ${serverConfig.env} mode`,
+        `Running in ${serverConfig.env} mode on port ${serverConfig.port}`,
         'NestApplication',
     );
 }
