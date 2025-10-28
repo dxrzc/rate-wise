@@ -72,7 +72,9 @@ export class RedisConnection {
     }
 
     async disconnect() {
-        await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
-        await this._client.disconnect();
+        if (this._client && this._client.isOpen) {
+            await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
+            await this._client.disconnect();
+        }
     }
 }
