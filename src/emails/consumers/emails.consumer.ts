@@ -24,10 +24,13 @@ export class EmailsConsumer extends WorkerHost {
     }
 
     async process(job: Job<IEmailInfo>): Promise<void> {
+        const { subject, from, html, to, text } = job.data;
         await this.client.sendMail({
-            from: job.data.from,
-            message: job.data.message,
-            to: job.data.to,
+            subject,
+            from,
+            html,
+            to,
+            text,
         });
     }
 
