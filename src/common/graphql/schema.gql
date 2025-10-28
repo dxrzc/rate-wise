@@ -103,8 +103,13 @@ input CreateItemInput {
 }
 
 input SignUpInput {
+  "        \n        **Constraints:**\n        - Length between 3 and 45 characters.\n        "
   username: String!
+
+  "\n        **Constraints:**\n        - Valid email format.\n        - Maximum length of 45 characters.\n        "
   email: String!
+
+  "        \n        **Constraints:**\n        - Length between 8 and 56 characters.\n        "
   password: String!
 }
 
