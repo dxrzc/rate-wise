@@ -11,8 +11,10 @@ import { User } from 'src/users/entities/user.entity';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { Injectable } from '@nestjs/common';
-import { AUTH_LIMITS } from './constants/auth.constants';
+import { AuthNotifications } from './notifications/auth.notifications';
+import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
+import { AUTH_LIMITS } from './constants/auth.constants';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +24,13 @@ export class AuthService {
         private readonly sessionService: SessionsService,
         private readonly userService: UsersService,
         private readonly logger: HttpLoggerService,
+        private readonly authNotifications: AuthNotifications,
     ) {}
+
+    async verifyAccount(user: AuthenticatedUser) {
+        await this.authNotifications.sendAccountVerificationEmail(user);
+        this.logger.info(`Verification account email sent to ${user.email}`);
+    }
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
         signUpInput.password = await this.hashingService.hash(
