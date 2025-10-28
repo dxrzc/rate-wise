@@ -41,9 +41,9 @@ export class AuthResolver {
     }
 
     @CriticalThrottle()
-    @Mutation(() => Boolean, { name: 'verifyAccount' })
-    async verifyAccount(@Context('req') req: RequestContext) {
-        await this.authService.verifyAccount(req.user);
+    @Mutation(() => Boolean, { name: 'requestAccountVerification' })
+    async requestAccountVerification(@Context('req') req: RequestContext) {
+        await this.authService.requestAccountVerification(req.user);
         return true;
     }
 

@@ -27,7 +27,8 @@ export class AuthService {
         private readonly authNotifications: AuthNotifications,
     ) {}
 
-    async verifyAccount(user: AuthenticatedUser) {
+    async requestAccountVerification(user: AuthenticatedUser) {
+        // TODO: check user role first.
         await this.authNotifications.sendAccountVerificationEmail(user);
         this.logger.info(`Verification account email sent to ${user.email}`);
     }
