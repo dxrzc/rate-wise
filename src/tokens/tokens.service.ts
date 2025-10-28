@@ -55,7 +55,7 @@ export class TokensService<CustomData extends object> {
         );
     }
 
-    async verify<T extends object>(token: string): Promise<JwtPayload<T>> {
+    async verify<T extends CustomData>(token: string): Promise<JwtPayload<T>> {
         // JwtModule verification
         const payload = await this.verifyTokenOrThrow<T>(token);
 
@@ -74,7 +74,7 @@ export class TokensService<CustomData extends object> {
         return payload;
     }
 
-    async consume<T extends object>(token: string): Promise<JwtPayload<T>> {
+    async consume<T extends CustomData>(token: string): Promise<JwtPayload<T>> {
         const payload = await this.verify<T>(token);
         await this.blacklist(payload.jti, payload.exp);
         return payload;
