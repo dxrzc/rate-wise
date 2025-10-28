@@ -1,10 +1,10 @@
 import { AppValidationPipe } from 'src/common/pipes/app-validation.pipe';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { mock } from 'jest-mock-extended';
 
 const pipe = new AppValidationPipe(mock<HttpLoggerService>());

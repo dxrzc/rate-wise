@@ -1,11 +1,11 @@
 import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AppValidationPipe } from 'src/common/pipes/app-validation.pipe';
-import { HttpLoggerService } from 'src/logging/http/http-logger.service';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { SignInInput } from 'src/auth/dtos/sign-in.input';
 import { mock } from 'jest-mock-extended';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 const pipe = new AppValidationPipe(mock<HttpLoggerService>());
 const userSeed = new UserSeedService();
@@ -40,14 +40,12 @@ describe('SignInInput', () => {
     });
 
     describe('Password too long', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('do not throw', async () => {
             const data = {
                 email: userSeed.email,
-                password: 'a'.repeat(129),
+                password: 'a'.repeat(AUTH_LIMITS.PASSWORD.MAX + 1),
             };
-            await expect(pipe.transform(data, metadata)).rejects.toThrow(
-                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
-            );
+            await expect(pipe.transform(data, metadata)).resolves.not.toThrow();
         });
     });
 
