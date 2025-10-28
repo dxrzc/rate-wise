@@ -21,6 +21,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
     catch(exception: unknown, host: ArgumentsHost) {
         switch (host.getType<GqlContextType>()) {
             case 'http': {
+                // After configuring Apollo, http exceptions are no longer handled automatically
                 const ctx = host.switchToHttp();
                 const response = ctx.getResponse<Response>();
                 if (exception instanceof HttpException) {
@@ -37,6 +38,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
                 break;
             }
             case 'graphql': {
+                // This runs before Apollo formatError
                 if (!(exception instanceof GraphQLError)) {
                     logException(exception);
                 }
