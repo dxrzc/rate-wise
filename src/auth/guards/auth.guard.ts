@@ -4,7 +4,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { AUTH_MESSAGES } from '../messages/auth.messages';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { UsersService } from 'src/users/users.service';
-import { GqlExecutionContext } from '@nestjs/graphql';
+import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
@@ -18,9 +18,15 @@ export class AuthGuard implements CanActivate {
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
+        // Works for both REST & GraphQL
         const isPublic = this.reflector.get(Public, context.getHandler());
         if (isPublic) {
             return true;
+        }
+
+        // non-GraphQL
+        if (context.getType<GqlContextType>() !== 'graphql') {
+            throw new Error('Non-gql contexts in AuthGuard not implemented');
         }
 
         const graphQLContext = GqlExecutionContext.create(context);
