@@ -22,16 +22,20 @@ describe('Tokens Service ', () => {
     beforeAll(async () => {
         testingModule = await Test.createTestingModule({
             imports: [
+                TokensModule.forRootAsync({
+                    useFactory: async () => ({
+                        connection: {
+                            redisUri: await createLightweightRedisContainer(),
+                        },
+                    }),
+                }),
                 TokensModule.forFeatureAsync({
                     provide: 'TEST_TOKEN_SERVICE',
-                    useFactory: async () => ({
+                    useFactory: () => ({
                         purpose: JwtPurpose.EMAIL_CONFIRMATION,
                         expiresIn: '3m',
                         secret: '123EMAIL',
                         dataInToken: ['email'],
-                        connection: {
-                            redisUri: await createLightweightRedisContainer(),
-                        },
                     }),
                 }),
             ],
