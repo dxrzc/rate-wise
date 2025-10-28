@@ -37,7 +37,7 @@ export class EmailsModule {
         };
     }
 
-    static forFeature(
+    static forFeatureAsync(
         options: FactoryConfigModuleWithExtraProvider<IEmailsFeatureOptions>,
     ): DynamicModule {
         return {
