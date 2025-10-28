@@ -28,6 +28,7 @@ export class TokensModule implements OnApplicationShutdown {
     ): DynamicModule {
         return {
             module: TokensModule,
+            global: true,
             imports: options.imports || [],
             providers: [
                 {
@@ -37,7 +38,7 @@ export class TokensModule implements OnApplicationShutdown {
                 },
                 {
                     provide: TOKENS_REDIS_CONNECTION,
-                    useFactory: async (moduleOpts: ITokensFeatureOptions) => {
+                    useFactory: async (moduleOpts: ITokensRootOptions) => {
                         const redisUri = moduleOpts.connection.redisUri;
                         const redisClient = new RedisClientAdapter(
                             redisUri,
