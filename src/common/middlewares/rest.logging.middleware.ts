@@ -5,7 +5,7 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
-export class HttpLoggingMiddleware implements NestMiddleware {
+export class RestLoggingMiddleware implements NestMiddleware {
     constructor(
         private readonly logger: HttpLoggerService,
         private readonly cls: ClsService,
