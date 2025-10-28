@@ -67,7 +67,7 @@ export class EmailsConsumer extends WorkerHost {
     @OnWorkerEvent('completed')
     onCompleted(job: Job<JobData>) {
         this.runInContext(job.data.requestId, () => {
-            this.logger.warn(`Email successfully sent to ${job.data.to}`);
+            this.logger.info(`Email successfully sent to ${job.data.to}`);
         });
     }
 }
