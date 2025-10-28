@@ -3,7 +3,7 @@ import { baseJestConfig } from '../common/config/jest.base.config';
 
 const config: Config = {
     ...baseJestConfig,
-    maxWorkers: 3,
+    maxWorkers: '50%',
 
     roots: ['<rootDir>/testing/unit/specs'],
 
