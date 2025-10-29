@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { Public } from 'src/common/decorators/public.decorator';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { accountVerifiedPage } from './pages/account-verified.page';
+import { AUTH_MESSAGES } from './messages/auth.messages';
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +17,7 @@ export class AuthController {
     async verifyAccount(@Query('token') token: string) {
         if (!token) {
             this.logger.error('No token provided in verifyAccount');
-            throw new BadRequestException('Invalid url');
+            throw new BadRequestException(AUTH_MESSAGES.INVALID_URL);
         }
         await this.authService.verifyAccount(token);
         return accountVerifiedPage();
