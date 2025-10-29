@@ -47,6 +47,7 @@ export class AuthGuard implements CanActivate {
             id: user.id,
             role: user.role,
             email: user.email,
+            status: user.status,
             username: user.username,
         };
         Object.assign(reqContext.req, { user: userInfo });
