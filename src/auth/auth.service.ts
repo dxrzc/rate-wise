@@ -1,8 +1,8 @@
 import {
     BadRequestException,
+    ForbiddenException,
     Inject,
     Injectable,
-    InternalServerErrorException,
 } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
@@ -11,7 +11,6 @@ import { HashingService } from 'src/common/services/hashing.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SessionsService } from 'src/sessions/sessions.service';
-import { InvalidToken } from 'src/tokens/errors/invalid-token.error';
 import { TokensService } from 'src/tokens/tokens.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -25,6 +24,7 @@ import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { RequestContext } from './types/request-context.type';
 import { UserStatus } from 'src/users/enum/user-status.enum';
+import { verifyTokenOrThrow } from './functions/verify-token-or-throw';
 
 @Injectable()
 export class AuthService {
@@ -41,28 +41,29 @@ export class AuthService {
 
     // REST endpoint related
     async verifyAccount(tokenInUrl: string) {
-        try {
-            const { id } = await this.accVerifToken.verify(tokenInUrl);
-            const user = await this.userService.findOneByIdOrThrow(id);
-            if (user.status === UserStatus.SUSPENDED) {
-                this.logger.warn(`Account ${user.id} suspended`);
-                throw new BadRequestException('Account suspended');
-            }
-            if (user.status !== UserStatus.PENDING_VERIFICATION) {
-                this.logger.warn(`Account ${user.id} already verified`);
-                throw new BadRequestException('Account already verified');
-            }
-            user.status = UserStatus.ACTIVE;
-            await this.userService.saveOne(user);
-            this.logger.info(`Account ${user.id} verified successfully`);
-        } catch (error) {
-            if (error instanceof InvalidToken) {
-                this.logger.error(error.message);
-                throw new BadRequestException('Invalid token');
-            }
-            this.logger.error(String(error));
-            throw new InternalServerErrorException();
+        const { id, jti, exp } = await verifyTokenOrThrow(
+            this.accVerifToken,
+            this.logger,
+            tokenInUrl,
+        );
+        const user = await this.userService.findOneByIdOrThrow(id);
+        if (user.status === UserStatus.SUSPENDED) {
+            this.logger.error(`Account ${user.id} suspended`);
+            throw new ForbiddenException(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
         }
+        if (user.status !== UserStatus.PENDING_VERIFICATION) {
+            this.logger.error(`Account ${user.id} already verified`);
+            throw new BadRequestException(
+                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
+            );
+        }
+        user.status = UserStatus.ACTIVE;
+        await this.userService.saveOne(user);
+        this.logger.info(`Account ${user.id} verified successfully`);
+        await this.accVerifToken.blacklist(jti, exp);
+        this.logger.debug(
+            `Verification token blacklisted for account ${user.id}`,
+        );
     }
 
     async requestAccountVerification(user: AuthenticatedUser) {
