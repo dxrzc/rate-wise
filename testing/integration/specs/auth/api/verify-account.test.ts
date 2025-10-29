@@ -1,0 +1,107 @@
+import { faker } from '@faker-js/faker/.';
+import {
+    createActiveUser,
+    createSuspendedUser,
+    createUser,
+} from '@integration/utils/create-user.util';
+import { testKit } from '@integration/utils/test-kit.util';
+import { HttpStatus } from '@nestjs/common';
+import { ACCOUNT_VERIFICATION_TOKEN } from 'src/auth/constants/tokens.provider.constant';
+import { IAccVerifTokenPayload } from 'src/auth/interfaces/tokens-payload.interface';
+import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
+import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { TokensService } from 'src/tokens/tokens.service';
+import { JwtPayload } from 'src/tokens/types/jwt-payload.type';
+import { UserStatus } from 'src/users/enum/user-status.enum';
+import * as request from 'supertest';
+
+// REST API
+describe('verifyAccount', () => {
+    describe('No token provided', () => {
+        test('return BAD REQUEST and INVALID URL message', async () => {
+            const res = await request(testKit.app.getHttpServer()).get(
+                testKit.endpointsREST.verifyAccount,
+            );
+            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
+    describe('Invalid token', () => {
+        test('return BAD REQUEST and INVALID_TOKEN message', async () => {
+            const invalidToken = faker.string.uuid();
+            const res = await request(testKit.app.getHttpServer()).get(
+                `${testKit.endpointsREST.verifyAccount}?token=${invalidToken}`,
+            );
+            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
+    describe('Target account is suspended', () => {
+        test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
+            const { id } = await createSuspendedUser();
+            const tokenService = testKit.app.get<
+                TokensService<IAccVerifTokenPayload>
+            >(ACCOUNT_VERIFICATION_TOKEN);
+            const token = await tokenService.generate({ id });
+            const res = await request(testKit.app.getHttpServer()).get(
+                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
+            );
+            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
+            expect(res.status).toBe(HttpStatus.FORBIDDEN);
+        });
+    });
+
+    describe('Target account is already verified', () => {
+        test('return BAD REQUEST and ACCOUNT_ALREADY_VERIFIED message', async () => {
+            const { id } = await createActiveUser();
+            const tokenService = testKit.app.get<
+                TokensService<IAccVerifTokenPayload>
+            >(ACCOUNT_VERIFICATION_TOKEN);
+            const token = await tokenService.generate({ id });
+            const res = await request(testKit.app.getHttpServer()).get(
+                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
+            );
+            expect(res.body.message).toBe(
+                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
+            );
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
+    describe('Account successfully verified', () => {
+        test('user status should be updated to ACTIVE', async () => {
+            const { id } = await createUser();
+            const tokenService = testKit.app.get<
+                TokensService<IAccVerifTokenPayload>
+            >(ACCOUNT_VERIFICATION_TOKEN);
+            const token = await tokenService.generate({ id });
+            // verify
+            const res = await request(testKit.app.getHttpServer()).get(
+                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
+            );
+            const userInDb = await testKit.userRepos.findOneBy({ id });
+            expect(res.status).toBe(HttpStatus.OK);
+            expect(userInDb?.status).toBe(UserStatus.ACTIVE);
+        });
+
+        test('token should be blacklisted', async () => {
+            const { id } = await createUser();
+            const tokenSvc = testKit.app.get<
+                TokensService<IAccVerifTokenPayload>
+            >(ACCOUNT_VERIFICATION_TOKEN);
+            const token = await tokenSvc.generate({ id });
+            // verify
+            const res = await request(testKit.app.getHttpServer()).get(
+                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
+            );
+            const { jti } =
+                await tokenSvc['verifyTokenOrThrow']<JwtPayload<any>>(token);
+            const redisKey = blacklistTokenKey(jti);
+            const isBlacklisted = await testKit.tokensRedisClient.get(redisKey);
+            expect(res.status).toBe(HttpStatus.OK);
+            expect(isBlacklisted).toBe(1);
+        });
+    });
+});
