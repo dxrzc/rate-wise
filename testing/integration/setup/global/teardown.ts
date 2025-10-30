@@ -6,7 +6,6 @@ export default async function () {
         await Promise.all([
             fs.rm(join(__dirname, 'containers/postgres-uri.txt')),
             fs.rm(join(__dirname, 'containers/redis-auth-uri.txt')),
-            fs.rm(join(__dirname, 'containers/redis-queues-uri.txt')),
             fs.rm(join(__dirname, 'containers/mailpit-port.txt')),
             fs.rm(join(__dirname, 'containers/mailpit-api-port.txt')),
         ]);

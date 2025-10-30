@@ -9,5 +9,5 @@ async function createRedis(type: AllowedRedisServices): Promise<void> {
 }
 
 export async function createRedisInstances() {
-    await Promise.all([createRedis('redis-auth'), createRedis('redis-queues')]);
+    await Promise.all([createRedis('redis-auth')]);
 }
