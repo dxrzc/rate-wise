@@ -12,7 +12,7 @@ interface ExtraData {
 // Default values
 export async function createUser(): Promise<UserModel & ExtraData> {
     const user = testKit.userSeed.signUpInput;
-    const res = await testKit.request.send(
+    const res = await testKit.gqlClient.send(
         signUp({
             fields: 'ALL',
             input: user,
@@ -27,7 +27,7 @@ export async function createUser(): Promise<UserModel & ExtraData> {
 
 export async function createSuspendedUser(): Promise<UserModel & ExtraData> {
     const user = testKit.userSeed.signUpInput;
-    const res = await testKit.request.send(
+    const res = await testKit.gqlClient.send(
         signUp({
             fields: 'ALL',
             input: user,
@@ -47,7 +47,7 @@ export async function createSuspendedUser(): Promise<UserModel & ExtraData> {
 
 export async function createActiveUser(): Promise<UserModel & ExtraData> {
     const user = testKit.userSeed.signUpInput;
-    const res = await testKit.request.send(
+    const res = await testKit.gqlClient.send(
         signUp({
             fields: 'ALL',
             input: user,

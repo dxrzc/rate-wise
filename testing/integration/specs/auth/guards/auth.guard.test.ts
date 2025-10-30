@@ -11,7 +11,7 @@ const protectedRoute = signOut();
 describe('AuthGuard', () => {
     describe('Session cookie not provided', () => {
         test('should return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
-            const res = await testKit.request.send(protectedRoute);
+            const res = await testKit.gqlClient.send(protectedRoute);
             expect(res).toFailWith(
                 Code.UNAUTHORIZED,
                 AUTH_MESSAGES.UNAUTHORIZED,
@@ -23,7 +23,7 @@ describe('AuthGuard', () => {
         test('should return NOT_FOUND and USER_NOT_FOUND message', async () => {
             const { sessionCookie, id } = await createUser();
             await testKit.userRepos.delete({ id });
-            const res = await testKit.request
+            const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOut());
             expect(res).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);

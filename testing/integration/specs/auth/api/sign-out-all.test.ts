@@ -19,7 +19,7 @@ describe('signOutAll', () => {
             const sid1 = getSidFromCookie(sessionCookie);
 
             // sign in
-            const signInRes = await testKit.request.send(
+            const signInRes = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: ['id'],
@@ -37,11 +37,13 @@ describe('signOutAll', () => {
             ).resolves.not.toBeNull();
 
             // sign out all
-            const res = await testKit.request.set('Cookie', sessionCookie).send(
-                signOutAll({
-                    input: { password },
-                }),
-            );
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(
+                    signOutAll({
+                        input: { password },
+                    }),
+                );
             expect(res).notToFail();
 
             // sids don't exist anymore
@@ -57,7 +59,7 @@ describe('signOutAll', () => {
     describe('Session Cookie not provided', () => {
         test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
             await expect(
-                testKit.request.send(
+                testKit.gqlClient.send(
                     signOutAll({
                         input: { password: 'password' },
                     }),
@@ -75,13 +77,15 @@ describe('signOutAll', () => {
                 length: AUTH_LIMITS.PASSWORD.MIN - 1,
             });
             const { sessionCookie } = await createUser();
-            const res = await testKit.request.set('Cookie', sessionCookie).send(
-                signOutAll({
-                    input: {
-                        password: shortPassword,
-                    },
-                }),
-            );
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(
+                    signOutAll({
+                        input: {
+                            password: shortPassword,
+                        },
+                    }),
+                );
             expect(res).toFailWith(
                 Code.BAD_REQUEST,
                 AUTH_MESSAGES.INVALID_CREDENTIALS,
@@ -95,13 +99,15 @@ describe('signOutAll', () => {
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
             const { sessionCookie } = await createUser();
-            const res = await testKit.request.set('Cookie', sessionCookie).send(
-                signOutAll({
-                    input: {
-                        password: longPassword,
-                    },
-                }),
-            );
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(
+                    signOutAll({
+                        input: {
+                            password: longPassword,
+                        },
+                    }),
+                );
             expect(res).toFailWith(
                 Code.BAD_REQUEST,
                 AUTH_MESSAGES.INVALID_CREDENTIALS,
@@ -113,7 +119,7 @@ describe('signOutAll', () => {
         test('should return BAD_REQUEST code and INVALID_CREDENTIALS message', async () => {
             const { sessionCookie } = await createUser();
             await expect(
-                testKit.request.set('Cookie', sessionCookie).send(
+                testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signOutAll({
                         input: { password: 'password' },
                     }),
@@ -129,13 +135,13 @@ describe('signOutAll', () => {
         test('should return TOO MANY REQUESTS code and message', async () => {
             const ip = faker.internet.ip();
             for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
-                await testKit.request.set('X-Forwarded-For', ip).send(
+                await testKit.gqlClient.set('X-Forwarded-For', ip).send(
                     signOutAll({
                         input: { password: testKit.userSeed.password },
                     }),
                 );
             }
-            const res = await testKit.request.set('X-Forwarded-For', ip).send(
+            const res = await testKit.gqlClient.set('X-Forwarded-For', ip).send(
                 signOutAll({
                     input: { password: testKit.userSeed.password },
                 }),

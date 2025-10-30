@@ -11,7 +11,7 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 describe('signOut', () => {
     describe('Session cookie not provided', () => {
         test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
-            const res = await testKit.request.send(signOut());
+            const res = await testKit.gqlClient.send(signOut());
             expect(res).toFailWith(
                 Code.UNAUTHORIZED,
                 AUTH_MESSAGES.UNAUTHORIZED,
@@ -24,7 +24,7 @@ describe('signOut', () => {
             // sign up
             const { sessionCookie } = await createUser();
             // sign out
-            const res = await testKit.request
+            const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOut());
             expect(res).notToFail();
@@ -41,11 +41,11 @@ describe('signOut', () => {
         test('should return TOO MANY REQUESTS code and message', async () => {
             const ip = faker.internet.ip();
             for (let i = 0; i < THROTTLE_CONFIG.CRITICAL.limit; i++) {
-                await testKit.request
+                await testKit.gqlClient
                     .set('X-Forwarded-For', ip)
                     .send(signOut());
             }
-            const res = await testKit.request
+            const res = await testKit.gqlClient
                 .set('X-Forwarded-For', ip)
                 .send(signOut());
             expect(res).toFailWith(

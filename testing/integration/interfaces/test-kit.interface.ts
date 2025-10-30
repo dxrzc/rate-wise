@@ -14,7 +14,7 @@ export interface ITestKit {
     userRepos: Repository<User>;
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
-    request: Test;
+    gqlClient: Test;
     endpointsREST: {
         verifyAccount: string;
     };
