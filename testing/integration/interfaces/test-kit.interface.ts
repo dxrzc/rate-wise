@@ -15,4 +15,7 @@ export interface ITestKit {
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
     request: Test;
+    endpointsREST: {
+        verifyAccount: string;
+    };
 }

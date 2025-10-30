@@ -13,9 +13,11 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from '../errors/graphql-http.error';
 import { IGraphQLContext } from '../interfaces/graphql/graphql-context.interface';
 import { COMMON_MESSAGES } from '../messages/common.messages';
+import { Request } from 'express';
 
+// GraphQL & REST
 @Injectable()
-export class GqlThrottlerGuard extends ThrottlerGuard {
+export class CommonThrottlerGuard extends ThrottlerGuard {
     constructor(
         options: ThrottlerOptions[],
         storageService: ThrottlerStorage,
@@ -32,6 +34,15 @@ export class GqlThrottlerGuard extends ThrottlerGuard {
     }
 
     getRequestResponse(context: ExecutionContext) {
+        // REST
+        if (context.getType() === 'http') {
+            const http = context.switchToHttp();
+            return {
+                req: http.getRequest<Request>(),
+                res: http.getResponse<Response>(),
+            };
+        }
+        // GraphQL
         const gqlCtx = GqlExecutionContext.create(context);
         const ctx = gqlCtx.getContext<IGraphQLContext>();
         return { req: ctx.req, res: ctx.res };

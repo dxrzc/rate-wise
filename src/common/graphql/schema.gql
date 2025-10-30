@@ -91,6 +91,7 @@ type Mutation {
   createItem(item_data: CreateItemInput!): ItemModel!
   signUp(user_data: SignUpInput!): UserModel!
   signIn(credentials: SignInInput!): UserModel!
+  requestAccountVerification: Boolean!
   signOut: Boolean!
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
 }

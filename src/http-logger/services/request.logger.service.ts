@@ -4,7 +4,10 @@ import * as winston from 'winston';
 import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
 import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
 import { createDummyTransport } from '../functions/create-dummy-transport';
-import { IRequestLog } from '../interfaces/request-log.interface';
+import {
+    IRestRequestLog,
+    IGqlRequestLog,
+} from '../interfaces/request-log.interface';
 
 // Request logs fs
 @Injectable()
@@ -43,7 +46,13 @@ export class RequestLoggerService {
         });
     }
 
-    log(data: IRequestLog) {
+    // gql
+    logGQL(data: IGqlRequestLog) {
+        this.requestLogger.log('info', data);
+    }
+
+    // REST
+    logREST(data: IRestRequestLog) {
         this.requestLogger.log('info', data);
     }
 }

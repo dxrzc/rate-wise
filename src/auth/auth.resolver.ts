@@ -41,6 +41,13 @@ export class AuthResolver {
     }
 
     @CriticalThrottle()
+    @Mutation(() => Boolean, { name: 'requestAccountVerification' })
+    async requestAccountVerification(@Context('req') req: RequestContext) {
+        await this.authService.requestAccountVerification(req.user);
+        return true;
+    }
+
+    @CriticalThrottle()
     @Mutation(() => Boolean, { name: 'signOut' })
     async signOut(
         @Context('req') req: RequestContext,

@@ -32,7 +32,7 @@ describe('Tokens Service ', () => {
                 TokensModule.forFeatureAsync({
                     provide: 'TEST_TOKEN_SERVICE',
                     useFactory: () => ({
-                        purpose: JwtPurpose.EMAIL_CONFIRMATION,
+                        purpose: JwtPurpose.ACCOUNT_VERIFICATION,
                         expiresIn: '3m',
                         secret: '123EMAIL',
                         dataInToken: ['email'],
@@ -55,7 +55,7 @@ describe('Tokens Service ', () => {
                 const badToken = tokensService['jwtService'].sign(
                     {
                         email: '',
-                        purpose: JwtPurpose.EMAIL_CONFIRMATION,
+                        purpose: JwtPurpose.ACCOUNT_VERIFICATION,
                     },
                     {
                         secret: 'badSecret',
@@ -139,7 +139,7 @@ describe('Tokens Service ', () => {
                 );
                 expect(payload).toStrictEqual({
                     email,
-                    purpose: JwtPurpose.EMAIL_CONFIRMATION,
+                    purpose: JwtPurpose.ACCOUNT_VERIFICATION,
                     jti: expect.any(String),
                     iat: expect.any(Number),
                     exp: expect.any(Number),

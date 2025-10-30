@@ -1,5 +1,8 @@
 import { HTTP_LOGGER_FEATURE_OPTIONS } from './constants/http-logger.options.constants';
-import { IRequestLog } from './interfaces/request-log.interface';
+import {
+    IRestRequestLog,
+    IGqlRequestLog,
+} from './interfaces/request-log.interface';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConsoleLoggerService } from './services/console.logger.service';
 import { FileSystemLoggerService } from './services/file-system.logger.service';
@@ -21,8 +24,12 @@ export class HttpLoggerService {
         this.fsLogger.log(level, message, this.options.context);
     }
 
-    request(data: IRequestLog) {
-        this.requestLogger.log(data);
+    logGQL(data: IGqlRequestLog) {
+        this.requestLogger.logGQL(data);
+    }
+
+    logREST(data: IRestRequestLog) {
+        this.requestLogger.logREST(data);
     }
 
     info(message: string) {

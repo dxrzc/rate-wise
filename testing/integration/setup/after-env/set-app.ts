@@ -1,11 +1,14 @@
 import { faker } from '@faker-js/faker/.';
+import { EmailsQueueMock } from '@integration/mocks/queues/emails.queue.mock';
 import { testKit } from '@integration/utils/test-kit.util';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
+import { EMAILS_QUEUE } from 'src/emails/constants/emails.constants';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
+import { TOKENS_REDIS_CONNECTION } from 'src/tokens/constants/tokens.constants';
 import { User } from 'src/users/entities/user.entity';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
@@ -19,7 +22,10 @@ beforeAll(async () => {
             imports: [
                 await import('src/app/app.module').then((m) => m.AppModule),
             ],
-        }).compile();
+        })
+            .overrideProvider(EMAILS_QUEUE)
+            .useClass(EmailsQueueMock)
+            .compile();
 
         nestApp = testingModule.createNestApplication<NestExpressApplication>();
         nestApp.set('trust proxy', 'loopback'); // allow X-Forwarded-For from localhost
@@ -30,6 +36,9 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
+        testKit.tokensRedisClient = nestApp.get<RedisClientAdapter>(
+            TOKENS_REDIS_CONNECTION,
+        );
         testKit.sessionsRedisClient = nestApp.get<RedisClientAdapter>(
             SESSIONS_REDIS_CONNECTION,
         );

@@ -30,6 +30,8 @@ import { TokensModule } from 'src/tokens/tokens.module';
 import { gqlThrottlerGuard } from './providers/guards/graphql-throttler.guard.provider';
 import { minutes, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
+import { AuthController } from 'src/auth/auth.controller';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -134,5 +136,6 @@ export class AppModule implements NestModule {
 
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(this.sessionMiddlewareFactory.create()).forRoutes('*');
+        consumer.apply(RestLoggingMiddleware).forRoutes(AuthController);
     }
 }

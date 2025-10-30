@@ -76,6 +76,36 @@ export class UsersService {
         return userFound;
     }
 
+    async saveOne(user: User) {
+        try {
+            const saved = await this.userRepository.save(user);
+            this.logger.info(`User with id ${user.id} saved to database`);
+            return saved;
+        } catch (error) {
+            if (isDuplicatedKeyError(error)) {
+                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                throw GqlHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
+            }
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    async updateOne(id: string, updateData: Partial<User>): Promise<User> {
+        const userToUpdate = await this.findOneByIdOrThrow(id);
+        Object.assign(userToUpdate, updateData);
+        try {
+            const updated = await this.userRepository.save(userToUpdate);
+            this.logger.info(`User with id ${id} updated in database`);
+            return updated;
+        } catch (error) {
+            if (isDuplicatedKeyError(error)) {
+                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                throw GqlHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
+            }
+            throw new InternalServerErrorException(error);
+        }
+    }
+
     async createOne(user: SignUpInput): Promise<User> {
         try {
             const created = await this.userRepository.save(user);
