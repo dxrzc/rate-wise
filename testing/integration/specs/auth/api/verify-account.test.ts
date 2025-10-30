@@ -9,6 +9,8 @@ import { HttpStatus } from '@nestjs/common';
 import { ACCOUNT_VERIFICATION_TOKEN } from 'src/auth/constants/tokens.provider.constant';
 import { IAccVerifTokenPayload } from 'src/auth/interfaces/tokens-payload.interface';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
+import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { TokensService } from 'src/tokens/tokens.service';
 import { JwtPayload } from 'src/tokens/types/jwt-payload.type';
@@ -102,6 +104,22 @@ describe('verifyAccount', () => {
             const isBlacklisted = await testKit.tokensRedisClient.get(redisKey);
             expect(res.status).toBe(HttpStatus.OK);
             expect(isBlacklisted).toBe(1);
+        });
+    });
+
+    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
+        test('should return TOO MANY REQUESTS code and message', async () => {
+            const invalidToken = faker.string.uuid();
+            for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
+                await request(testKit.app.getHttpServer()).get(
+                    `${testKit.endpointsREST.verifyAccount}?token=${invalidToken}`,
+                );
+            }
+            const res = await request(testKit.app.getHttpServer()).get(
+                testKit.endpointsREST.verifyAccount,
+            );
+            expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+            expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });
 });
