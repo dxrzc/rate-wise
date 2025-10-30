@@ -12,7 +12,11 @@ import { GqlContextType } from '@nestjs/graphql';
 
 function logException(exception: unknown) {
     if (exception instanceof Error)
-        SystemLogger.getInstance().error(exception.message, exception.stack);
+        SystemLogger.getInstance().error(
+            exception.message,
+            exception.stack,
+            'CatchEverythingFilter',
+        );
     else SystemLogger.getInstance().error(exception);
 }
 
