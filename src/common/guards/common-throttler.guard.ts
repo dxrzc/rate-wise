@@ -13,7 +13,8 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from '../errors/graphql-http.error';
 import { IGraphQLContext } from '../interfaces/graphql/graphql-context.interface';
 import { COMMON_MESSAGES } from '../messages/common.messages';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { TooManyRequestsException } from '../errors/http.exceptions';
 
 // GraphQL & REST
 @Injectable()
@@ -48,11 +49,14 @@ export class CommonThrottlerGuard extends ThrottlerGuard {
         return { req: ctx.req, res: ctx.res };
     }
 
-    throwThrottlingException(
+    async throwThrottlingException(
         context: ExecutionContext,
         { limit, ttl }: ThrottlerLimitDetail,
     ): Promise<void> {
         this.logger.error(`More than ${limit} requests in ${ttl}ms`);
+        // REST
+        if (context.getType() === 'http') throw new TooManyRequestsException();
+        // GraphQL
         throw GqlHttpError.TooManyRequests(COMMON_MESSAGES.TOO_MANY_REQUESTS);
     }
 }

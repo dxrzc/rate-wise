@@ -19,7 +19,7 @@ describe('signUp', () => {
     describe('Successful signUp', () => {
         test('created user should contain the expected values in db', async () => {
             const user = testKit.userSeed.signUpInput;
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({ input: user, fields: ['id'] }),
             );
             const userId = res.body.data.signUp.id;
@@ -38,7 +38,7 @@ describe('signUp', () => {
 
         test('response data should match the created user in database', async () => {
             const user = testKit.userSeed.signUpInput;
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({ input: user, fields: 'ALL' }),
             );
             expect(res).notToFail();
@@ -59,7 +59,7 @@ describe('signUp', () => {
         });
 
         test('should set a session cookie', async () => {
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({ input: testKit.userSeed.signUpInput, fields: ['id'] }),
             );
             expect(res).notToFail();
@@ -67,7 +67,7 @@ describe('signUp', () => {
         });
 
         test('should create user-sessions index redis set', async () => {
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({ input: testKit.userSeed.signUpInput, fields: ['id'] }),
             );
             expect(res).notToFail();
@@ -78,7 +78,7 @@ describe('signUp', () => {
         });
 
         test('should create session-user relation record in redis', async () => {
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({ input: testKit.userSeed.signUpInput, fields: ['id'] }),
             );
             expect(res).notToFail();
@@ -92,7 +92,7 @@ describe('signUp', () => {
     describe('Username already exists', () => {
         test('should return BAD REQUEST code and ALREADY_EXISTS message ', async () => {
             const { username } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({
                     fields: ['id'],
                     input: {
@@ -112,7 +112,7 @@ describe('signUp', () => {
     describe('Email already exists', () => {
         test('should return BAD REQUEST code and ALREADY_EXISTS message', async () => {
             const { email } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({
                     fields: ['id'],
                     input: {
@@ -131,7 +131,7 @@ describe('signUp', () => {
 
     describe('Password exceeds the max password length (wiring test)', () => {
         test('should return BAD REQUEST code and INVALID_INPUT message', async () => {
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({
                     fields: ['id'],
                     input: {
@@ -151,7 +151,7 @@ describe('signUp', () => {
 
     describe('Password queried in graphql operation', () => {
         test('user password can not be queried from the response data', async () => {
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signUp({
                     input: testKit.userSeed.signUpInput,
                     fields: ['password' as any],
@@ -171,7 +171,7 @@ describe('signUp', () => {
                 const { sessionCookie } = await createUser();
                 const oldSid = getSidFromCookie(sessionCookie);
                 // new session (by signing up)
-                await testKit.request.set('Cookie', sessionCookie).send(
+                await testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signUp({
                         fields: ['id'],
                         input: testKit.userSeed.signUpInput,
@@ -190,14 +190,14 @@ describe('signUp', () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
             for (let i = 0; i < THROTTLE_CONFIG.CRITICAL.limit; i++) {
-                await testKit.request.set('X-Forwarded-For', ip).send(
+                await testKit.gqlClient.set('X-Forwarded-For', ip).send(
                     signUp({
                         input: userData,
                         fields: ['id'],
                     }),
                 );
             }
-            const res = await testKit.request.set('X-Forwarded-For', ip).send(
+            const res = await testKit.gqlClient.set('X-Forwarded-For', ip).send(
                 signUp({
                     input: userData,
                     fields: ['id'],

@@ -16,7 +16,7 @@ describe('signIn', () => {
     describe('Successful sign-in', () => {
         test('returned data should match the user data in database', async () => {
             const { email, password, id } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: 'ALL',
@@ -37,7 +37,7 @@ describe('signIn', () => {
 
         test('should set a session cookie', async () => {
             const { email, password } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: ['id'],
@@ -49,7 +49,7 @@ describe('signIn', () => {
 
         test('should add the new session to the user sessions index redis set', async () => {
             const { email, password } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: ['id'],
@@ -65,7 +65,7 @@ describe('signIn', () => {
 
         test('should create session-user relation record in redis', async () => {
             const { email, password } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: ['id'],
@@ -82,7 +82,7 @@ describe('signIn', () => {
     describe('Email is valid but too long', () => {
         test('should return BAD REQUEST code and INVALID CREDENTIALS message', async () => {
             const longEmail = `${faker.string.alpha(AUTH_LIMITS.EMAIL.MAX)}@gmail.com`;
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     fields: ['id'],
                     input: {
@@ -103,7 +103,7 @@ describe('signIn', () => {
             const longPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     fields: ['id'],
                     input: {
@@ -124,7 +124,7 @@ describe('signIn', () => {
             const shortPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MIN - 1,
             });
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     fields: ['id'],
                     input: {
@@ -143,7 +143,7 @@ describe('signIn', () => {
     describe('Password does not match', () => {
         test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
             const { email } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password: testKit.userSeed.password },
                     fields: ['id'],
@@ -158,7 +158,7 @@ describe('signIn', () => {
 
     describe('User in email does not exist', () => {
         test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     fields: ['id'],
                     input: {
@@ -180,7 +180,7 @@ describe('signIn', () => {
             const { email, password } = await createUser(); // 1 session
             for (let i = 0; i < maxSessions - 1; i++) {
                 await expect(
-                    testKit.request.send(
+                    testKit.gqlClient.send(
                         signIn({
                             input: { email, password },
                             fields: ['id'],
@@ -188,7 +188,7 @@ describe('signIn', () => {
                     ),
                 ).resolves.notToFail();
             }
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: ['id'],
@@ -206,7 +206,7 @@ describe('signIn', () => {
             test('old session should be removed from redis store (session rotation)', async () => {
                 const { sessionCookie, email, password } = await createUser();
                 const oldSid = getSidFromCookie(sessionCookie);
-                await testKit.request.set('Cookie', sessionCookie).send(
+                await testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signIn({
                         input: { email, password },
                         fields: ['id'],
@@ -222,7 +222,7 @@ describe('signIn', () => {
     describe('Password queried in graphql operation', () => {
         test('should failed with graphql validation error', async () => {
             const { email, password } = await createUser();
-            const res = await testKit.request.send(
+            const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
                     fields: ['password' as any],
@@ -243,14 +243,14 @@ describe('signIn', () => {
                 password: testKit.userSeed.password,
             };
             for (let i = 0; i < THROTTLE_CONFIG.CRITICAL.limit; i++) {
-                await testKit.request.set('X-Forwarded-For', ip).send(
+                await testKit.gqlClient.set('X-Forwarded-For', ip).send(
                     signIn({
                         input,
                         fields: ['id'],
                     }),
                 );
             }
-            const res = await testKit.request.set('X-Forwarded-For', ip).send(
+            const res = await testKit.gqlClient.set('X-Forwarded-For', ip).send(
                 signIn({
                     input,
                     fields: ['id'],

@@ -40,7 +40,7 @@ export class AuthResolver {
         return await this.authService.signIn(credentials, req);
     }
 
-    @CriticalThrottle()
+    @UltraCriticalThrottle()
     @Mutation(() => Boolean, { name: 'requestAccountVerification' })
     async requestAccountVerification(@Context('req') req: RequestContext) {
         await this.authService.requestAccountVerification(req.user);
