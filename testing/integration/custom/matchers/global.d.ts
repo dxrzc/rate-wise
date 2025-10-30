@@ -7,6 +7,7 @@ declare global {
             toFailWith(code: Code, message: string): R;
             toContainCookie(cookie: string): R;
             notToFail(): R;
+            emailSentToThisAddress(): Promise<R>;
         }
     }
 }
