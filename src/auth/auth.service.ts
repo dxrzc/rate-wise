@@ -39,18 +39,6 @@ export class AuthService {
         private readonly authNotifs: AuthNotifications,
     ) {}
 
-    private checkAccountIsNotAlreadyVerifiedOrThrow(user: {
-        status: UserStatus;
-        id: string;
-    }) {
-        if (user.status !== UserStatus.PENDING_VERIFICATION) {
-            this.logger.error(`Account ${user.id} already verified`);
-            throw new BadRequestException(
-                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
-            );
-        }
-    }
-
     // REST endpoint related
     async verifyAccount(tokenInUrl: string) {
         const { id, jti, exp } = await verifyTokenOrThrow(
@@ -63,7 +51,12 @@ export class AuthService {
             this.logger.error(`Account ${user.id} suspended`);
             throw new ForbiddenException(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
         }
-        this.checkAccountIsNotAlreadyVerifiedOrThrow(user);
+        if (user.status !== UserStatus.PENDING_VERIFICATION) {
+            this.logger.error(`Account ${user.id} already verified`);
+            throw new BadRequestException(
+                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
+            );
+        }
         user.status = UserStatus.ACTIVE;
         await this.userService.saveOne(user);
         this.logger.info(`Account ${user.id} verified successfully`);
@@ -74,7 +67,12 @@ export class AuthService {
     }
 
     async requestAccountVerification(user: AuthenticatedUser) {
-        this.checkAccountIsNotAlreadyVerifiedOrThrow(user);
+        if (user.status !== UserStatus.PENDING_VERIFICATION) {
+            this.logger.error(`Account ${user.id} already verified`);
+            throw GqlHttpError.BadRequest(
+                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
+            );
+        }
         await this.authNotifs.sendAccountVerificationEmail(user);
         this.logger.info(`Verification account email sent to ${user.email}`);
     }
