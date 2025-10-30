@@ -45,7 +45,7 @@ beforeAll(async () => {
 
         // Returns a new a graphql request coming from a random ip address
         // on each call
-        Object.defineProperty(testKit, 'request', {
+        Object.defineProperty(testKit, 'gqlClient', {
             get: () =>
                 request(testKit.app.getHttpServer())
                     .post('/graphql')
