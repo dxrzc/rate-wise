@@ -6,6 +6,7 @@ import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { Test } from 'supertest';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RestClient } from './rest-client.interface';
 
 export interface ITestKit {
     app: INestApplication<App>;
@@ -15,6 +16,7 @@ export interface ITestKit {
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
     gqlClient: Test;
+    restClient: RestClient;
     endpointsREST: {
         verifyAccount: string;
     };
