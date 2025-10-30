@@ -4,6 +4,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { accountVerifiedPage } from './pages/account-verified.page';
 import { AUTH_MESSAGES } from './messages/auth.messages';
+import { UltraCriticalThrottle } from 'src/common/decorators/throttling.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -13,6 +14,7 @@ export class AuthController {
     ) {}
 
     @Public()
+    @UltraCriticalThrottle()
     @Get('verifyAccount')
     async verifyAccount(@Query('token') token: string) {
         if (!token) {
