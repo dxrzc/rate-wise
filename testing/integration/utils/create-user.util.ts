@@ -2,7 +2,7 @@ import { signUp } from '@commontestutils/operations/auth/sign-up.operation';
 import { getSessionCookie } from './get-session-cookie.util';
 import { UserModel } from 'src/users/models/user.model';
 import { testKit } from './test-kit.util';
-import { UserStatus } from 'src/users/enum/user-status.enum';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 interface ExtraData {
     password: string;
@@ -36,7 +36,7 @@ export async function createSuspendedUser(): Promise<UserModel & ExtraData> {
     // Suspend the user
     await testKit.userRepos.update(
         { id: res.body.data.signUp.id },
-        { status: UserStatus.SUSPENDED },
+        { status: AccountStatus.SUSPENDED },
     );
     return {
         ...(res.body.data.signUp as UserModel),
@@ -56,7 +56,7 @@ export async function createActiveUser(): Promise<UserModel & ExtraData> {
     // Activate the user
     await testKit.userRepos.update(
         { id: res.body.data.signUp.id },
-        { status: UserStatus.ACTIVE },
+        { status: AccountStatus.ACTIVE },
     );
     return {
         ...(res.body.data.signUp as UserModel),

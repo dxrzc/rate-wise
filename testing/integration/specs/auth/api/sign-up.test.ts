@@ -8,12 +8,12 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createUser } from '@integration/utils/create-user.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
-import { UserStatus } from 'src/users/enum/user-status.enum';
 import { testKit } from '@integration/utils/test-kit.util';
-import { UserRole } from 'src/users/enum/user-role.enum';
 import { UserModel } from 'src/users/models/user.model';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
+import { UserRole } from 'src/users/enums/user-role.enum';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 describe('signUp', () => {
     describe('Successful signUp', () => {
@@ -33,7 +33,7 @@ describe('signUp', () => {
             expect(userDB.password).not.toBe(user.password); // hashed
             expect(userDB.createdAt).toBeDefined();
             expect(userDB.updatedAt).toBeDefined();
-            expect(userDB.status).toBe(UserStatus.PENDING_VERIFICATION); // default
+            expect(userDB.status).toBe(AccountStatus.PENDING_VERIFICATION); // default
         });
 
         test('response data should match the created user in database', async () => {

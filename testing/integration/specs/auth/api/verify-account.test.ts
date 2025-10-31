@@ -14,7 +14,7 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { TokensService } from 'src/tokens/tokens.service';
 import { JwtPayload } from 'src/tokens/types/jwt-payload.type';
-import { UserStatus } from 'src/users/enum/user-status.enum';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 // REST API
 describe('verifyAccount', () => {
@@ -72,7 +72,7 @@ describe('verifyAccount', () => {
     });
 
     describe('Account successfully verified', () => {
-        test('user status should be updated to ACTIVE', async () => {
+        test('account status should be updated to ACTIVE', async () => {
             const { id } = await createUser();
             const tokenService = testKit.app.get<
                 TokensService<IAccVerifTokenPayload>
@@ -84,7 +84,7 @@ describe('verifyAccount', () => {
             );
             const userInDb = await testKit.userRepos.findOneBy({ id });
             expect(res.status).toBe(HttpStatus.OK);
-            expect(userInDb?.status).toBe(UserStatus.ACTIVE);
+            expect(userInDb?.status).toBe(AccountStatus.ACTIVE);
         });
 
         test('token should be blacklisted', async () => {
