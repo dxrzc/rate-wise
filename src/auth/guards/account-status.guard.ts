@@ -31,7 +31,6 @@ export class AccountStatusGuard implements CanActivate {
         );
         const graphQLContext = GqlExecutionContext.create(context);
         const reqContext = graphQLContext.getContext<IGraphQLContext>();
-        console.log(reqContext);
         const userAccountStatus = reqContext.req.user.status;
         const userId = reqContext.req.user.id;
         const allowed = isAccountStatusAllowed(
