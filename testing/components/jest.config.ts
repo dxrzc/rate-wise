@@ -7,6 +7,7 @@ const config: Config = {
     maxWorkers: 2,
 
     roots: ['<rootDir>/testing/components/specs'],
+    setupFilesAfterEnv: ['<rootDir>/testing/components/setup/set-jest.ts'],
 
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/components',
