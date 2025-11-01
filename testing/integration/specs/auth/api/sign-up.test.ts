@@ -5,7 +5,7 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { signUp } from '@commontestutils/operations/auth/sign-up.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { createUser } from '@integration/utils/create-user.util';
+import { createAccount } from '@integration/utils/create-account.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -91,7 +91,7 @@ describe('signUp', () => {
 
     describe('Username already exists', () => {
         test('should return BAD REQUEST code and ALREADY_EXISTS message ', async () => {
-            const { username } = await createUser();
+            const { username } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
                     fields: ['id'],
@@ -111,7 +111,7 @@ describe('signUp', () => {
 
     describe('Email already exists', () => {
         test('should return BAD REQUEST code and ALREADY_EXISTS message', async () => {
-            const { email } = await createUser();
+            const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
                     fields: ['id'],
@@ -168,7 +168,7 @@ describe('signUp', () => {
         describe('SignUp success', () => {
             test('old session should be removed from redis store (session rotation)', async () => {
                 //  old session
-                const { sessionCookie } = await createUser();
+                const { sessionCookie } = await createAccount();
                 const oldSid = getSidFromCookie(sessionCookie);
                 // new session (by signing up)
                 await testKit.gqlClient.set('Cookie', sessionCookie).send(

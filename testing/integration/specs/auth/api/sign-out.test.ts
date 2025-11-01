@@ -1,6 +1,6 @@
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { signOut } from '@commontestutils/operations/auth/sign-out.operation';
-import { createUser } from '@integration/utils/create-user.util';
+import { createAccount } from '@integration/utils/create-account.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
@@ -22,7 +22,7 @@ describe('signOut', () => {
     describe('Successful signOut', () => {
         test('session cookie should be removed from redis store', async () => {
             // sign up
-            const { sessionCookie } = await createUser();
+            const { sessionCookie } = await createAccount();
             // sign out
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)

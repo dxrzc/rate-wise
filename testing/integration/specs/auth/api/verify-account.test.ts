@@ -1,9 +1,5 @@
 import { faker } from '@faker-js/faker/.';
-import {
-    createActiveUser,
-    createSuspendedUser,
-    createUser,
-} from '@integration/utils/create-user.util';
+import { createAccount } from '@integration/utils/create-account.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
 import { ACCOUNT_VERIFICATION_TOKEN } from 'src/auth/constants/tokens.provider.constant';
@@ -41,7 +37,7 @@ describe('verifyAccount', () => {
 
     describe('Target account is suspended', () => {
         test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
-            const { id } = await createSuspendedUser();
+            const { id } = await createAccount(AccountStatus.SUSPENDED);
             const tokenService = testKit.app.get<
                 TokensService<IAccVerifTokenPayload>
             >(ACCOUNT_VERIFICATION_TOKEN);
@@ -56,7 +52,7 @@ describe('verifyAccount', () => {
 
     describe('Target account is already verified', () => {
         test('return BAD REQUEST and ACCOUNT_ALREADY_VERIFIED message', async () => {
-            const { id } = await createActiveUser();
+            const { id } = await createAccount(AccountStatus.ACTIVE);
             const tokenService = testKit.app.get<
                 TokensService<IAccVerifTokenPayload>
             >(ACCOUNT_VERIFICATION_TOKEN);
@@ -73,7 +69,7 @@ describe('verifyAccount', () => {
 
     describe('Account successfully verified', () => {
         test('account status should be updated to ACTIVE', async () => {
-            const { id } = await createUser();
+            const { id } = await createAccount();
             const tokenService = testKit.app.get<
                 TokensService<IAccVerifTokenPayload>
             >(ACCOUNT_VERIFICATION_TOKEN);
@@ -88,7 +84,7 @@ describe('verifyAccount', () => {
         });
 
         test('token should be blacklisted', async () => {
-            const { id } = await createUser();
+            const { id } = await createAccount();
             const tokenSvc = testKit.app.get<
                 TokensService<IAccVerifTokenPayload>
             >(ACCOUNT_VERIFICATION_TOKEN);

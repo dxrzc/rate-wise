@@ -3,7 +3,7 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { signIn } from '@commontestutils/operations/auth/sign-in.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { createUser } from '@integration/utils/create-user.util';
+import { createAccount } from '@integration/utils/create-account.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -15,7 +15,7 @@ describe('signOutAll', () => {
     describe('Successful signOutAll', () => {
         test("delete all the user's session cookies from redis ", async () => {
             // sign up
-            const { email, password, sessionCookie } = await createUser();
+            const { email, password, sessionCookie } = await createAccount();
             const sid1 = getSidFromCookie(sessionCookie);
 
             // sign in
@@ -76,7 +76,7 @@ describe('signOutAll', () => {
             const shortPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MIN - 1,
             });
-            const { sessionCookie } = await createUser();
+            const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(
@@ -98,7 +98,7 @@ describe('signOutAll', () => {
             const longPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
-            const { sessionCookie } = await createUser();
+            const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(
@@ -117,7 +117,7 @@ describe('signOutAll', () => {
 
     describe('Password does not match', () => {
         test('should return BAD_REQUEST code and INVALID_CREDENTIALS message', async () => {
-            const { sessionCookie } = await createUser();
+            const { sessionCookie } = await createAccount();
             await expect(
                 testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signOutAll({
