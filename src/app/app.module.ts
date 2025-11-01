@@ -118,7 +118,7 @@ import { appAccountStatusGuard } from './providers/guards/app-account-status.gua
             useClass: TypeOrmConfigService,
         }),
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
-            imports: [HttpLoggerModule.forFeature({ context: 'GraphQL' })],
+            imports: [HttpLoggerModule.forFeature({ context: 'Gql Handler' })],
             useClass: GqlConfigService,
             driver: ApolloDriver,
         }),
