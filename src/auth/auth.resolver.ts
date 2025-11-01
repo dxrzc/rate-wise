@@ -1,18 +1,19 @@
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Response } from 'express';
+import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
+import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 import {
     CriticalThrottle,
     UltraCriticalThrottle,
 } from 'src/common/decorators/throttling.decorator';
-import { ReAuthenticationInput } from './dtos/re-authentication.input';
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { Public } from 'src/common/decorators/public.decorator';
-import { RequestContext } from './types/request-context.type';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserModel } from 'src/users/models/user.model';
+import { AuthService } from './auth.service';
+import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
-import { AuthService } from './auth.service';
-import { Response } from 'express';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
-import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { RequestContext } from './types/request-context.type';
 
 @Resolver()
 export class AuthResolver {
@@ -51,7 +52,7 @@ export class AuthResolver {
     }
 
     @CriticalThrottle()
-    @MinAccountStatusRequired(AccountStatus.SUSPENDED)
+    @AllAccountStatusesAllowed()
     @Mutation(() => Boolean, { name: 'signOut' })
     async signOut(
         @Context('req') req: RequestContext,
@@ -63,7 +64,7 @@ export class AuthResolver {
     }
 
     @UltraCriticalThrottle()
-    @MinAccountStatusRequired(AccountStatus.SUSPENDED)
+    @AllAccountStatusesAllowed()
     @Mutation(() => Boolean, { name: 'signOutAll' })
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,
