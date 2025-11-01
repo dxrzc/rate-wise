@@ -7,6 +7,7 @@ import { Code } from 'src/common/enum/code.enum';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { faker } from '@faker-js/faker/.';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 
 describe('signOut', () => {
     describe('Session cookie not provided', () => {
@@ -21,19 +22,15 @@ describe('signOut', () => {
 
     describe('Successful signOut', () => {
         test('session cookie should be removed from redis store', async () => {
-            // sign up
             const { sessionCookie } = await createAccount();
-            // sign out
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOut());
             expect(res).notToFail();
-            // cookie should be removed from redis
-            await expect(
-                testKit.sessionsRedisClient.get(
-                    `session:${getSidFromCookie(sessionCookie)}`,
-                ),
-            ).resolves.toBeNull();
+            const sessInRedis = await testKit.sessionsRedisClient.get(
+                `${SESS_REDIS_PREFIX}${getSidFromCookie(sessionCookie)}`,
+            );
+            expect(sessInRedis).toBeNull();
         });
     });
 
