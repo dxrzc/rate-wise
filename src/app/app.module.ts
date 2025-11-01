@@ -32,6 +32,7 @@ import { minutes, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
 import { AuthController } from 'src/auth/auth.controller';
+import { appAccountStatusGuard } from './providers/guards/app-account-status.guard.provider';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -49,6 +50,7 @@ import { AuthController } from 'src/auth/auth.controller';
         appValidationPipe,
         gqlThrottlerGuard,
         appAuthGuard,
+        appAccountStatusGuard,
     ],
     imports: [
         ConfigModule,
