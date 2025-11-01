@@ -1,19 +1,17 @@
 import { requestAccountVerification } from '@commontestutils/operations/auth/request-account-verification.operation';
 import { faker } from '@faker-js/faker/.';
-import {
-    createActiveUser,
-    createUser,
-} from '@integration/utils/create-user.util';
+import { createAccount } from '@integration/utils/create-account.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 describe('requestAccountVerification', () => {
-    describe('Target account is already verified', () => {
+    describe('Account status is "ACTIVE"', () => {
         test('return BAD REQUEST and ACCOUNT_ALREADY_VERIFIED message', async () => {
-            const { sessionCookie } = await createActiveUser();
+            const { sessionCookie } = await createAccount(AccountStatus.ACTIVE);
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
@@ -24,9 +22,26 @@ describe('requestAccountVerification', () => {
         });
     });
 
-    describe('Request approved successfully', () => {
+    describe('Account is status "SUSPENDED"', () => {
+        test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
+            const { sessionCookie } = await createAccount(
+                AccountStatus.SUSPENDED,
+            );
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(requestAccountVerification());
+            expect(res).toFailWith(
+                Code.FORBIDDEN,
+                AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED,
+            );
+        });
+    });
+
+    describe('Account is status "PENDING_VERIFICATION"', () => {
         test('email should be sent to user email address', async () => {
-            const { sessionCookie, email } = await createUser();
+            const { sessionCookie, email } = await createAccount(
+                AccountStatus.PENDING_VERIFICATION,
+            );
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());

@@ -3,7 +3,7 @@ import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { createUser } from '@integration/utils/create-user.util';
+import { createAccount } from '@integration/utils/create-account.util';
 import { signIn } from '@commontestutils/operations/auth/sign-in.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
@@ -15,7 +15,7 @@ import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants'
 describe('signIn', () => {
     describe('Successful sign-in', () => {
         test('returned data should match the user data in database', async () => {
-            const { email, password, id } = await createUser();
+            const { email, password, id } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
@@ -36,7 +36,7 @@ describe('signIn', () => {
         });
 
         test('should set a session cookie', async () => {
-            const { email, password } = await createUser();
+            const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
@@ -48,7 +48,7 @@ describe('signIn', () => {
         });
 
         test('should add the new session to the user sessions index redis set', async () => {
-            const { email, password } = await createUser();
+            const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
@@ -64,7 +64,7 @@ describe('signIn', () => {
         });
 
         test('should create session-user relation record in redis', async () => {
-            const { email, password } = await createUser();
+            const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },
@@ -142,7 +142,7 @@ describe('signIn', () => {
 
     describe('Password does not match', () => {
         test('should return BAD REQUEST code and INVALID_CREDENTIALS message', async () => {
-            const { email } = await createUser();
+            const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password: testKit.userSeed.password },
@@ -177,7 +177,7 @@ describe('signIn', () => {
     describe('User exceeds the maximum active sessions', () => {
         test('should return BAD REQUEST code and MAX_SESSIONS_REACHED message', async () => {
             const maxSessions = testKit.authConfig.maxUserSessions;
-            const { email, password } = await createUser(); // 1 session
+            const { email, password } = await createAccount(); // 1 session
             for (let i = 0; i < maxSessions - 1; i++) {
                 await expect(
                     testKit.gqlClient.send(
@@ -204,7 +204,8 @@ describe('signIn', () => {
     describe('Session cookie is provided', () => {
         describe('SignIn success', () => {
             test('old session should be removed from redis store (session rotation)', async () => {
-                const { sessionCookie, email, password } = await createUser();
+                const { sessionCookie, email, password } =
+                    await createAccount();
                 const oldSid = getSidFromCookie(sessionCookie);
                 await testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signIn({
@@ -221,7 +222,7 @@ describe('signIn', () => {
 
     describe('Password queried in graphql operation', () => {
         test('should failed with graphql validation error', async () => {
-            const { email, password } = await createUser();
+            const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
                     input: { email, password },

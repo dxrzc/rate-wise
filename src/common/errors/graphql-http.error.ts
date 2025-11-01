@@ -20,6 +20,12 @@ export class GqlHttpError {
         });
     }
 
+    static Forbidden(message: string) {
+        return new GraphQLError(message, {
+            extensions: { code: Code.FORBIDDEN },
+        });
+    }
+
     static TooManyRequests(message: string) {
         return new GraphQLError(message, {
             extensions: { code: Code.TOO_MANY_REQUESTS },

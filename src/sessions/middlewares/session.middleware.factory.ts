@@ -5,6 +5,7 @@ import { ISessionsRootOptions } from '../interfaces/sessions.root.options.interf
 import {
     SESSIONS_ROOT_OPTIONS,
     SESSIONS_REDIS_CONNECTION,
+    SESS_REDIS_PREFIX,
 } from '../constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 
@@ -32,7 +33,7 @@ export class SessionMiddlewareFactory {
             },
             store: new RedisStore({
                 client: <unknown>this.redisClient.connection.client,
-                prefix: 'session:',
+                prefix: SESS_REDIS_PREFIX,
             }),
         });
         return middleware;

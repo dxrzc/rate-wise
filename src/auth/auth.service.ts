@@ -23,7 +23,7 @@ import { IAccVerifTokenPayload } from './interfaces/tokens-payload.interface';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { RequestContext } from './types/request-context.type';
-import { UserStatus } from 'src/users/enum/user-status.enum';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { verifyTokenOrThrow } from './functions/verify-token-or-throw';
 
 @Injectable()
@@ -47,17 +47,17 @@ export class AuthService {
             tokenInUrl,
         );
         const user = await this.userService.findOneByIdOrThrow(id);
-        if (user.status === UserStatus.SUSPENDED) {
+        if (user.status === AccountStatus.SUSPENDED) {
             this.logger.error(`Account ${user.id} suspended`);
             throw new ForbiddenException(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
         }
-        if (user.status !== UserStatus.PENDING_VERIFICATION) {
+        if (user.status !== AccountStatus.PENDING_VERIFICATION) {
             this.logger.error(`Account ${user.id} already verified`);
             throw new BadRequestException(
                 AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
             );
         }
-        user.status = UserStatus.ACTIVE;
+        user.status = AccountStatus.ACTIVE;
         await this.userService.saveOne(user);
         this.logger.info(`Account ${user.id} verified successfully`);
         await this.accVerifToken.blacklist(jti, exp);
@@ -67,7 +67,7 @@ export class AuthService {
     }
 
     async requestAccountVerification(user: AuthenticatedUser) {
-        if (user.status !== UserStatus.PENDING_VERIFICATION) {
+        if (user.status !== AccountStatus.PENDING_VERIFICATION) {
             this.logger.error(`Account ${user.id} already verified`);
             throw GqlHttpError.BadRequest(
                 AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
