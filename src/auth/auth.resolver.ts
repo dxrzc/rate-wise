@@ -11,6 +11,8 @@ import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 @Resolver()
 export class AuthResolver {
@@ -41,6 +43,7 @@ export class AuthResolver {
     }
 
     @UltraCriticalThrottle()
+    @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
     @Mutation(() => Boolean, { name: 'requestAccountVerification' })
     async requestAccountVerification(@Context('req') req: RequestContext) {
         await this.authService.requestAccountVerification(req.user);
@@ -48,6 +51,7 @@ export class AuthResolver {
     }
 
     @CriticalThrottle()
+    @MinAccountStatusRequired(AccountStatus.SUSPENDED)
     @Mutation(() => Boolean, { name: 'signOut' })
     async signOut(
         @Context('req') req: RequestContext,
@@ -59,6 +63,7 @@ export class AuthResolver {
     }
 
     @UltraCriticalThrottle()
+    @MinAccountStatusRequired(AccountStatus.SUSPENDED)
     @Mutation(() => Boolean, { name: 'signOutAll' })
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,
