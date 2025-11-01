@@ -8,6 +8,7 @@ type ReturnedError = {
     stackTrace: unknown;
 };
 
+// TODO: add unit tests
 export function handleGqlError(
     error: GraphQLFormattedError,
     opts?: {
