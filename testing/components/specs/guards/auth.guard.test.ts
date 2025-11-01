@@ -1,7 +1,6 @@
 import { createDisabledLoggerImport } from '@components/imports/create-disabled-logger.import';
 import { createGqlImport } from '@components/imports/create-graphql.import';
 import { createTypeormImport } from '@components/imports/create-typeorm.import';
-import { createLightWeightPostgres } from '@components/utils/create-lightweight-postgres.util';
 import { Mutation, Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -34,10 +33,9 @@ describe('AuthGuard', () => {
     let nestApp: NestExpressApplication;
 
     beforeAll(async () => {
-        const postgresUri = await createLightWeightPostgres();
         testingModule = await Test.createTestingModule({
             imports: [
-                ...createTypeormImport(postgresUri),
+                ...createTypeormImport(),
                 ...createDisabledLoggerImport(),
                 ...createGqlImport(),
                 UsersModule,

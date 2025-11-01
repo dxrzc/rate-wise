@@ -7,7 +7,11 @@ const config: Config = {
     maxWorkers: 2,
 
     roots: ['<rootDir>/testing/components/specs'],
-    setupFilesAfterEnv: ['<rootDir>/testing/components/setup/set-jest.ts'],
+    globalSetup: '<rootDir>/testing/components/setup/global-setup.ts',
+    globalTeardown: '<rootDir>/testing/components/setup/global-teardown.ts',
+    setupFilesAfterEnv: [
+        '<rootDir>/testing/components/setup/setup-after-env.ts',
+    ],
 
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/components',
