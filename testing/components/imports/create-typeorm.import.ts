@@ -1,9 +1,8 @@
-import { testKit } from '@components/utils/test-kit.util';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Item } from 'src/items/entities/item.entity';
 import { User } from 'src/users/entities/user.entity';
 
-export function createTypeormImport(postgresUrl = testKit.postgresUrl) {
+export function createTypeormImport(postgresUrl: string) {
     return [
         TypeOrmModule.forRoot({
             url: postgresUrl,
