@@ -74,6 +74,8 @@ jobs:
     name: Components Tests
     runs-on: ubuntu-latest
     needs: run-linter
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
