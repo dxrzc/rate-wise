@@ -29,6 +29,10 @@ export class AccountStatusGuard implements CanActivate {
             MinAccountStatusRequired,
             context.getHandler(),
         );
+
+        if (!minStatusRequired)
+            throw new Error('Min account status not specified');
+
         const graphQLContext = GqlExecutionContext.create(context);
         const reqContext = graphQLContext.getContext<IGraphQLContext>();
         const userAccountStatus = reqContext.req.user.status;
