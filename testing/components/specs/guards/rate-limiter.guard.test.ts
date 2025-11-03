@@ -23,9 +23,7 @@ class TestResolver {
     }
 }
 
-const testQuery = generateGqlQuery(
-    TestResolver.prototype.ultraCriticalQuery.name,
-);
+const testQuery = generateGqlQuery(TestResolver.prototype.ultraCriticalQuery.name);
 
 describe('RateLimiter Guard', () => {
     let testingModule: TestingModule;
@@ -49,10 +47,7 @@ describe('RateLimiter Guard', () => {
                     throttlers: [{ ttl: 10000, limit: 10 * 1000 }],
                 }),
             ],
-            providers: [
-                { provide: APP_GUARD, useClass: RateLimiterGuard },
-                TestResolver,
-            ],
+            providers: [{ provide: APP_GUARD, useClass: RateLimiterGuard }, TestResolver],
         }).compile();
         app = testingModule.createNestApplication({});
         app.set('trust proxy', 'loopback'); // allow X-Forwarded-For from localhost
@@ -79,10 +74,7 @@ describe('RateLimiter Guard', () => {
                     .post('/graphql')
                     .set('X-Forwarded-For', commonReqsIp)
                     .send({ query: testQuery });
-                expect(req).toFailWith(
-                    Code.TOO_MANY_REQUESTS,
-                    COMMON_MESSAGES.TOO_MANY_REQUESTS,
-                );
+                expect(req).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
             });
         });
     });
@@ -102,10 +94,7 @@ describe('RateLimiter Guard', () => {
                     .post('/graphql')
                     .set('X-Forwarded-For', faker.internet.ip())
                     .send({ query: testQuery });
-                expect(req).toFailWith(
-                    Code.TOO_MANY_REQUESTS,
-                    COMMON_MESSAGES.TOO_MANY_REQUESTS,
-                );
+                expect(req).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
             });
         });
     });

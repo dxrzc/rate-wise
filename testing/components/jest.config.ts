@@ -9,17 +9,12 @@ const config: Config = {
     roots: ['<rootDir>/testing/components/specs'],
     globalSetup: '<rootDir>/testing/components/setup/global-setup.ts',
     globalTeardown: '<rootDir>/testing/components/setup/global-teardown.ts',
-    setupFilesAfterEnv: [
-        '<rootDir>/testing/components/setup/setup-after-env.ts',
-    ],
+    setupFilesAfterEnv: ['<rootDir>/testing/components/setup/setup-after-env.ts'],
 
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/components',
     coverageProvider: 'v8',
-    collectCoverageFrom: [
-        '<rootDir>/src/**/*.ts',
-        '!<rootDir>/testing/components/**',
-    ],
+    collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!<rootDir>/testing/components/**'],
 
     moduleNameMapper: {
         ...baseJestConfig.moduleNameMapper,

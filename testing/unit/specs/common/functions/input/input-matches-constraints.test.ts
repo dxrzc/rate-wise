@@ -43,9 +43,7 @@ describe('matchesConstraints', () => {
         });
 
         test('returns false when input length is above MAX', () => {
-            expect(
-                matchesConstraints('this is too long', { MIN: 3, MAX: 10 }),
-            ).toBe(false);
+            expect(matchesConstraints('this is too long', { MIN: 3, MAX: 10 })).toBe(false);
         });
 
         test('returns true when input length equals both MIN and MAX', () => {

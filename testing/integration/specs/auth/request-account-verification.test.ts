@@ -15,25 +15,17 @@ describe('requestAccountVerification', () => {
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         });
     });
 
     describe('Account is status "SUSPENDED"', () => {
         test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
-            const { sessionCookie } = await createAccount(
-                AccountStatus.SUSPENDED,
-            );
+            const { sessionCookie } = await createAccount(AccountStatus.SUSPENDED);
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
-            expect(res).toFailWith(
-                Code.FORBIDDEN,
-                AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED,
-            );
+            expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
         });
     });
 
@@ -60,10 +52,7 @@ describe('requestAccountVerification', () => {
             const res = await testKit.gqlClient
                 .set('X-Forwarded-For', ip)
                 .send(requestAccountVerification());
-            expect(res).toFailWith(
-                Code.TOO_MANY_REQUESTS,
-                COMMON_MESSAGES.TOO_MANY_REQUESTS,
-            );
+            expect(res).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });
 });

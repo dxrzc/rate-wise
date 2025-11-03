@@ -11,8 +11,7 @@ export const toContainCookie: MatcherFunction<[cookie: string]> = function (
     if (!cookies) {
         return {
             pass: false,
-            message: () =>
-                `Expected response to have a 'Set-Cookie' header, but none was found.`,
+            message: () => `Expected response to have a 'Set-Cookie' header, but none was found.`,
         };
     }
 

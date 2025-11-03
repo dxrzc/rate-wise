@@ -7,13 +7,8 @@ import { promises as fs } from 'fs';
 // Postgres db is cloned before each test file
 beforeAll(async () => {
     try {
-        const configJson = await fs.readFile(
-            SERVICES_CONFIG_FILE_PATH,
-            'utf-8',
-        );
-        const { postgresUrl, redisUrls, mailpit } = <ServicesConfig>(
-            JSON.parse(configJson)
-        );
+        const configJson = await fs.readFile(SERVICES_CONFIG_FILE_PATH, 'utf-8');
+        const { postgresUrl, redisUrls, mailpit } = <ServicesConfig>JSON.parse(configJson);
 
         // Cloned database for test isolation
         process.env.POSTGRES_URI = await cloneDatabase(postgresUrl);

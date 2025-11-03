@@ -10,10 +10,7 @@ import { RedisInstances } from '../../types/redis-instances.type';
  */
 export async function createRedisContainer(serviceName: RedisInstances) {
     const redisConf =
-        (await fs.readFile(
-            join(process.cwd(), `redis/${serviceName}.conf`),
-            'utf8',
-        )) +
+        (await fs.readFile(join(process.cwd(), `redis/${serviceName}.conf`), 'utf8')) +
         `
             appendonly no
             save ""

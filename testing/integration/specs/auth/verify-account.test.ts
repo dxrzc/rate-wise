@@ -16,9 +16,7 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 describe('verifyAccount', () => {
     describe('No token provided', () => {
         test('return BAD REQUEST and INVALID URL message', async () => {
-            const res = await testKit.restClient.get(
-                testKit.endpointsREST.verifyAccount,
-            );
+            const res = await testKit.restClient.get(testKit.endpointsREST.verifyAccount);
             expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
@@ -38,9 +36,9 @@ describe('verifyAccount', () => {
     describe('Target account is suspended', () => {
         test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
             const { id } = await createAccount(AccountStatus.SUSPENDED);
-            const tokenService = testKit.app.get<
-                TokensService<IAccVerifTokenPayload>
-            >(ACCOUNT_VERIFICATION_TOKEN);
+            const tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
+                ACCOUNT_VERIFICATION_TOKEN,
+            );
             const token = await tokenService.generate({ id });
             const res = await testKit.restClient.get(
                 `${testKit.endpointsREST.verifyAccount}?token=${token}`,
@@ -53,16 +51,14 @@ describe('verifyAccount', () => {
     describe('Target account is already verified', () => {
         test('return BAD REQUEST and ACCOUNT_ALREADY_VERIFIED message', async () => {
             const { id } = await createAccount(AccountStatus.ACTIVE);
-            const tokenService = testKit.app.get<
-                TokensService<IAccVerifTokenPayload>
-            >(ACCOUNT_VERIFICATION_TOKEN);
+            const tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
+                ACCOUNT_VERIFICATION_TOKEN,
+            );
             const token = await tokenService.generate({ id });
             const res = await testKit.restClient.get(
                 `${testKit.endpointsREST.verifyAccount}?token=${token}`,
             );
-            expect(res.body.message).toBe(
-                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
-            );
+            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -70,9 +66,9 @@ describe('verifyAccount', () => {
     describe('Account successfully verified', () => {
         test('account status should be updated to ACTIVE', async () => {
             const { id } = await createAccount();
-            const tokenService = testKit.app.get<
-                TokensService<IAccVerifTokenPayload>
-            >(ACCOUNT_VERIFICATION_TOKEN);
+            const tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
+                ACCOUNT_VERIFICATION_TOKEN,
+            );
             const token = await tokenService.generate({ id });
             // verify
             const res = await testKit.restClient.get(
@@ -85,16 +81,15 @@ describe('verifyAccount', () => {
 
         test('token should be blacklisted', async () => {
             const { id } = await createAccount();
-            const tokenSvc = testKit.app.get<
-                TokensService<IAccVerifTokenPayload>
-            >(ACCOUNT_VERIFICATION_TOKEN);
+            const tokenSvc = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
+                ACCOUNT_VERIFICATION_TOKEN,
+            );
             const token = await tokenSvc.generate({ id });
             // verify
             const res = await testKit.restClient.get(
                 `${testKit.endpointsREST.verifyAccount}?token=${token}`,
             );
-            const { jti } =
-                await tokenSvc['verifyTokenOrThrow']<JwtPayload<any>>(token);
+            const { jti } = await tokenSvc['verifyTokenOrThrow']<JwtPayload<any>>(token);
             const redisKey = blacklistTokenKey(jti);
             const isBlacklisted = await testKit.tokensRedisClient.get(redisKey);
             expect(res.status).toBe(HttpStatus.OK);
@@ -108,9 +103,7 @@ describe('verifyAccount', () => {
             const sameIp = faker.internet.ip();
             for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
                 await testKit.restClient
-                    .get(
-                        `${testKit.endpointsREST.verifyAccount}?token=${invalidToken}`,
-                    )
+                    .get(`${testKit.endpointsREST.verifyAccount}?token=${invalidToken}`)
                     .set('X-Forwarded-For', sameIp);
             }
             const res = await testKit.restClient

@@ -19,9 +19,7 @@ describe('signUp', () => {
     describe('Successful signUp', () => {
         test('created user should contain the expected values in db', async () => {
             const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient.send(
-                signUp({ input: user, fields: ['id'] }),
-            );
+            const res = await testKit.gqlClient.send(signUp({ input: user, fields: ['id'] }));
             const userId = res.body.data.signUp.id;
             const userDB = await testKit.userRepos.findOneByOrFail({
                 id: userId,
@@ -38,9 +36,7 @@ describe('signUp', () => {
 
         test('response data should match the created user in database', async () => {
             const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient.send(
-                signUp({ input: user, fields: 'ALL' }),
-            );
+            const res = await testKit.gqlClient.send(signUp({ input: user, fields: 'ALL' }));
             expect(res).notToFail();
             const responseData = res.body.data.signUp as UserModel;
             const userDb = await testKit.userRepos.findOneByOrFail({
@@ -102,10 +98,7 @@ describe('signUp', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                USER_MESSAGES.ALREADY_EXISTS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, USER_MESSAGES.ALREADY_EXISTS);
         });
     });
 
@@ -122,10 +115,7 @@ describe('signUp', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                USER_MESSAGES.ALREADY_EXISTS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, USER_MESSAGES.ALREADY_EXISTS);
         });
     });
 
@@ -142,10 +132,7 @@ describe('signUp', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                COMMON_MESSAGES.INVALID_INPUT,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
         });
     });
 
@@ -203,10 +190,7 @@ describe('signUp', () => {
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(
-                Code.TOO_MANY_REQUESTS,
-                COMMON_MESSAGES.TOO_MANY_REQUESTS,
-            );
+            expect(res).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });
 });

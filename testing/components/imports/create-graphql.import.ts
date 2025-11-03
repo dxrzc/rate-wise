@@ -10,8 +10,7 @@ export function createGqlImport(customDataGetter?: () => object) {
             playground: false,
             introspection: false,
             autoSchemaFile: true,
-            formatError: (error: GraphQLFormattedError) =>
-                handleGqlError(error),
+            formatError: (error: GraphQLFormattedError) => handleGqlError(error),
             context: (context: { req: Request; res: Response }) => {
                 const req = context.req;
                 if (customDataGetter) {

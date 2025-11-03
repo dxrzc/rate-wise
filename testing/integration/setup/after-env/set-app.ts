@@ -19,9 +19,7 @@ beforeAll(async () => {
     try {
         // Application
         const testingModule: TestingModule = await Test.createTestingModule({
-            imports: [
-                await import('src/app/app.module').then((m) => m.AppModule),
-            ],
+            imports: [await import('src/app/app.module').then((m) => m.AppModule)],
         })
             .overrideProvider(EMAILS_QUEUE)
             .useClass(EmailsQueueMock)
@@ -36,12 +34,8 @@ beforeAll(async () => {
         testKit.userSeed = nestApp.get(UserSeedService);
         testKit.authConfig = nestApp.get(AuthConfigService);
         testKit.userRepos = nestApp.get(DataSource).getRepository(User);
-        testKit.tokensRedisClient = nestApp.get<RedisClientAdapter>(
-            TOKENS_REDIS_CONNECTION,
-        );
-        testKit.sessionsRedisClient = nestApp.get<RedisClientAdapter>(
-            SESSIONS_REDIS_CONNECTION,
-        );
+        testKit.tokensRedisClient = nestApp.get<RedisClientAdapter>(TOKENS_REDIS_CONNECTION);
+        testKit.sessionsRedisClient = nestApp.get<RedisClientAdapter>(SESSIONS_REDIS_CONNECTION);
 
         // Returns a new a graphql request coming from a random ip address
         // on each call
@@ -58,21 +52,13 @@ beforeAll(async () => {
                 const client = request(testKit.app.getHttpServer());
                 return {
                     get: (url: string) =>
-                        client
-                            .get(url)
-                            .set('X-Forwarded-For', faker.internet.ip()),
+                        client.get(url).set('X-Forwarded-For', faker.internet.ip()),
                     post: (url: string) =>
-                        client
-                            .post(url)
-                            .set('X-Forwarded-For', faker.internet.ip()),
+                        client.post(url).set('X-Forwarded-For', faker.internet.ip()),
                     put: (url: string) =>
-                        client
-                            .put(url)
-                            .set('X-Forwarded-For', faker.internet.ip()),
+                        client.put(url).set('X-Forwarded-For', faker.internet.ip()),
                     delete: (url: string) =>
-                        client
-                            .delete(url)
-                            .set('X-Forwarded-For', faker.internet.ip()),
+                        client.delete(url).set('X-Forwarded-For', faker.internet.ip()),
                 };
             },
         });

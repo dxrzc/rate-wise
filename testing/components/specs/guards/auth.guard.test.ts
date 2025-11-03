@@ -42,10 +42,7 @@ export class TestController {
     // Generates a valid session cookie
     @Public()
     @Get()
-    createCookie(
-        @Req() req: RequestContext,
-        @RestQuery('userId') userId: string,
-    ) {
+    createCookie(@Req() req: RequestContext, @RestQuery('userId') userId: string) {
         req.session.userId = userId;
     }
 }
@@ -70,10 +67,7 @@ describe('AuthGuard', () => {
                 SeedModule,
                 UsersModule,
             ],
-            providers: [
-                { provide: APP_GUARD, useClass: AuthGuard },
-                TestResolver,
-            ],
+            providers: [{ provide: APP_GUARD, useClass: AuthGuard }, TestResolver],
             controllers: [TestController],
         }).compile();
         app = testingModule.createNestApplication({});
@@ -102,9 +96,7 @@ describe('AuthGuard', () => {
     });
 
     async function getSessionCookie(id: string) {
-        const res = await request(app.getHttpServer()).get(
-            `/test?userId=${id}`,
-        );
+        const res = await request(app.getHttpServer()).get(`/test?userId=${id}`);
         const cookie = res.headers['set-cookie'][0];
         return cookie;
     }
@@ -126,10 +118,7 @@ describe('AuthGuard', () => {
             const res = await request(app.getHttpServer())
                 .post('/graphql')
                 .send({ query: testOperation });
-            expect(res).toFailWith(
-                Code.UNAUTHORIZED,
-                AUTH_MESSAGES.UNAUTHORIZED,
-            );
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 

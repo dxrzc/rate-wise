@@ -61,10 +61,7 @@ describe('AccountStatus Guard', () => {
                 ...createDisabledLoggerImport(),
                 ...createGqlImport(() => mockReqData), // Allow customize req.user in every test
             ],
-            providers: [
-                { provide: APP_GUARD, useClass: AccountStatusGuard },
-                TestResolver,
-            ],
+            providers: [{ provide: APP_GUARD, useClass: AccountStatusGuard }, TestResolver],
         }).compile();
         app = testingModule.createNestApplication({});
         app.useLogger(false);
@@ -86,9 +83,7 @@ describe('AccountStatus Guard', () => {
     describe('No decorator provided in Graphql operation', () => {
         test('should return INTERNAL SERVER code and message', async () => {
             const query = generateGqlQuery(resolver.noDecorator.name);
-            const res = await request(app.getHttpServer())
-                .post('/graphql')
-                .send({ query });
+            const res = await request(app.getHttpServer()).post('/graphql').send({ query });
             expect(res).toFailWith(
                 Code.INTERNAL_SERVER_ERROR,
                 COMMON_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -99,9 +94,7 @@ describe('AccountStatus Guard', () => {
     describe('Graphql operation has the @Public decorator', () => {
         test('guard should grant access', async () => {
             const query = generateGqlQuery(resolver.public.name);
-            const res = await request(app.getHttpServer())
-                .post('/graphql')
-                .send({ query });
+            const res = await request(app.getHttpServer()).post('/graphql').send({ query });
             expect(res).notToFail();
         });
     });
@@ -111,13 +104,8 @@ describe('AccountStatus Guard', () => {
             test('return FORBIDDEN code and ACCOUNT_IS_NOT_ACTIVE message', async () => {
                 const query = generateGqlQuery(resolver.activeOnly.name);
                 mockReqData.user.status = AccountStatus.PENDING_VERIFICATION;
-                const res = await request(app.getHttpServer())
-                    .post('/graphql')
-                    .send({ query });
-                expect(res).toFailWith(
-                    Code.FORBIDDEN,
-                    AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE,
-                );
+                const res = await request(app.getHttpServer()).post('/graphql').send({ query });
+                expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE);
             });
         });
     });
@@ -127,13 +115,8 @@ describe('AccountStatus Guard', () => {
             test('return FORBIDDEN code and ACCOUNT_IS_SUSPENDED message', async () => {
                 const query = generateGqlQuery(resolver.pendingVerOnly.name);
                 mockReqData.user.status = AccountStatus.SUSPENDED;
-                const res = await request(app.getHttpServer())
-                    .post('/graphql')
-                    .send({ query });
-                expect(res).toFailWith(
-                    Code.FORBIDDEN,
-                    AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED,
-                );
+                const res = await request(app.getHttpServer()).post('/graphql').send({ query });
+                expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
             });
         });
     });
@@ -143,9 +126,7 @@ describe('AccountStatus Guard', () => {
             test('guard should grant access', async () => {
                 const query = generateGqlQuery(resolver.allAllowed.name);
                 mockReqData.user.status = AccountStatus.SUSPENDED;
-                const res = await request(app.getHttpServer())
-                    .post('/graphql')
-                    .send({ query });
+                const res = await request(app.getHttpServer()).post('/graphql').send({ query });
                 expect(res).notToFail();
             });
         });

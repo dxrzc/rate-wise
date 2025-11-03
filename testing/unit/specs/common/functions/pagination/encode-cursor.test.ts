@@ -11,9 +11,7 @@ describe('encodeCursor', () => {
 
     test('returns a valid base64 string', () => {
         const result = encodeCursor('2025-10-28T10:00:00Z', 'abc');
-        expect(() =>
-            Buffer.from(result, 'base64').toString('utf-8'),
-        ).not.toThrow();
+        expect(() => Buffer.from(result, 'base64').toString('utf-8')).not.toThrow();
     });
 
     test('produces deterministic output for same inputs', () => {
