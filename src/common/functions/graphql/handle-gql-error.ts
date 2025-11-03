@@ -16,9 +16,7 @@ export function handleGqlError(
     },
 ): ReturnedError {
     const codeInExtensions = error.extensions?.code;
-    const stackTrace = opts?.stackTrace
-        ? error.extensions?.stacktrace
-        : undefined;
+    const stackTrace = opts?.stackTrace ? error.extensions?.stacktrace : undefined;
 
     if (!codeInExtensions) {
         return {

@@ -16,11 +16,7 @@ function tryToCloseApp(app: INestApplication, context: string) {
             logger.warn('Application closed', context);
         })
         .catch((err: Error) => {
-            logger.error(
-                `Error closing nest application: ${err.message}`,
-                err.stack,
-                context,
-            );
+            logger.error(`Error closing nest application: ${err.message}`, err.stack, context);
         });
 }
 

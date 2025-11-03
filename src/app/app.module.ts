@@ -132,9 +132,7 @@ import { appAccountStatusGuard } from './providers/guards/app-account-status.gua
     ],
 })
 export class AppModule implements NestModule {
-    constructor(
-        private readonly sessionMiddlewareFactory: SessionMiddlewareFactory,
-    ) {}
+    constructor(private readonly sessionMiddlewareFactory: SessionMiddlewareFactory) {}
 
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(this.sessionMiddlewareFactory.create()).forRoutes('*');

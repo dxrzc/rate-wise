@@ -4,9 +4,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AuthConfigService {
-    constructor(
-        private readonly configService: ConfigService<IConfigs, true>,
-    ) {}
+    constructor(private readonly configService: ConfigService<IConfigs, true>) {}
 
     get sessCookieSecret(): string {
         return this.configService.get('SESS_COOKIE_SECRET');

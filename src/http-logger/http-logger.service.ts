@@ -1,8 +1,5 @@
 import { HTTP_LOGGER_FEATURE_OPTIONS } from './constants/http-logger.options.constants';
-import {
-    IRestRequestLog,
-    IGqlRequestLog,
-} from './interfaces/request-log.interface';
+import { IRestRequestLog, IGqlRequestLog } from './interfaces/request-log.interface';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConsoleLoggerService } from './services/console.logger.service';
 import { FileSystemLoggerService } from './services/file-system.logger.service';

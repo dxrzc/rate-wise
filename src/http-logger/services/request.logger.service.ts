@@ -4,10 +4,7 @@ import * as winston from 'winston';
 import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
 import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
 import { createDummyTransport } from '../functions/create-dummy-transport';
-import {
-    IRestRequestLog,
-    IGqlRequestLog,
-} from '../interfaces/request-log.interface';
+import { IRestRequestLog, IGqlRequestLog } from '../interfaces/request-log.interface';
 
 // Request logs fs
 @Injectable()

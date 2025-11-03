@@ -14,8 +14,7 @@ registerEnumType(AccountStatus, {
             description: 'Account is active and user can log in.',
         },
         PENDING_VERIFICATION: {
-            description:
-                'Account has been registered but not yet verified their email.',
+            description: 'Account has been registered but not yet verified their email.',
         },
         SUSPENDED: {
             description: 'Account has been suspended.',

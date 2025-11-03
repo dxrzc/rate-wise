@@ -35,7 +35,4 @@ type Unit =
 
 type UnitAnyCase = Unit | Uppercase<Unit> | Lowercase<Unit>;
 
-export type StringValue =
-    | `${number}`
-    | `${number}${UnitAnyCase}`
-    | `${number} ${UnitAnyCase}`;
+export type StringValue = `${number}` | `${number}${UnitAnyCase}` | `${number} ${UnitAnyCase}`;

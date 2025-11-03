@@ -12,7 +12,6 @@ export function isAccountStatusAllowed(
 ): boolean {
     const userAccountStatusIndex = sortedRoles.indexOf(userAccountStatus);
     const minAccountStatusIndex = sortedRoles.indexOf(minAccountStatus);
-    if (userAccountStatusIndex === -1 || minAccountStatusIndex === -1)
-        return false;
+    if (userAccountStatusIndex === -1 || minAccountStatusIndex === -1) return false;
     return userAccountStatusIndex >= minAccountStatusIndex;
 }

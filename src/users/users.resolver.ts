@@ -1,8 +1,5 @@
 import { Args, ID, Query, Resolver } from '@nestjs/graphql';
-import {
-    BalancedThrottle,
-    RelaxedThrottle,
-} from 'src/common/decorators/throttling.decorator';
+import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { UserPaginationModel } from './models/pagination.model';
@@ -15,17 +12,13 @@ export class UsersResolver {
 
     @RelaxedThrottle()
     @Query(() => UserModel, { name: 'findUserById' })
-    async findOneById(
-        @Args('user_id', { type: () => ID }) id: string,
-    ): Promise<UserModel> {
+    async findOneById(@Args('user_id', { type: () => ID }) id: string): Promise<UserModel> {
         return await this.userService.findOneByIdOrThrow(id);
     }
 
     @BalancedThrottle()
     @Query(() => UserPaginationModel, { name: 'users' })
-    async findAll(
-        @Args() paginationArgs: PaginationArgs,
-    ): Promise<IPaginatedType<UserModel>> {
+    async findAll(@Args() paginationArgs: PaginationArgs): Promise<IPaginatedType<UserModel>> {
         return await this.userService.findAll(paginationArgs);
     }
 }

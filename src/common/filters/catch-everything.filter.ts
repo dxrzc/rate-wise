@@ -1,10 +1,4 @@
-import {
-    ArgumentsHost,
-    Catch,
-    ExceptionFilter,
-    HttpException,
-    HttpStatus,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import { GraphQLError } from 'graphql';
 import { SystemLogger } from '../logging/system.logger';
@@ -29,15 +23,11 @@ export class CatchEverythingFilter implements ExceptionFilter {
                 const ctx = host.switchToHttp();
                 const response = ctx.getResponse<Response>();
                 if (exception instanceof HttpException) {
-                    response
-                        .status(exception.getStatus())
-                        .json(exception.getResponse());
+                    response.status(exception.getStatus()).json(exception.getResponse());
                     return;
                 }
                 const statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-                response
-                    .status(statusCode)
-                    .json({ error: 'Internal server error', statusCode });
+                response.status(statusCode).json({ error: 'Internal server error', statusCode });
                 logException(exception);
                 break;
             }

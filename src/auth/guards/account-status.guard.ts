@@ -21,43 +21,29 @@ export class AccountStatusGuard implements CanActivate {
         const isPublic = this.reflector.get(Public, context.getHandler());
         if (isPublic) return true;
         if (context.getType<GqlContextType>() !== 'graphql') {
-            throw new Error(
-                'Non-gql contexts in AccountStatusGuard not implemented',
-            );
+            throw new Error('Non-gql contexts in AccountStatusGuard not implemented');
         }
         const minStatusRequired = this.reflector.get(
             MinAccountStatusRequired,
             context.getHandler(),
         );
 
-        if (!minStatusRequired)
-            throw new Error('Min account status not specified');
+        if (!minStatusRequired) throw new Error('Min account status not specified');
 
         const graphQLContext = GqlExecutionContext.create(context);
         const reqContext = graphQLContext.getContext<IGraphQLContext>();
         const userAccountStatus = reqContext.req.user.status;
         const userId = reqContext.req.user.id;
-        const allowed = isAccountStatusAllowed(
-            minStatusRequired,
-            userAccountStatus,
-        );
+        const allowed = isAccountStatusAllowed(minStatusRequired, userAccountStatus);
         if (!allowed) {
             switch (userAccountStatus) {
                 case AccountStatus.PENDING_VERIFICATION: {
-                    this.logger.error(
-                        `Access denied for user ${userId} - account not active`,
-                    );
-                    throw GqlHttpError.Forbidden(
-                        AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE,
-                    );
+                    this.logger.error(`Access denied for user ${userId} - account not active`);
+                    throw GqlHttpError.Forbidden(AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE);
                 }
                 case AccountStatus.SUSPENDED:
-                    this.logger.error(
-                        `Access denied for user ${userId} - account suspended`,
-                    );
-                    throw GqlHttpError.Forbidden(
-                        AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED,
-                    );
+                    this.logger.error(`Access denied for user ${userId} - account suspended`);
+                    throw GqlHttpError.Forbidden(AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
             }
         }
         return true;
