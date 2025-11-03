@@ -1,9 +1,4 @@
-import {
-    BadRequestException,
-    ForbiddenException,
-    Inject,
-    Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
@@ -53,25 +48,19 @@ export class AuthService {
         }
         if (user.status !== AccountStatus.PENDING_VERIFICATION) {
             this.logger.error(`Account ${user.id} already verified`);
-            throw new BadRequestException(
-                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
-            );
+            throw new BadRequestException(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
         user.status = AccountStatus.ACTIVE;
         await this.userService.saveOne(user);
         this.logger.info(`Account ${user.id} verified successfully`);
         await this.accVerifToken.blacklist(jti, exp);
-        this.logger.debug(
-            `Verification token blacklisted for account ${user.id}`,
-        );
+        this.logger.debug(`Verification token blacklisted for account ${user.id}`);
     }
 
     async requestAccountVerification(user: AuthenticatedUser) {
         if (user.status !== AccountStatus.PENDING_VERIFICATION) {
             this.logger.error(`Account ${user.id} already verified`);
-            throw GqlHttpError.BadRequest(
-                AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED,
-            );
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
         await this.authNotifs.sendAccountVerificationEmail(user);
         this.logger.info(`Verification account email sent to ${user.email}`);
@@ -132,20 +121,14 @@ export class AuthService {
         this.logger.info(`User ${userId} signed out`);
     }
 
-    async signOutAll(
-        auth: ReAuthenticationInput,
-        userId: string,
-    ): Promise<void> {
+    async signOutAll(auth: ReAuthenticationInput, userId: string): Promise<void> {
         if (!matchesConstraints(auth.password, AUTH_LIMITS.PASSWORD)) {
             this.logger.error('Invalid password length');
             throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
 
         const user = await this.userService.findOneByIdOrThrow(userId);
-        const passwordMatches = await this.hashingService.compare(
-            auth.password,
-            user.password,
-        );
+        const passwordMatches = await this.hashingService.compare(auth.password, user.password);
         if (!passwordMatches) {
             this.logger.warn(`Invalid credentials for userId: ${userId}`);
             throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);

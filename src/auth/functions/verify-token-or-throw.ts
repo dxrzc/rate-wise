@@ -1,7 +1,4 @@
-import {
-    BadRequestException,
-    InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { InvalidToken } from 'src/tokens/errors/invalid-token.error';
 import { TokensService } from 'src/tokens/tokens.service';

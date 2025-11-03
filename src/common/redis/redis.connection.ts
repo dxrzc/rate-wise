@@ -24,10 +24,7 @@ export class RedisConnection {
             url: redisUri,
             socket: {
                 reconnectStrategy: (retries, cause) => {
-                    if (
-                        cause instanceof SocketTimeoutError ||
-                        retries > MAX_RETRIES
-                    ) {
+                    if (cause instanceof SocketTimeoutError || retries > MAX_RETRIES) {
                         // stop reconnecting
                         return false;
                     }
@@ -57,10 +54,7 @@ export class RedisConnection {
         this._client.on('reconnecting', this.onReconnecting);
     }
 
-    async addSubscriber(
-        channel: string,
-        listener: (payload: string) => Promise<void>,
-    ) {
+    async addSubscriber(channel: string, listener: (payload: string) => Promise<void>) {
         const subscriber = this._client.duplicate();
         subscriber.subscribe(channel, listener);
         await subscriber.connect();

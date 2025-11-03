@@ -26,9 +26,7 @@ export class UsersService {
 
     async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         const limit = pagArgs.limit;
-        const decodedCursor = pagArgs.cursor
-            ? decodeCursor(pagArgs.cursor)
-            : undefined;
+        const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
         // fetches limit + 1 records so we can detect whether there’s a next page
         const edges = await createPaginationEdges<User, IUserDbRecord>(
             this.userRepository,
@@ -38,9 +36,7 @@ export class UsersService {
         );
         const hasNextPage = edges.length > limit;
         if (hasNextPage) edges.pop();
-        const totalCount = await this.userRepository
-            .createQueryBuilder()
-            .getCount();
+        const totalCount = await this.userRepository.createQueryBuilder().getCount();
         return {
             edges,
             nodes: edges.map((edge) => edge.node),

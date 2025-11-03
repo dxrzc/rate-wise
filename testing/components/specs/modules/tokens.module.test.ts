@@ -61,9 +61,7 @@ describe('Tokens Service ', () => {
                         secret: 'badSecret',
                     },
                 );
-                await expect(tokensService.verify(badToken)).rejects.toThrow(
-                    InvalidToken,
-                );
+                await expect(tokensService.verify(badToken)).rejects.toThrow(InvalidToken);
             });
         });
 
@@ -73,9 +71,7 @@ describe('Tokens Service ', () => {
                     email: '',
                     purpose: JwtPurpose.PASSWORD_RESET,
                 });
-                await expect(tokensService.verify(token)).rejects.toThrow(
-                    InvalidTokenPurpose,
-                );
+                await expect(tokensService.verify(token)).rejects.toThrow(InvalidTokenPurpose);
             });
         });
 
@@ -85,9 +81,7 @@ describe('Tokens Service ', () => {
                     email: '',
                     purpose: undefined,
                 });
-                await expect(tokensService.verify(token)).rejects.toThrow(
-                    InvalidDataInToken,
-                );
+                await expect(tokensService.verify(token)).rejects.toThrow(InvalidDataInToken);
             });
         });
 
@@ -97,9 +91,7 @@ describe('Tokens Service ', () => {
                     email: '',
                     jti: undefined,
                 });
-                await expect(tokensService.verify(token)).rejects.toThrow(
-                    InvalidDataInToken,
-                );
+                await expect(tokensService.verify(token)).rejects.toThrow(InvalidDataInToken);
             });
         });
 
@@ -108,9 +100,7 @@ describe('Tokens Service ', () => {
                 const token = await tokensService.generate({
                     anotherData: 'data123',
                 });
-                await expect(tokensService.verify(token)).rejects.toThrow(
-                    InvalidDataInToken,
-                );
+                await expect(tokensService.verify(token)).rejects.toThrow(InvalidDataInToken);
             });
         });
 
@@ -122,9 +112,7 @@ describe('Tokens Service ', () => {
                 const payload = await tokensService.verify(token);
                 await tokensService.blacklist(payload.jti, payload.exp);
                 // verify again
-                await expect(tokensService.verify(token)).rejects.toThrow(
-                    TokenIsBlacklisted,
-                );
+                await expect(tokensService.verify(token)).rejects.toThrow(TokenIsBlacklisted);
             });
         });
 
@@ -134,9 +122,7 @@ describe('Tokens Service ', () => {
                 const token = await tokensService.generate({
                     email,
                 });
-                const payload = await tokensService.verify<{ email: string }>(
-                    token,
-                );
+                const payload = await tokensService.verify<{ email: string }>(token);
                 expect(payload).toStrictEqual({
                     email,
                     purpose: JwtPurpose.ACCOUNT_VERIFICATION,
@@ -154,9 +140,7 @@ describe('Tokens Service ', () => {
                 email: '',
             });
             const payload = await tokensService.consume(token);
-            const jtiInRedis = await redisClient.get(
-                blacklistTokenKey(payload.jti),
-            );
+            const jtiInRedis = await redisClient.get(blacklistTokenKey(payload.jti));
             expect(jtiInRedis).toBe(1);
         });
     });

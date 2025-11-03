@@ -91,10 +91,7 @@ describe('signIn', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -112,10 +109,7 @@ describe('signIn', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -133,10 +127,7 @@ describe('signIn', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -149,10 +140,7 @@ describe('signIn', () => {
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -167,10 +155,7 @@ describe('signIn', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -194,18 +179,14 @@ describe('signIn', () => {
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.MAX_SESSIONS_REACHED,
-            );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         });
     });
 
     describe('Session cookie is provided', () => {
         describe('SignIn success', () => {
             test('old session should be removed from redis store (session rotation)', async () => {
-                const { sessionCookie, email, password } =
-                    await createAccount();
+                const { sessionCookie, email, password } = await createAccount();
                 const oldSid = getSidFromCookie(sessionCookie);
                 await testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signIn({
@@ -229,10 +210,7 @@ describe('signIn', () => {
                     fields: ['password' as any],
                 }),
             );
-            expect(res).toFailWith(
-                Code.GRAPHQL_VALIDATION_FAILED,
-                <string>expect.any(String),
-            );
+            expect(res).toFailWith(Code.GRAPHQL_VALIDATION_FAILED, <string>expect.any(String));
         });
     });
 
@@ -257,10 +235,7 @@ describe('signIn', () => {
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(
-                Code.TOO_MANY_REQUESTS,
-                COMMON_MESSAGES.TOO_MANY_REQUESTS,
-            );
+            expect(res).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });
 });

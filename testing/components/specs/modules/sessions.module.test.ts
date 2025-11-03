@@ -35,10 +35,7 @@ describe('Sessions Service ', () => {
                     // creates a real session simulating async behavior
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     setImmediate(async () => {
-                        await redisClient.store(
-                            `session:${mockRequest.sessionID}`,
-                            {},
-                        );
+                        await redisClient.store(`session:${mockRequest.sessionID}`, {});
                         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         cb && cb(); // signal success to promisify()
                     });
@@ -149,21 +146,13 @@ describe('Sessions Service ', () => {
             await sessionsService.create(<any>mockRequest, userId);
 
             // sessions created
-            await expect(
-                redisClient.get(`session:${sess1Id}`),
-            ).resolves.not.toBeNull();
-            await expect(
-                redisClient.get(`session:${sess2Id}`),
-            ).resolves.not.toBeNull();
+            await expect(redisClient.get(`session:${sess1Id}`)).resolves.not.toBeNull();
+            await expect(redisClient.get(`session:${sess2Id}`)).resolves.not.toBeNull();
 
             // sessions deleted
             await sessionsService.deleteAll(userId);
-            await expect(
-                redisClient.get(`session:${sess1Id}`),
-            ).resolves.toBeNull();
-            await expect(
-                redisClient.get(`session:${sess2Id}`),
-            ).resolves.toBeNull();
+            await expect(redisClient.get(`session:${sess1Id}`)).resolves.toBeNull();
+            await expect(redisClient.get(`session:${sess2Id}`)).resolves.toBeNull();
         });
     });
 

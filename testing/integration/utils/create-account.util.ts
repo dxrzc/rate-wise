@@ -22,10 +22,7 @@ export async function createAccount(
             input: user,
         }),
     );
-    await testKit.userRepos.update(
-        { id: res.body.data.signUp.id },
-        { status, role },
-    );
+    await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, role });
     return {
         ...(res.body.data.signUp as UserModel),
         password: user.password,

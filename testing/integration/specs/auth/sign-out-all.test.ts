@@ -37,22 +37,16 @@ describe('signOutAll', () => {
             ).resolves.not.toBeNull();
 
             // sign out all
-            const res = await testKit.gqlClient
-                .set('Cookie', sessionCookie)
-                .send(
-                    signOutAll({
-                        input: { password },
-                    }),
-                );
+            const res = await testKit.gqlClient.set('Cookie', sessionCookie).send(
+                signOutAll({
+                    input: { password },
+                }),
+            );
             expect(res).notToFail();
 
             // sids don't exist anymore
-            await expect(
-                testKit.sessionsRedisClient.get(`session:${sid1}`),
-            ).resolves.toBeNull();
-            await expect(
-                testKit.sessionsRedisClient.get(`session:${sid2}`),
-            ).resolves.toBeNull();
+            await expect(testKit.sessionsRedisClient.get(`session:${sid1}`)).resolves.toBeNull();
+            await expect(testKit.sessionsRedisClient.get(`session:${sid2}`)).resolves.toBeNull();
         });
     });
 
@@ -64,10 +58,7 @@ describe('signOutAll', () => {
                         input: { password: 'password' },
                     }),
                 ),
-            ).resolves.toFailWith(
-                Code.UNAUTHORIZED,
-                AUTH_MESSAGES.UNAUTHORIZED,
-            );
+            ).resolves.toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
@@ -77,19 +68,14 @@ describe('signOutAll', () => {
                 length: AUTH_LIMITS.PASSWORD.MIN - 1,
             });
             const { sessionCookie } = await createAccount();
-            const res = await testKit.gqlClient
-                .set('Cookie', sessionCookie)
-                .send(
-                    signOutAll({
-                        input: {
-                            password: shortPassword,
-                        },
-                    }),
-                );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
+            const res = await testKit.gqlClient.set('Cookie', sessionCookie).send(
+                signOutAll({
+                    input: {
+                        password: shortPassword,
+                    },
+                }),
             );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -99,19 +85,14 @@ describe('signOutAll', () => {
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
             const { sessionCookie } = await createAccount();
-            const res = await testKit.gqlClient
-                .set('Cookie', sessionCookie)
-                .send(
-                    signOutAll({
-                        input: {
-                            password: longPassword,
-                        },
-                    }),
-                );
-            expect(res).toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
+            const res = await testKit.gqlClient.set('Cookie', sessionCookie).send(
+                signOutAll({
+                    input: {
+                        password: longPassword,
+                    },
+                }),
             );
+            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -124,10 +105,7 @@ describe('signOutAll', () => {
                         input: { password: 'password' },
                     }),
                 ),
-            ).resolves.toFailWith(
-                Code.BAD_REQUEST,
-                AUTH_MESSAGES.INVALID_CREDENTIALS,
-            );
+            ).resolves.toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
@@ -146,10 +124,7 @@ describe('signOutAll', () => {
                     input: { password: testKit.userSeed.password },
                 }),
             );
-            expect(res).toFailWith(
-                Code.TOO_MANY_REQUESTS,
-                COMMON_MESSAGES.TOO_MANY_REQUESTS,
-            );
+            expect(res).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });
 });

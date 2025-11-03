@@ -30,10 +30,7 @@ export class GqlConfigService implements GqlOptionsFactory {
                     this.logger.error('Internal server error');
                 return handledError;
             },
-            autoSchemaFile: join(
-                process.cwd(),
-                'src/common/graphql/schema.gql',
-            ),
+            autoSchemaFile: join(process.cwd(), 'src/common/graphql/schema.gql'),
             context: (context: { req: Request; res: Response }) => ({
                 req: context.req,
                 res: context.res,

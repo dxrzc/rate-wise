@@ -8,9 +8,7 @@ export class HttpLoggerConfigService implements IHttpLoggerOptionsFactory {
     constructor(private readonly serverConfig: ServerConfigService) {}
 
     create(): IHttpLoggerRootOptions {
-        const logsDir = this.serverConfig.isProduction
-            ? 'logs/prod'
-            : 'logs/dev';
+        const logsDir = this.serverConfig.isProduction ? 'logs/prod' : 'logs/dev';
         return {
             silentAll: this.serverConfig.isTesting,
             requests: {
@@ -24,9 +22,7 @@ export class HttpLoggerConfigService implements IHttpLoggerOptionsFactory {
                     dir: logsDir,
                 },
                 console: {
-                    minLevel: this.serverConfig.isDevelopment
-                        ? 'debug'
-                        : 'info',
+                    minLevel: this.serverConfig.isDevelopment ? 'debug' : 'info',
                 },
             },
         };

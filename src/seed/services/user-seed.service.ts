@@ -19,9 +19,7 @@ export class UserSeedService {
 
     get role(): UserRole {
         const roles = Object.values(UserRole);
-        return roles[
-            faker.number.int({ min: 0, max: roles.length - 1 })
-        ] as UserRole;
+        return roles[faker.number.int({ min: 0, max: roles.length - 1 })] as UserRole;
     }
 
     get reputationScore(): number {

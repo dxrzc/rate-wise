@@ -4,9 +4,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class DbConfigService {
-    constructor(
-        private readonly configService: ConfigService<IConfigs, true>,
-    ) {}
+    constructor(private readonly configService: ConfigService<IConfigs, true>) {}
 
     get postgresUri(): string {
         return this.configService.get('POSTGRES_URI');

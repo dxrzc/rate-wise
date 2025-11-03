@@ -6,8 +6,7 @@ export const notToFail: MatcherFunction<[void]> = function (response: unknown) {
     const typedResponse = response as { body: GraphQLErrorResponse };
 
     const hasError =
-        Array.isArray(typedResponse.body.errors) &&
-        typedResponse.body.errors.length > 0;
+        Array.isArray(typedResponse.body.errors) && typedResponse.body.errors.length > 0;
 
     const pass = !hasError;
 

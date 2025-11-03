@@ -1,13 +1,6 @@
 import { Test } from 'supertest';
 
-type HttpMethod =
-    | 'get'
-    | 'post'
-    | 'put'
-    | 'delete'
-    | 'patch'
-    | 'head'
-    | 'options';
+type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options';
 
 export type RestClient = {
     [M in HttpMethod]: (url: string) => Test;
