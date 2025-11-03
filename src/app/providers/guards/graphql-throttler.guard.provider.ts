@@ -1,7 +1,7 @@
 import { APP_GUARD } from '@nestjs/core';
-import { CommonThrottlerGuard } from 'src/common/guards/common-throttler.guard';
+import { RateLimiterGuard } from 'src/common/guards/rate-limiter.guard';
 
-export const gqlThrottlerGuard = {
+export const rateLimiterGuard = {
     provide: APP_GUARD,
-    useClass: CommonThrottlerGuard,
+    useClass: RateLimiterGuard,
 };

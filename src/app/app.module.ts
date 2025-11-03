@@ -27,7 +27,7 @@ import { catchEverythingFiler } from './providers/filters/catch-everything.filte
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { TokensModule } from 'src/tokens/tokens.module';
-import { gqlThrottlerGuard } from './providers/guards/graphql-throttler.guard.provider';
+import { rateLimiterGuard } from './providers/guards/graphql-throttler.guard.provider';
 import { minutes, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
@@ -48,7 +48,7 @@ import { appAccountStatusGuard } from './providers/guards/app-account-status.gua
         RequestContextPlugin,
         catchEverythingFiler,
         appValidationPipe,
-        gqlThrottlerGuard,
+        rateLimiterGuard,
         appAuthGuard,
         appAccountStatusGuard,
     ],

@@ -4,9 +4,14 @@ import type { Config } from 'jest';
 const config: Config = {
     ...baseJestConfig,
     testTimeout: 20000,
-    maxWorkers: 2,
+    maxWorkers: '50%',
 
     roots: ['<rootDir>/testing/components/specs'],
+    globalSetup: '<rootDir>/testing/components/setup/global-setup.ts',
+    globalTeardown: '<rootDir>/testing/components/setup/global-teardown.ts',
+    setupFilesAfterEnv: [
+        '<rootDir>/testing/components/setup/setup-after-env.ts',
+    ],
 
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/components',

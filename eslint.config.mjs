@@ -94,6 +94,17 @@ export default tseslint.config(
           ],
         },
       ],
+      "no-restricted-properties": [
+        "error",
+        {
+          property: 'toContainCookie',
+          message: 'Integration-only matcher.',
+        },
+        {
+          property: 'emailSentToThisAddress',
+          message: 'Integration-only matcher.',
+        },
+      ],
     },
   },
   {
@@ -112,6 +123,17 @@ export default tseslint.config(
               message: "Use aliases instead of relative imports",
             },
           ],
+        },
+      ],
+      "no-restricted-properties": [
+        "error",
+        {                    
+          property: 'toContainCookie',
+          message: 'Integration-only matcher.',
+        },
+        {
+          property: 'emailSentToThisAddress',
+          message: 'Integration-only matcher.',
         },
       ],
     },
