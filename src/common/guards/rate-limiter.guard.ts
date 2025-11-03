@@ -16,9 +16,9 @@ import { COMMON_MESSAGES } from '../messages/common.messages';
 import { Request, Response } from 'express';
 import { TooManyRequestsException } from '../errors/http.exceptions';
 
-// GraphQL & REST
+// Supports GraphQL & REST
 @Injectable()
-export class CommonThrottlerGuard extends ThrottlerGuard {
+export class RateLimiterGuard extends ThrottlerGuard {
     constructor(
         options: ThrottlerOptions[],
         storageService: ThrottlerStorage,
