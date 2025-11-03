@@ -1,14 +1,14 @@
 import { join } from 'path';
 import { GenericContainer } from 'testcontainers';
 import { promises as fs } from 'fs';
-import { AllowedRedisServices } from '../types/allowed-redis-services.type';
+import { RedisInstances } from '../../types/redis-instances.type';
 
 /**
  * This disables persistence but loads the configuration stored in redis/redis-*.conf
  * so the container mimics production but its faster at the same time.
  * @returns container url
  */
-export async function createRedisContainer(serviceName: AllowedRedisServices) {
+export async function createRedisContainer(serviceName: RedisInstances) {
     const redisConf =
         (await fs.readFile(
             join(process.cwd(), `redis/${serviceName}.conf`),
