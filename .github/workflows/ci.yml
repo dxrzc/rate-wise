@@ -68,5 +68,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run integration tests
-        run: npm run test:integration -- --maxWorkers=100%    
+        run: npm run test:integration -- --maxWorkers=100%
+
+  run-components-tests:
+    name: Components Tests
+    runs-on: ubuntu-latest
+    needs: run-linter
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run components tests
+        run: npm run test:components -- --maxWorkers=100%
     
