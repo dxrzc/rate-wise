@@ -1,14 +1,9 @@
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { SERVICES_CONFIG_FILE_PATH } from './constants/services-config-file-path.constant';
 
 export default async function () {
     try {
-        await Promise.all([
-            fs.rm(join(__dirname, 'containers/postgres-uri.txt')),
-            fs.rm(join(__dirname, 'containers/redis-auth-uri.txt')),
-            fs.rm(join(__dirname, 'containers/mailpit-port.txt')),
-            fs.rm(join(__dirname, 'containers/mailpit-api-port.txt')),
-        ]);
+        await fs.rm(SERVICES_CONFIG_FILE_PATH);
     } catch (error) {
         console.error(error);
         process.exit(1);
