@@ -11,7 +11,7 @@ import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 
 describe('signOut', () => {
     describe('Session cookie not provided', () => {
-                              test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
+        test('return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
             const res = await testKit.gqlClient.send(signOut());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
