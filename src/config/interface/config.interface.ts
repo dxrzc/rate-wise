@@ -17,4 +17,5 @@ export interface IConfigs {
     SMTP_PORT: number;
     SMTP_USER: string;
     SMTP_PASS: string;
+    API_BASE_URL: string;
 }

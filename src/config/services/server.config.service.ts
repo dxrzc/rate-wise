@@ -26,4 +26,8 @@ export class ServerConfigService {
     get isTesting(): boolean {
         return this.env === Environment.INTEGRATION;
     }
+
+    get apiBaseUrl(): string {
+        return this.configService.get('API_BASE_URL');
+    }
 }

@@ -25,4 +25,5 @@ export const envSchema = Joi.object<IConfigs, true>({
     NODE_ENV: Joi.string()
         .valid(...Object.values(Environment))
         .required(),
+    API_BASE_URL: Joi.string().uri().required(),
 });

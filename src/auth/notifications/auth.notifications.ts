@@ -8,6 +8,7 @@ import {
     accountVerificationEmailSentPage,
     accountVerificationEmailSentText,
 } from '../pages/account-verification-email-sent.page';
+import { ServerConfigService } from 'src/config/services/server.config.service';
 
 @Injectable()
 export class AuthNotifications {
@@ -15,14 +16,12 @@ export class AuthNotifications {
         @Inject(ACCOUNT_VERIFICATION_TOKEN)
         private readonly accVerifToken: TokensService<IAccVerifTokenPayload>,
         private readonly emailsService: EmailsService,
+        private readonly serverConfig: ServerConfigService,
     ) {}
-
-    // TODO:
-    private readonly API_BASE_URL = 'http://localhost:3000';
 
     private async createAccountVerificationLink(id: string) {
         const token = await this.accVerifToken.generate({ id });
-        return `${this.API_BASE_URL}/auth/verifyAccount?token=${token}`;
+        return `${this.serverConfig.apiBaseUrl}/auth/verifyAccount?token=${token}`;
     }
 
     async sendAccountVerificationEmail(user: AuthenticatedUser) {
