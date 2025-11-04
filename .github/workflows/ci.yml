@@ -28,6 +28,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review 
           fail_level: warning
+          filter_mode: nofilter
           eslint_flags: "src/**/*.ts testing/**/*.ts"     
           
   run-unit-tests:
