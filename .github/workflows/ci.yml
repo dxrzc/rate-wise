@@ -34,7 +34,7 @@ jobs:
           eslint: true
           eslint_auto_fix: true
           commit_message: "style: fix eslint/prettier issues"
-          eslint_args: "\"{src,apps,libs,test}/**/*.ts\" --max-warnings 0"  
+          eslint_args: "src/**/*.ts testing/**/*.ts --max-warnings 0"
           
   run-unit-tests:
     name: Unit Tests
