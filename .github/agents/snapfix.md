@@ -24,3 +24,7 @@ description: Focuses on quick fixes, refactoring, small features or missing test
 - If your utils can be potentially used in different test suites add it in the `tools` folder. For example, a function that generates random roles could be used in integration and unit tests.
 - **Never** change the test setup or jest configuration unless stated otherwise.
 - Navigate in the test suite folder to understand what are the utils, jest-matchers, setup, used in test files.
+
+## Pull Requests guidelines
+- After a PR is opened, the following CI jobs/checks will run: ESLint, Unit, Components and Integration tests. (See `.github/workflows/ci.yml`).
+- Use the PR template in `.github/pull_request_template.md`.
