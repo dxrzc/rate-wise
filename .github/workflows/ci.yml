@@ -11,30 +11,24 @@ concurrency:
 
 jobs: 
   run-linter:
-    name: ESLint
+    name: Linter
     runs-on: ubuntu-latest
     permissions:
-      checks: write
-      contents: write
+      contents: read
+      pull-requests: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: 22.19.0
           cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
+      - run: npm ci      
+      - uses: reviewdog/action-eslint@2fee6dd72a5419ff4113f694e2068d2a03bb35dd # v1.33.2
         with:
-          auto_fix: true
-          continue_on_error: false
-          eslint: true
-          eslint_auto_fix: true
-          commit_message: "style: fix eslint/prettier issues"
-          eslint_args: "src/**/*.ts testing/**/*.ts --max-warnings 0"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review 
+          fail_level: warning
+          eslint_flags: "src/**/*.ts testing/**/*.ts"     
           
   run-unit-tests:
     name: Unit Tests
