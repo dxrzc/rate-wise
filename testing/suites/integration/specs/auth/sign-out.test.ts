@@ -1,5 +1,5 @@
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
-import { signOut } from '@commontestutils/operations/auth/sign-out.operation';
+import { signOut } from '@testing/tools/gql-operations/auth/sign-out.operation';
 import { createAccount } from '@integration/utils/create-account.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { testKit } from '@integration/utils/test-kit.util';

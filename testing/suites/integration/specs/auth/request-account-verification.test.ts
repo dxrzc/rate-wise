@@ -1,4 +1,4 @@
-import { requestAccountVerification } from '@commontestutils/operations/auth/request-account-verification.operation';
+import { requestAccountVerification } from '@testing/tools/gql-operations/auth/request-account-verification.operation';
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
 import { testKit } from '@integration/utils/test-kit.util';

@@ -3,7 +3,7 @@ import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants'
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signUp } from '@commontestutils/operations/auth/sign-up.operation';
+import { signUp } from '@testing/tools/gql-operations/auth/sign-up.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createAccount } from '@integration/utils/create-account.util';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
