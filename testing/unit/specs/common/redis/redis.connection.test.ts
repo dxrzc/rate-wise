@@ -13,7 +13,7 @@ describe('RedisConnection', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         mockClient = {
             on: jest.fn(),
             connect: jest.fn(),
