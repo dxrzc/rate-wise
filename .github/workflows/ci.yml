@@ -29,7 +29,7 @@ jobs:
           reporter: github-pr-review 
           fail_level: warning
           filter_mode: nofilter
-          eslint_flags: "src/**/*.ts testing/**/*.ts"     
+          eslint_flags: "{src,testing}/**/*.ts"    
           
   run-unit-tests:
     name: Unit Tests
