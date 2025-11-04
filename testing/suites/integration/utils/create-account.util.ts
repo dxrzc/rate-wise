@@ -1,4 +1,4 @@
-import { signUp } from '@commontestutils/operations/auth/sign-up.operation';
+import { signUp } from '@testing/tools/gql-operations/auth/sign-up.operation';
 import { getSessionCookie } from './get-session-cookie.util';
 import { UserModel } from 'src/users/models/user.model';
 import { testKit } from './test-kit.util';

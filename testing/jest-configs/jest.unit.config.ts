@@ -1,11 +1,11 @@
 import type { Config } from 'jest';
-import { baseJestConfig } from '../common/config/jest.base.config';
+import { baseJestConfig } from './jest.base.config';
 
 const config: Config = {
     ...baseJestConfig,
     maxWorkers: '50%',
 
-    roots: ['<rootDir>/testing/unit/specs'],
+    roots: ['<rootDir>/testing/suites/unit/specs'],
 
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/unit',
