@@ -14,6 +14,12 @@ export class GqlHttpError {
         });
     }
 
+    static Conflict(message: string) {
+        return new GraphQLError(message, {
+            extensions: { code: Code.CONFLICT },
+        });
+    }
+
     static Unauthorized(message: string) {
         return new GraphQLError(message, {
             extensions: { code: Code.UNAUTHORIZED },

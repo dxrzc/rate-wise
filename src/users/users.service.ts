@@ -80,7 +80,7 @@ export class UsersService {
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
-                throw GqlHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
+                throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }
@@ -96,7 +96,7 @@ export class UsersService {
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
-                throw GqlHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
+                throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }
@@ -110,7 +110,7 @@ export class UsersService {
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
-                throw GqlHttpError.BadRequest(USER_MESSAGES.ALREADY_EXISTS);
+                throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }
