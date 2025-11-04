@@ -18,6 +18,7 @@ describe('RedisConnection', () => {
             on: jest.fn(),
             connect: jest.fn(),
             disconnect: jest.fn(),
+            isOpen: true,
             duplicate: jest.fn(() => ({
                 subscribe: jest.fn(),
                 connect: jest.fn(),
