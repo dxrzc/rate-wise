@@ -86,7 +86,7 @@ describe('signUp', () => {
     });
 
     describe('Username already exists', () => {
-        test('should return BAD REQUEST code and ALREADY_EXISTS message ', async () => {
+        test('should return CONFLICT code and ALREADY_EXISTS message ', async () => {
             const { username } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -98,12 +98,12 @@ describe('signUp', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, USER_MESSAGES.ALREADY_EXISTS);
+            expect(res).toFailWith(Code.CONFLICT, USER_MESSAGES.ALREADY_EXISTS);
         });
     });
 
     describe('Email already exists', () => {
-        test('should return BAD REQUEST code and ALREADY_EXISTS message', async () => {
+        test('should return CONFLICT code and ALREADY_EXISTS message', async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -115,7 +115,7 @@ describe('signUp', () => {
                     },
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, USER_MESSAGES.ALREADY_EXISTS);
+            expect(res).toFailWith(Code.CONFLICT, USER_MESSAGES.ALREADY_EXISTS);
         });
     });
 
