@@ -18,9 +18,7 @@ import { IEmailsRootOptions } from './interface/emails.root.options.interface';
 
 @Module({})
 export class EmailsModule {
-    static forRootAsync(
-        options: FactoryConfigModule<IEmailsRootOptions>,
-    ): DynamicModule {
+    static forRootAsync(options: FactoryConfigModule<IEmailsRootOptions>): DynamicModule {
         return {
             module: EmailsModule,
             imports: options.imports || [],
@@ -37,7 +35,7 @@ export class EmailsModule {
         };
     }
 
-    static forFeature(
+    static forFeatureAsync(
         options: FactoryConfigModuleWithExtraProvider<IEmailsFeatureOptions>,
     ): DynamicModule {
         return {

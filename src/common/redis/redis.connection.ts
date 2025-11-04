@@ -8,9 +8,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { SystemLogger } from 'src/common/logging/system.logger';
-import { createClient, SocketTimeoutError } from '@redis/client';
+import { createClient } from '@redis/client';
 
-const MAX_RETRIES = 5;
+// Maximum reconnection delay in milliseconds (30 seconds)
+// This prevents indefinite exponential growth while still allowing for recovery
+const MAX_RECONNECT_DELAY = 30000;
 
 export class RedisConnection {
     private readonly subscribers = new Array<any>();
@@ -23,17 +25,22 @@ export class RedisConnection {
         this._client = createClient({
             url: redisUri,
             socket: {
-                reconnectStrategy: (retries, cause) => {
-                    if (
-                        cause instanceof SocketTimeoutError ||
-                        retries > MAX_RETRIES
-                    ) {
-                        // stop reconnecting
-                        return false;
-                    }
-                    const jitter = Math.floor(Math.random() * 200);
-                    const delay = Math.min(Math.pow(2, retries) * 50, 2000);
-                    return delay + jitter;
+                reconnectStrategy: (retries) => {
+                    // Kubernetes-friendly reconnection strategy:
+                    // - No maximum retry limit (infinite retries)
+                    // - Exponential backoff with jitter to prevent thundering herd
+                    // - Capped at MAX_RECONNECT_DELAY to avoid excessive waits
+
+                    // Calculate delay with exponential backoff: 2^retries * 50ms
+                    const exponentialDelay = Math.pow(2, retries) * 50;
+
+                    // Cap the delay at MAX_RECONNECT_DELAY
+                    const cappedDelay = Math.min(exponentialDelay, MAX_RECONNECT_DELAY);
+
+                    // Add jitter (random value between 0-1000ms) to prevent thundering herd
+                    const jitter = Math.floor(Math.random() * 1000);
+
+                    return cappedDelay + jitter;
                 },
             },
         });
@@ -57,10 +64,7 @@ export class RedisConnection {
         this._client.on('reconnecting', this.onReconnecting);
     }
 
-    async addSubscriber(
-        channel: string,
-        listener: (payload: string) => Promise<void>,
-    ) {
+    async addSubscriber(channel: string, listener: (payload: string) => Promise<void>) {
         const subscriber = this._client.duplicate();
         subscriber.subscribe(channel, listener);
         await subscriber.connect();
@@ -72,7 +76,9 @@ export class RedisConnection {
     }
 
     async disconnect() {
-        await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
-        await this._client.disconnect();
+        if (this._client.isOpen) {
+            await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
+            await this._client.disconnect();
+        }
     }
 }

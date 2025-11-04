@@ -4,9 +4,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SmtpConfigService {
-    constructor(
-        private readonly configService: ConfigService<IConfigs, true>,
-    ) {}
+    constructor(private readonly configService: ConfigService<IConfigs, true>) {}
 
     get host(): string {
         return this.configService.get('SMTP_HOST');

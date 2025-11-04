@@ -9,6 +9,7 @@ export default tseslint.config(
     ignores: [
       'eslint.config.mjs',      
       'scripts/*.js',
+      'commitlint.config.js'
     ],
   },
   eslint.configs.recommended,
@@ -93,6 +94,17 @@ export default tseslint.config(
           ],
         },
       ],
+      "no-restricted-properties": [
+        "error",
+        {
+          property: 'toContainCookie',
+          message: 'Integration-only matcher.',
+        },
+        {
+          property: 'emailSentToThisAddress',
+          message: 'Integration-only matcher.',
+        },
+      ],
     },
   },
   {
@@ -111,6 +123,17 @@ export default tseslint.config(
               message: "Use aliases instead of relative imports",
             },
           ],
+        },
+      ],
+      "no-restricted-properties": [
+        "error",
+        {                    
+          property: 'toContainCookie',
+          message: 'Integration-only matcher.',
+        },
+        {
+          property: 'emailSentToThisAddress',
+          message: 'Integration-only matcher.',
         },
       ],
     },

@@ -3,8 +3,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { SystemLogger } from './common/logging/system.logger';
 import { ServerConfigService } from './config/services/server.config.service';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
-let app: INestApplication | undefined;
+let app: NestExpressApplication | undefined;
 
 function tryToCloseApp(app: INestApplication, context: string) {
     const logger = SystemLogger.getInstance();
@@ -15,11 +16,7 @@ function tryToCloseApp(app: INestApplication, context: string) {
             logger.warn('Application closed', context);
         })
         .catch((err: Error) => {
-            logger.error(
-                `Error closing nest application: ${err.message}`,
-                err.stack,
-                context,
-            );
+            logger.error(`Error closing nest application: ${err.message}`, err.stack, context);
         });
 }
 
@@ -47,16 +44,17 @@ process.on('unhandledRejection', (reason: unknown) => {
 });
 
 async function bootstrap() {
-    app = await NestFactory.create(AppModule, {
+    app = await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
     });
+
     app.useLogger(SystemLogger.getInstance());
     app.enableShutdownHooks();
 
     const serverConfig = app.get(ServerConfigService);
     await app.listen(serverConfig.port);
     SystemLogger.getInstance().log(
-        `Running in ${serverConfig.env} mode`,
+        `Running in ${serverConfig.env} mode on port ${serverConfig.port}`,
         'NestApplication',
     );
 }

@@ -16,16 +16,12 @@ export class ItemsResolver {
     }
 
     @Query(() => ItemPaginationModel, { name: 'users' })
-    async findAll(
-        @Args() paginationArgs: PaginationArgs,
-    ): Promise<IPaginatedType<ItemModel>> {
+    async findAll(@Args() paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
         return await this.itemsService.findAll(paginationArgs);
     }
 
     @Mutation(() => ItemModel, { name: 'createItem' })
-    async createOne(
-        @Args('item_data') item: CreateItemInput,
-    ): Promise<ItemModel> {
+    async createOne(@Args('item_data') item: CreateItemInput): Promise<ItemModel> {
         return await this.itemsService.createOne(item);
     }
 

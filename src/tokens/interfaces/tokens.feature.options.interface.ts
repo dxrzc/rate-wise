@@ -6,7 +6,4 @@ export interface ITokensFeatureOptions {
     expiresIn: StringValue;
     purpose: JwtPurpose;
     dataInToken: string[];
-    connection: {
-        redisUri: string;
-    };
 }

@@ -31,9 +31,7 @@ export class SessionsService {
     async deleteAll(userId: string): Promise<void> {
         const indexKey = userSessionsSetKey(userId);
         const sessionsIds = await this.redisClient.setMembers(indexKey);
-        const deletions = sessionsIds.map((sId) =>
-            this.redisClient.delete(`session:${sId}`),
-        );
+        const deletions = sessionsIds.map((sId) => this.redisClient.delete(`session:${sId}`));
         await Promise.all(deletions);
         this.logger.debug(`All user ${userId} sessions deleted`);
     }

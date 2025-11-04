@@ -23,11 +23,10 @@ export class TokensModule implements OnApplicationShutdown {
         await TokensModule.redisConnection.disconnect();
     }
 
-    static forRootAsync(
-        options: FactoryConfigModule<ITokensRootOptions>,
-    ): DynamicModule {
+    static forRootAsync(options: FactoryConfigModule<ITokensRootOptions>): DynamicModule {
         return {
             module: TokensModule,
+            global: true,
             imports: options.imports || [],
             providers: [
                 {
@@ -37,12 +36,9 @@ export class TokensModule implements OnApplicationShutdown {
                 },
                 {
                     provide: TOKENS_REDIS_CONNECTION,
-                    useFactory: async (moduleOpts: ITokensFeatureOptions) => {
+                    useFactory: async (moduleOpts: ITokensRootOptions) => {
                         const redisUri = moduleOpts.connection.redisUri;
-                        const redisClient = new RedisClientAdapter(
-                            redisUri,
-                            'Tokens',
-                        );
+                        const redisClient = new RedisClientAdapter(redisUri, 'Tokens');
                         TokensModule.redisConnection = redisClient.connection;
                         await redisClient.connection.connect();
                         return redisClient;

@@ -24,7 +24,7 @@ export class InvalidTokenPurpose extends InvalidToken {
 
 export class TokenIsBlacklisted extends InvalidToken {
     constructor() {
-        super('Invalid token purpose');
+        super('Token is blacklisted');
         this.name = 'TokenIsBlacklisted';
         Object.setPrototypeOf(this, TokenIsBlacklisted.prototype);
     }

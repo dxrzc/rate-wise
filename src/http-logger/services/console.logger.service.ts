@@ -35,14 +35,8 @@ export class ConsoleLoggerService {
                     const coloredTimestamp = colorizer(level, `[${timestamp}]`);
                     const coloredRequest = colorizer(level, `[${requestId}]`);
                     const formattedMssg = mssg[0].toUpperCase() + mssg.slice(1);
-                    const coloredContext = colorizer(
-                        level,
-                        `[${info.context}]`,
-                    );
-                    const coloredLevel = colorizer(
-                        level,
-                        `[${level.toUpperCase()}]`,
-                    );
+                    const coloredContext = colorizer(level, `[${info.context}]`);
+                    const coloredLevel = colorizer(level, `[${level.toUpperCase()}]`);
 
                     return `${coloredTimestamp} ${coloredRequest} ${coloredLevel} ${coloredContext}: ${formattedMssg} ${colorizedMs}`;
                 }),

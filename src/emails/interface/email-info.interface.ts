@@ -1,5 +1,7 @@
 export interface IEmailInfo {
     to: string;
     from: string;
-    message: string;
+    subject: string;
+    text?: string;
+    html: string;
 }

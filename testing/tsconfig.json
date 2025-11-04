@@ -13,19 +13,19 @@
                 "./src/*"
             ],            
             "@unit/*": [
-                "./testing/unit/*"
+                "./testing/suites/unit/*"
             ],
             "@components/*": [
-                "./testing/components/*"
+                "./testing/suites/components/*"
             ],
             "@integration/*": [
-                "./testing/integration/*"
+                "./testing/suites/integration/*"
             ],
             "@e2e/*": [
-                "./testing/e2e/*"
+                "./testing/suites/e2e/*"
             ],
-            "@commontestutils/*": [
-                "./testing/common/utils/*",
+            "@testing/tools/*": [
+                "./testing/tools/*",
             ]
         }
     }

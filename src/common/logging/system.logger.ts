@@ -18,16 +18,12 @@ export class SystemLogger extends ConsoleLogger {
             });
         } else {
             const folder =
-                process.env.NODE_ENV === Environment.DEVELOPMENT
-                    ? 'logs/dev'
-                    : 'logs/prod';
+                process.env.NODE_ENV === Environment.DEVELOPMENT ? 'logs/dev' : 'logs/prod';
             SystemLogger.fsLogger = winston.createLogger({
                 transports: [
                     new winston.transports.File({
                         filename: `${folder}/system.log`,
-                        format: winston.format.combine(
-                            winston.format.timestamp(),
-                        ),
+                        format: winston.format.combine(winston.format.timestamp()),
                     }),
                 ],
             });

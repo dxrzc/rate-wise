@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
-import { UserRole } from 'src/users/enum/user-role.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 
@@ -19,9 +19,7 @@ export class UserSeedService {
 
     get role(): UserRole {
         const roles = Object.values(UserRole);
-        return roles[
-            faker.number.int({ min: 0, max: roles.length - 1 })
-        ] as UserRole;
+        return roles[faker.number.int({ min: 0, max: roles.length - 1 })] as UserRole;
     }
 
     get reputationScore(): number {
