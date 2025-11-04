@@ -13,7 +13,7 @@ import { faker } from '@faker-js/faker/.';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 
 describe('signIn', () => {
-                                 describe('Successful sign-in', () => {
+    describe('Successful sign-in', () => {
         test('returned data should match the user data in database', async () => {
             const { email, password, id } = await createAccount();
             const res = await testKit.gqlClient.send(
