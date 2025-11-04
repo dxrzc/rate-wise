@@ -26,9 +26,7 @@ export class ItemsService {
 
     async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
         const limit = pagArgs.limit;
-        const decodedCursor = pagArgs.cursor
-            ? decodeCursor(pagArgs.cursor)
-            : undefined;
+        const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
         const edges = await createPaginationEdges<Item, IItemDbRecord>(
             this.itemRepository,
             limit,
@@ -37,9 +35,7 @@ export class ItemsService {
         );
         const hasNextPage = edges.length > limit;
         if (hasNextPage) edges.pop();
-        const totalCount = await this.itemRepository
-            .createQueryBuilder()
-            .getCount();
+        const totalCount = await this.itemRepository.createQueryBuilder().getCount();
         return {
             edges,
             nodes: edges.map((edge) => edge.node),
@@ -49,11 +45,9 @@ export class ItemsService {
     }
 
     async findOneById(id: string): Promise<Item> {
-        if (!validUUID(id))
-            throw new BadRequestException('Id is not a valid UUID');
+        if (!validUUID(id)) throw new BadRequestException('Id is not a valid UUID');
         const itemFound = await this.itemRepository.findOneBy({ id });
-        if (!itemFound)
-            throw new NotFoundException(`User with id ${id} not found`);
+        if (!itemFound) throw new NotFoundException(`User with id ${id} not found`);
         return itemFound;
     }
 
@@ -61,8 +55,7 @@ export class ItemsService {
         try {
             return await this.itemRepository.save(item);
         } catch (error) {
-            if (isDuplicatedKeyError(error))
-                throw new BadRequestException('User already exists');
+            if (isDuplicatedKeyError(error)) throw new BadRequestException('User already exists');
             throw new InternalServerErrorException(error);
         }
     }

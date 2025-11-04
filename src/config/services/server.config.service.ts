@@ -5,9 +5,7 @@ import { Environment } from 'src/common/enum/environment.enum';
 
 @Injectable()
 export class ServerConfigService {
-    constructor(
-        private readonly configService: ConfigService<IConfigs, true>,
-    ) {}
+    constructor(private readonly configService: ConfigService<IConfigs, true>) {}
 
     get port(): number {
         return this.configService.get('PORT');

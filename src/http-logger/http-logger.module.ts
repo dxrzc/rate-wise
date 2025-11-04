@@ -14,9 +14,7 @@ import { IHttpLoggerOptionsFactory } from './interfaces/http-logger.options.fact
 
 @Module({})
 export class HttpLoggerModule {
-    static forRootAsync(
-        options: ClassConfigModule<IHttpLoggerRootOptions>,
-    ): DynamicModule {
+    static forRootAsync(options: ClassConfigModule<IHttpLoggerRootOptions>): DynamicModule {
         return {
             global: true,
             module: HttpLoggerModule,

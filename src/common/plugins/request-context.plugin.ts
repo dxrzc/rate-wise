@@ -4,7 +4,7 @@ import {
     GraphQLRequestContext,
     GraphQLRequestContextWillSendResponse,
 } from '@apollo/server';
-import { IGraphQLContext } from 'src/auth/interfaces/graphql-context.interface';
+import { IGraphQLContext } from 'src/common/interfaces/graphql/graphql-context.interface';
 import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { Plugin } from '@nestjs/apollo';
@@ -39,7 +39,7 @@ export class RequestContextPlugin implements ApolloServerPlugin {
                     const error = reqCtx.errors?.at(0)?.message;
                     const responseTime = Date.now() - now;
                     this.logger.info(`Request completed (${responseTime}ms)`);
-                    this.logger.request({
+                    this.logger.logGQL({
                         responseTime: `${responseTime}ms`,
                         requestId: reqId,
                         query,

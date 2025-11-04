@@ -14,14 +14,8 @@ export class SessionsEvents implements OnModuleInit {
     async onModuleInit() {
         const listener = (key: string) => this.handleRemovedSession(key);
         await Promise.all([
-            this.redisClient.connection.addSubscriber(
-                '__keyevent@0__:del',
-                listener,
-            ),
-            this.redisClient.connection.addSubscriber(
-                '__keyevent@0__:expired',
-                listener,
-            ),
+            this.redisClient.connection.addSubscriber('__keyevent@0__:del', listener),
+            this.redisClient.connection.addSubscriber('__keyevent@0__:expired', listener),
         ]);
     }
 
@@ -32,9 +26,7 @@ export class SessionsEvents implements OnModuleInit {
         if (!sessionId) throw new Error(`Invalid session key format`);
 
         const userSessionRelationKey = userAndSessionRelationKey(sessionId);
-        const userId = await this.redisClient.get<string>(
-            userSessionRelationKey,
-        );
+        const userId = await this.redisClient.get<string>(userSessionRelationKey);
 
         if (userId) {
             await Promise.all([

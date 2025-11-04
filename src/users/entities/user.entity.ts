@@ -1,8 +1,8 @@
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Item } from 'src/items/entities/item.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
-import { UserRole } from '../enum/user-role.enum';
-import { UserStatus } from '../enum/user-status.enum';
+import { UserRole } from '../enums/user-role.enum';
+import { AccountStatus } from '../enums/account-status.enum';
 
 @Entity('account')
 export class User extends BaseEntity {
@@ -25,11 +25,11 @@ export class User extends BaseEntity {
 
     @Column({
         type: 'enum',
-        enum: UserStatus,
+        enum: AccountStatus,
         enumName: 'account_status_enum',
-        default: UserStatus.PENDING_VERIFICATION,
+        default: AccountStatus.PENDING_VERIFICATION,
     })
-    status!: UserStatus;
+    status!: AccountStatus;
 
     @Column('integer', { default: 0, name: 'reputation_score' })
     reputationScore!: number;

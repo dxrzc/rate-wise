@@ -27,6 +27,12 @@ import { catchEverythingFiler } from './providers/filters/catch-everything.filte
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { TokensModule } from 'src/tokens/tokens.module';
+import { rateLimiterGuard } from './providers/guards/graphql-throttler.guard.provider';
+import { minutes, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
+import { AuthController } from 'src/auth/auth.controller';
+import { appAccountStatusGuard } from './providers/guards/app-account-status.guard.provider';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -42,11 +48,21 @@ import { TokensModule } from 'src/tokens/tokens.module';
         RequestContextPlugin,
         catchEverythingFiler,
         appValidationPipe,
+        rateLimiterGuard,
         appAuthGuard,
+        appAccountStatusGuard,
     ],
     imports: [
         ConfigModule,
         EmailsModule,
+        ThrottlerModule.forRootAsync({
+            inject: [DbConfigService],
+            useFactory: ({ redisAuthUri }: DbConfigService) => ({
+                // default policy, overrided with decorators
+                throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
+                storage: new ThrottlerStorageRedisService(redisAuthUri),
+            }),
+        }),
         EmailsModule.forRootAsync({
             inject: [SmtpConfigService],
             useFactory: (smtpConfig: SmtpConfigService) => ({
@@ -102,7 +118,7 @@ import { TokensModule } from 'src/tokens/tokens.module';
             useClass: TypeOrmConfigService,
         }),
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
-            imports: [HttpLoggerModule.forFeature({ context: 'GraphQL' })],
+            imports: [HttpLoggerModule.forFeature({ context: 'Gql Handler' })],
             useClass: GqlConfigService,
             driver: ApolloDriver,
         }),
@@ -116,11 +132,10 @@ import { TokensModule } from 'src/tokens/tokens.module';
     ],
 })
 export class AppModule implements NestModule {
-    constructor(
-        private readonly sessionMiddlewareFactory: SessionMiddlewareFactory,
-    ) {}
+    constructor(private readonly sessionMiddlewareFactory: SessionMiddlewareFactory) {}
 
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(this.sessionMiddlewareFactory.create()).forRoutes('*');
+        consumer.apply(RestLoggingMiddleware).forRoutes(AuthController);
     }
 }

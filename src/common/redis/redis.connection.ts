@@ -64,10 +64,7 @@ export class RedisConnection {
         this._client.on('reconnecting', this.onReconnecting);
     }
 
-    async addSubscriber(
-        channel: string,
-        listener: (payload: string) => Promise<void>,
-    ) {
+    async addSubscriber(channel: string, listener: (payload: string) => Promise<void>) {
         const subscriber = this._client.duplicate();
         subscriber.subscribe(channel, listener);
         await subscriber.connect();
@@ -79,7 +76,9 @@ export class RedisConnection {
     }
 
     async disconnect() {
-        await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
-        await this._client.disconnect();
+        if (this._client.isOpen) {
+            await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
+            await this._client.disconnect();
+        }
     }
 }

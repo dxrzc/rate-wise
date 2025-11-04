@@ -10,7 +10,7 @@ type UserModel {
   username: String!
   email: String!
   role: UserRole!
-  status: UserStatus!
+  status: AccountStatus!
   reputationScore: Float!
 }
 
@@ -31,15 +31,15 @@ enum UserRole {
   ADMIN
 }
 
-"""Available statuses for a user."""
-enum UserStatus {
-  """User is active and can log in."""
+"""Available statuses for an account."""
+enum AccountStatus {
+  """Account is active and user can log in."""
   ACTIVE
 
-  """User has registered but not yet verified their email."""
+  """Account has been registered but not yet verified their email."""
   PENDING_VERIFICATION
 
-  """User account has been suspended."""
+  """Account has been suspended."""
   SUSPENDED
 }
 
@@ -91,6 +91,7 @@ type Mutation {
   createItem(item_data: CreateItemInput!): ItemModel!
   signUp(user_data: SignUpInput!): UserModel!
   signIn(credentials: SignInInput!): UserModel!
+  requestAccountVerification: Boolean!
   signOut: Boolean!
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
 }
@@ -103,8 +104,13 @@ input CreateItemInput {
 }
 
 input SignUpInput {
+  "        \n        **Constraints:**\n        - Length between 3 and 45 characters.\n        "
   username: String!
+
+  "\n        **Constraints:**\n        - Valid email format.\n        - Maximum length of 45 characters.\n        "
   email: String!
+
+  "        \n        **Constraints:**\n        - Length between 8 and 56 characters.\n        "
   password: String!
 }
 
