@@ -81,7 +81,7 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe('Email already exists', () => {
-        test('should return CONFLICT code and ALREADY_EXISTS message', async () => {
+        test(`should return CONFLICT code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -94,7 +94,7 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe('Password exceeds the max password length', () => {
-        test('should return BAD REQUEST code and INVALID_INPUT message', async () => {
+        test(`should return BAD REQUEST code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -122,7 +122,7 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe('Username already exists', () => {
-        test('should return CONFLICT code and ALREADY_EXISTS message ', async () => {
+        test(`should return CONFLICT code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
             const { username } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -156,7 +156,7 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe('Successful sign up', () => {
-        test(`default user role should be ${UserRole.USER}`, async () => {
+        test(`default user role should be "${UserRole.USER}"`, async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -168,7 +168,7 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe('Successful sign up', () => {
-        test('default account status should be PENDING_VERIFICATION', async () => {
+        test(`default account status should be "${AccountStatus.PENDING_VERIFICATION}"`, async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -176,6 +176,18 @@ describe('GraphQL - SignUp', () => {
             const userId = res.body.data.signUp.id;
             const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
             expect(userDB.status).toBe(AccountStatus.PENDING_VERIFICATION);
+        });
+    });
+
+    describe('Successful sign up', () => {
+        test('user username should be stored as-is in database', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.username).toBe(user.username);
         });
     });
 
@@ -218,18 +230,6 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe('Successful sign up', () => {
-        test('user username should be stored as-is in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.username).toBe(user.username);
-        });
-    });
-
-    describe('Successful sign up', () => {
         test('createdAt and updatedAt should be defined in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
@@ -243,7 +243,7 @@ describe('GraphQL - SignUp', () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test('should return TOO MANY REQUESTS code and message', async () => {
+        test(`should return TOO MANY REQUESTS code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
             const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
