@@ -14,6 +14,8 @@ const config: Config = {
         '<rootDir>/testing/suites/integration/setup/after-env/set-jest.ts',
         '<rootDir>/testing/suites/integration/setup/after-env/set-services.ts',
         '<rootDir>/testing/suites/integration/setup/after-env/set-app.ts',
+        '<rootDir>/testing/suites/integration/setup/after-env/set-kit.ts',
+        '<rootDir>/testing/suites/integration/setup/after-env/set-clients.ts',
     ],
 
     collectCoverage: true,
