@@ -7,10 +7,11 @@ import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants'
 import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { success } from '@integration/utils/no-errors.util';
 
-describe('requestAccountVerification', () => {
-    describe('Account status is "ACTIVE"', () => {
-        test('return BAD REQUEST and ACCOUNT_ALREADY_VERIFIED message', async () => {
+describe('GraphQL - requestAccountVerification', () => {
+    describe(`Account status is "${AccountStatus.ACTIVE}"`, () => {
+        test(`return ${Code.BAD_REQUEST} and ${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED} message`, async () => {
             const { sessionCookie } = await createAccount(AccountStatus.ACTIVE);
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -19,8 +20,8 @@ describe('requestAccountVerification', () => {
         });
     });
 
-    describe('Account is status "SUSPENDED"', () => {
-        test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
+    describe(`Account is status "${AccountStatus.SUSPENDED}"`, () => {
+        test(`return ${Code.FORBIDDEN} and ${AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED} message`, async () => {
             const { sessionCookie } = await createAccount(AccountStatus.SUSPENDED);
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -29,26 +30,27 @@ describe('requestAccountVerification', () => {
         });
     });
 
-    describe('Account is status "PENDING_VERIFICATION"', () => {
+    describe(`Account is status "${AccountStatus.PENDING_VERIFICATION}"`, () => {
         test('email should be sent to user email address', async () => {
             const { sessionCookie, email } = await createAccount(
                 AccountStatus.PENDING_VERIFICATION,
             );
-            const res = await testKit.gqlClient
+            await testKit.gqlClient
                 .set('Cookie', sessionCookie)
-                .send(requestAccountVerification());
-            expect(res).notToFail();
+                .send(requestAccountVerification())
+                .expect(success);
             await expect(email).emailSentToThisAddress();
         });
     });
 
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test('should return TOO MANY REQUESTS code and message', async () => {
+        test(`should return ${Code.TOO_MANY_REQUESTS} code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
             const ip = faker.internet.ip();
-            for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++)
-                await testKit.gqlClient
-                    .set('X-Forwarded-For', ip)
-                    .send(requestAccountVerification());
+            await Promise.all(
+                Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+                    testKit.gqlClient.set('X-Forwarded-For', ip).send(requestAccountVerification()),
+                ),
+            );
             const res = await testKit.gqlClient
                 .set('X-Forwarded-For', ip)
                 .send(requestAccountVerification());

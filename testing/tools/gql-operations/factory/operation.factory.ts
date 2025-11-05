@@ -3,7 +3,7 @@ import { IOperation } from '../interfaces/operation.interface';
 
 export function operationFactory(
     { operationName, inputType, argumentName }: IOperationInfo,
-    { input, fields }: IOperation,
+    { args, fields }: IOperation,
 ) {
     let dataFetched: string;
 
@@ -24,11 +24,11 @@ export function operationFactory(
 
     return {
         query: `
-               mutation ($input: ${inputType}!) {
-                ${operationName}(${argumentName}: $input)
+               mutation ($args: ${inputType}!) {
+                ${operationName}(${argumentName}: $args)
                     ${fields ? `{ ${dataFetched} }` : ''}                    
               }
         `,
-        variables: { input },
+        variables: { args },
     };
 }
