@@ -12,84 +12,34 @@ import { TokensService } from 'src/tokens/tokens.service';
 import { JwtPayload } from 'src/tokens/types/jwt-payload.type';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 
-// REST API
-describe('verifyAccount', () => {
-    describe('No token provided', () => {
-        test('return BAD REQUEST and INVALID URL message', async () => {
-            const res = await testKit.restClient.get(testKit.endpointsREST.verifyAccount);
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-        });
-    });
+const verifyAccountUrl = testKit.endpointsREST.verifyAccount;
 
-    describe('Invalid token', () => {
-        test('return BAD REQUEST and INVALID_TOKEN message', async () => {
-            const invalidToken = faker.string.uuid();
-            const res = await testKit.restClient.get(
-                `${testKit.endpointsREST.verifyAccount}?token=${invalidToken}`,
-            );
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-        });
-    });
+describe(`GET ${verifyAccountUrl}`, () => {
+    let tokenService: TokensService<IAccVerifTokenPayload>;
 
-    describe('Target account is suspended', () => {
-        test('return FORBIDDEN and ACCOUNT_SUSPENDED message', async () => {
-            const { id } = await createAccount(AccountStatus.SUSPENDED);
-            const tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
-                ACCOUNT_VERIFICATION_TOKEN,
-            );
-            const token = await tokenService.generate({ id });
-            const res = await testKit.restClient.get(
-                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
-            );
-            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
-            expect(res.status).toBe(HttpStatus.FORBIDDEN);
-        });
-    });
-
-    describe('Target account is already verified', () => {
-        test('return BAD REQUEST and ACCOUNT_ALREADY_VERIFIED message', async () => {
-            const { id } = await createAccount(AccountStatus.ACTIVE);
-            const tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
-                ACCOUNT_VERIFICATION_TOKEN,
-            );
-            const token = await tokenService.generate({ id });
-            const res = await testKit.restClient.get(
-                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
-            );
-            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-        });
+    beforeAll(() => {
+        tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
+            ACCOUNT_VERIFICATION_TOKEN,
+        );
     });
 
     describe('Account successfully verified', () => {
         test('account status should be updated to ACTIVE', async () => {
             const { id } = await createAccount();
-            const tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
-                ACCOUNT_VERIFICATION_TOKEN,
-            );
             const token = await tokenService.generate({ id });
-            // verify
-            const res = await testKit.restClient.get(
-                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
-            );
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             const userInDb = await testKit.userRepos.findOneBy({ id });
             expect(res.status).toBe(HttpStatus.OK);
             expect(userInDb?.status).toBe(AccountStatus.ACTIVE);
         });
+    });
 
+    describe('Account successfully verified', () => {
         test('token should be blacklisted', async () => {
             const { id } = await createAccount();
-            const tokenSvc = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
-                ACCOUNT_VERIFICATION_TOKEN,
-            );
-            const token = await tokenSvc.generate({ id });
-            // verify
-            const res = await testKit.restClient.get(
-                `${testKit.endpointsREST.verifyAccount}?token=${token}`,
-            );
-            const { jti } = await tokenSvc['verifyTokenOrThrow']<JwtPayload<any>>(token);
+            const token = await tokenService.generate({ id });
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
+            const { jti } = await tokenService['verifyTokenOrThrow']<JwtPayload<any>>(token);
             const redisKey = blacklistTokenKey(jti);
             const isBlacklisted = await testKit.tokensRedisClient.get(redisKey);
             expect(res.status).toBe(HttpStatus.OK);
@@ -97,17 +47,55 @@ describe('verifyAccount', () => {
         });
     });
 
+    describe('No token provided', () => {
+        test(`return BAD REQUEST and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
+            const res = await testKit.restClient.get(verifyAccountUrl);
+            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
+    describe('Invalid token', () => {
+        test(`return BAD REQUEST and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+            const invalidToken = faker.string.uuid();
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${invalidToken}`);
+            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
+    describe('Target account is suspended', () => {
+        test(`return FORBIDDEN and "${AUTH_MESSAGES.ACCOUNT_SUSPENDED}" message`, async () => {
+            const { id } = await createAccount(AccountStatus.SUSPENDED);
+            const token = await tokenService.generate({ id });
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
+            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
+            expect(res.status).toBe(HttpStatus.FORBIDDEN);
+        });
+    });
+
+    describe('Target account is already verified', () => {
+        test(`return BAD REQUEST and "${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED}" message`, async () => {
+            const { id } = await createAccount(AccountStatus.ACTIVE);
+            const token = await tokenService.generate({ id });
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
+            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test('should return TOO MANY REQUESTS code and message', async () => {
+        test(`should return TOO MANY REQUESTS code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
-            for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
-                await testKit.restClient
-                    .get(`${testKit.endpointsREST.verifyAccount}?token=${invalidToken}`)
-                    .set('X-Forwarded-For', sameIp);
-            }
+            const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+                testKit.restClient
+                    .get(`${verifyAccountUrl}?token=${invalidToken}`)
+                    .set('X-Forwarded-For', sameIp),
+            );
+            await Promise.all(requests);
             const res = await testKit.restClient
-                .get(testKit.endpointsREST.verifyAccount)
+                .get(verifyAccountUrl)
                 .set('X-Forwarded-For', sameIp);
             expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
