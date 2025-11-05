@@ -17,7 +17,7 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
-describe('GraphQL - SignUp', () => {
+describe('GraphQL - signUp', () => {
     describe('Successful sign up', () => {
         test('should set a session cookie in headers', async () => {
             const res = await testKit.gqlClient

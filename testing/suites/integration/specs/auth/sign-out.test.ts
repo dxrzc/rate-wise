@@ -10,7 +10,7 @@ import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 
-describe('signOut', () => {
+describe('GraphQL - signOut', () => {
     describe('Session cookie not provided', () => {
         test(`return UNAUTHORIZED code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
             const res = await testKit.gqlClient.send(signOut());
