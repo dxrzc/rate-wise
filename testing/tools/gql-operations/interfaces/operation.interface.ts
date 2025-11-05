@@ -1,6 +1,6 @@
 import { QueryFields } from '../types/query-fields.type';
 
 export interface IOperation<InputType = unknown, ModelType = any> {
-    input: InputType;
+    args: InputType;
     fields?: QueryFields<ModelType>[] | 'ALL';
 }
