@@ -16,12 +16,7 @@ export async function createAccount(
     role: UserRole = UserRole.USER,
 ): Promise<UserModel & ExtraData> {
     const user = testKit.userSeed.signUpInput;
-    const res = await testKit.gqlClient.send(
-        signUp({
-            fields: 'ALL',
-            input: user,
-        }),
-    );
+    const res = await testKit.gqlClient.send(signUp({ fields: 'ALL', args: user }));
     await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, role });
     return {
         ...(res.body.data.signUp as UserModel),
