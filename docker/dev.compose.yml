@@ -40,12 +40,28 @@ services:
 
   migrate:    
     restart: "no"
-    image: ratewise:migrate 
+    image: ratewise:dev
     pull_policy: never
     build:
       context: ..
       target: development   
     command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
+    volumes:
+      - ../db:/usr/src/app/db
+    depends_on:
+      postgres:
+        condition: service_healthy  
+    environment:
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
+
+  revert-migrate:    
+    restart: "no"
+    image: ratewise:dev
+    pull_policy: never
+    build:
+      context: ..
+      target: development   
+    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:revert"    
     volumes:
       - ../db:/usr/src/app/db
     depends_on:
