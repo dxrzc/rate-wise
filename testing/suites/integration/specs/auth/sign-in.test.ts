@@ -68,7 +68,7 @@ describe('GraphQL - signIn', () => {
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
                 status: userDb?.status.toUpperCase(),
-                role: userDb?.role.toUpperCase(),
+                roles: userDb?.roles.map((role) => role.toUpperCase()),
                 id: userDb?.id,
             });
         });

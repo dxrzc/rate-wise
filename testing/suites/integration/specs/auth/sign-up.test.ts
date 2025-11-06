@@ -149,21 +149,21 @@ describe('GraphQL - signUp', () => {
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
                 status: userDb?.status.toUpperCase(),
-                role: userDb?.role.toUpperCase(),
+                roles: userDb?.roles.map((role) => role.toUpperCase()),
                 id: userDb?.id,
             });
         });
     });
 
     describe('Successful sign up', () => {
-        test(`default user role should be "${UserRole.USER}"`, async () => {
+        test(`default user role should be "[${UserRole.USER}]"`, async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
                 .expect(success);
             const userId = res.body.data.signUp.id;
             const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.role).toBe(UserRole.USER);
+            expect(userDB.roles).toStrictEqual([UserRole.USER]);
         });
     });
 
