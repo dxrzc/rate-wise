@@ -66,7 +66,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
 
     describe('Target account is suspended', () => {
         test(`return FORBIDDEN and "${AUTH_MESSAGES.ACCOUNT_SUSPENDED}" message`, async () => {
-            const { id } = await createAccount(AccountStatus.SUSPENDED);
+            const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
             const token = await tokenService.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
@@ -76,7 +76,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
 
     describe('Target account is already verified', () => {
         test(`return BAD REQUEST and "${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED}" message`, async () => {
-            const { id } = await createAccount(AccountStatus.ACTIVE);
+            const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await tokenService.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
