@@ -11,8 +11,8 @@ export class UserModel extends BaseModel {
     @Field(() => String)
     email!: string;
 
-    @Field(() => UserRole)
-    role!: UserRole;
+    @Field(() => [UserRole])
+    roles!: UserRole[];
 
     @Field(() => AccountStatus)
     status!: AccountStatus;
