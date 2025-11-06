@@ -15,7 +15,7 @@ export function operationFactory(
             'username',
             'email',
             'status',
-            'role',
+            'roles',
             'reputationScore',
         ].join();
     } else {
