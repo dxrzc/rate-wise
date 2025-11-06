@@ -28,12 +28,12 @@ export class UsersService {
         const limit = pagArgs.limit;
         const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
         // fetches limit + 1 records so we can detect whether there’s a next page
-        const edges = await createPaginationEdges<User, IUserDbRecord>(
-            this.userRepository,
-            limit,
-            rawRecordTouserEntity,
+        const edges = await createPaginationEdges<User, IUserDbRecord>({
+            transformFunction: rawRecordTouserEntity,
+            repository: this.userRepository,
             decodedCursor,
-        );
+            limit,
+        });
         const hasNextPage = edges.length > limit;
         if (hasNextPage) edges.pop();
         const totalCount = await this.userRepository.createQueryBuilder().getCount();
