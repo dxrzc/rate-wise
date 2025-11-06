@@ -94,6 +94,7 @@ type Mutation {
   requestAccountVerification: Boolean!
   signOut: Boolean!
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
+  suspendAccount(user_id: ID!): Boolean!
 }
 
 input CreateItemInput {
