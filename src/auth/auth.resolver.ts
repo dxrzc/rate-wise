@@ -1,4 +1,4 @@
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, ID, Mutation, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
 import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
 import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
@@ -15,6 +15,8 @@ import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { RequestContext } from './types/request-context.type';
+import { UserRole } from 'src/users/enums/user-role.enum';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Resolver()
 export class AuthResolver {
@@ -77,6 +79,15 @@ export class AuthResolver {
     ): Promise<boolean> {
         await this.authService.signOutAll(input, req.session.userId);
         this.clearCookie(res);
+        return true;
+    }
+
+    @CriticalThrottle()
+    @Roles([UserRole.ADMIN, UserRole.MODERATOR])
+    @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @Mutation(() => Boolean, { name: 'suspendAccount' })
+    async suspendAccount(@Args('user_id', { type: () => ID }) userId: string): Promise<boolean> {
+        await this.authService.suspendAccount(userId);
         return true;
     }
 }

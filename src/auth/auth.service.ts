@@ -20,6 +20,7 @@ import { AuthNotifications } from './notifications/auth.notifications';
 import { RequestContext } from './types/request-context.type';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { verifyTokenOrThrow } from './functions/verify-token-or-throw';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -135,5 +136,20 @@ export class AuthService {
         }
         await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
+    }
+
+    async suspendAccount(userId: string): Promise<void> {
+        const targetUser = await this.userService.findOneByIdOrThrow(userId);
+        if (targetUser.roles.includes(UserRole.ADMIN)) {
+            this.logger.warn(`Admin user ${targetUser.id} cannot be suspended`);
+            throw GqlHttpError.Forbidden(AUTH_MESSAGES.FORBIDDEN);
+        }
+        if (targetUser.status === AccountStatus.SUSPENDED) {
+            this.logger.warn(`User ${targetUser.id} is already suspended`);
+            throw GqlHttpError.Conflict(AUTH_MESSAGES.ACCOUNT_ALREADY_SUSPENDED);
+        }
+        targetUser.status = AccountStatus.SUSPENDED;
+        await this.userService.saveOne(targetUser);
+        this.logger.info(`User ${targetUser.id} account suspended`);
     }
 }
