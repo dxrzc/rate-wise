@@ -11,11 +11,16 @@ interface ExtraData {
     sessionCookie: string;
 }
 
+interface CreateAccountOptions {
+    status?: AccountStatus;
+    roles?: UserRole[];
+}
+
 // By default, account default values
 export async function createAccount(
-    status: AccountStatus = AccountStatus.PENDING_VERIFICATION,
-    roles: UserRole[] = [UserRole.USER],
+    options: CreateAccountOptions = {},
 ): Promise<UserModel & ExtraData> {
+    const { status = AccountStatus.PENDING_VERIFICATION, roles = [UserRole.USER] } = options;
     const user = testKit.userSeed.signUpInput;
     const res = await testKit.gqlClient.send(signUp({ fields: 'ALL', args: user })).expect(success);
     await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, roles });

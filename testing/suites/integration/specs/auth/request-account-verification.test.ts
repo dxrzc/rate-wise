@@ -12,7 +12,7 @@ import { success } from '@integration/utils/no-errors.util';
 describe('GraphQL - requestAccountVerification', () => {
     describe(`Account status is "${AccountStatus.ACTIVE}"`, () => {
         test(`return ${Code.BAD_REQUEST} and ${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED} message`, async () => {
-            const { sessionCookie } = await createAccount(AccountStatus.ACTIVE);
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
@@ -22,7 +22,7 @@ describe('GraphQL - requestAccountVerification', () => {
 
     describe(`Account is status "${AccountStatus.SUSPENDED}"`, () => {
         test(`return ${Code.FORBIDDEN} and ${AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED} message`, async () => {
-            const { sessionCookie } = await createAccount(AccountStatus.SUSPENDED);
+            const { sessionCookie } = await createAccount({ status: AccountStatus.SUSPENDED });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
@@ -32,9 +32,9 @@ describe('GraphQL - requestAccountVerification', () => {
 
     describe(`Account is status "${AccountStatus.PENDING_VERIFICATION}"`, () => {
         test('email should be sent to user email address', async () => {
-            const { sessionCookie, email } = await createAccount(
-                AccountStatus.PENDING_VERIFICATION,
-            );
+            const { sessionCookie, email } = await createAccount({
+                status: AccountStatus.PENDING_VERIFICATION,
+            });
             await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification())
