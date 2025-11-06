@@ -4,6 +4,7 @@ import { UserModel } from 'src/users/models/user.model';
 import { testKit } from './test-kit.util';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { success } from './no-errors.util';
 
 interface ExtraData {
     password: string;
@@ -16,7 +17,7 @@ export async function createAccount(
     roles: UserRole[] = [UserRole.USER],
 ): Promise<UserModel & ExtraData> {
     const user = testKit.userSeed.signUpInput;
-    const res = await testKit.gqlClient.send(signUp({ fields: 'ALL', args: user }));
+    const res = await testKit.gqlClient.send(signUp({ fields: 'ALL', args: user })).expect(success);
     await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, roles });
     return {
         ...(res.body.data.signUp as UserModel),
