@@ -7,6 +7,9 @@ import { Code } from 'src/common/enum/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
+import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { faker } from '@faker-js/faker';
 
 describe('GraphQL - suspendAccount', () => {
     describe('Session cookie not provided', () => {
@@ -120,6 +123,50 @@ describe('GraphQL - suspendAccount', () => {
                 .set('Cookie', adminSess)
                 .send(suspendAccount({ args: '550e8400-e29b-41d4-a716-446655440000' }));
             expect(response).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe(`Account status is "${AccountStatus.PENDING_VERIFICATION}"`, () => {
+        test(`should return FORBIDDEN code and ${AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE} message`, async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.PENDING_VERIFICATION,
+                roles: [UserRole.USER, UserRole.ADMIN],
+            });
+            const { id: targetUserId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER],
+            });
+            const response = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(suspendAccount({ args: targetUserId }));
+            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE);
+        });
+    });
+
+    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attempts in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+        test(`should return ${Code.TOO_MANY_REQUESTS} code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
+            const ip = faker.internet.ip();
+            const { sessionCookie: adminSess } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER, UserRole.ADMIN],
+            });
+            const { id: targetUserId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER],
+            });
+            await Promise.all(
+                Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
+                    testKit.gqlClient
+                        .set('Cookie', adminSess)
+                        .set('X-Forwarded-For', ip)
+                        .send(suspendAccount({ args: targetUserId })),
+                ),
+            );
+            const response = await testKit.gqlClient
+                .set('Cookie', adminSess)
+                .set('X-Forwarded-For', ip)
+                .send(suspendAccount({ args: targetUserId }));
+            expect(response).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });
 });
