@@ -1,6 +1,7 @@
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
 import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
+import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import {
@@ -43,6 +44,7 @@ export class AuthResolver {
         return await this.authService.signIn(credentials, req);
     }
 
+    @AllRolesAllowed()
     @UltraCriticalThrottle()
     @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
     @Mutation(() => Boolean, { name: 'requestAccountVerification' })
@@ -51,6 +53,7 @@ export class AuthResolver {
         return true;
     }
 
+    @AllRolesAllowed()
     @CriticalThrottle()
     @AllAccountStatusesAllowed()
     @Mutation(() => Boolean, { name: 'signOut' })
@@ -63,6 +66,7 @@ export class AuthResolver {
         return true;
     }
 
+    @AllRolesAllowed()
     @UltraCriticalThrottle()
     @AllAccountStatusesAllowed()
     @Mutation(() => Boolean, { name: 'signOutAll' })

@@ -39,13 +39,12 @@ export class AuthGuard implements CanActivate {
 
         const userInSession = session.userId;
         const user = await this.userService.findOneByIdOrThrow(userInSession);
-        const userRole = user.role;
 
-        this.logger.info(`Access granted for user ${user.id} (${userRole})`);
+        this.logger.info(`Access granted for user ${user.id}`);
 
         const userInfo: AuthenticatedUser = {
             id: user.id,
-            role: user.role,
+            roles: user.roles,
             email: user.email,
             status: user.status,
             username: user.username,

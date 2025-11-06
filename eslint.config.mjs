@@ -9,7 +9,8 @@ export default tseslint.config(
     ignores: [
       'eslint.config.mjs',      
       'scripts/*.js',
-      'commitlint.config.js'
+      'commitlint.config.js',
+      'db/migrations/*.ts',
     ],
   },
   eslint.configs.recommended,

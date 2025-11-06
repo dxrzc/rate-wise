@@ -9,7 +9,7 @@ export function rawRecordTouserEntity(rawData: IUserDbRecord): User {
         reputationScore: rawData.reputation_score,
         status: rawData.status as AccountStatus,
         updatedAt: rawData.updated_at,
-        role: rawData.role as UserRole,
+        roles: rawData.roles as UserRole[],
         username: rawData.username,
         password: rawData.password,
         email: rawData.email,

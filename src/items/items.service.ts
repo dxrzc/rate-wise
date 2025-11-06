@@ -27,12 +27,12 @@ export class ItemsService {
     async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
         const limit = pagArgs.limit;
         const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
-        const edges = await createPaginationEdges<Item, IItemDbRecord>(
-            this.itemRepository,
-            limit,
-            rawRecordToItemEntity,
+        const edges = await createPaginationEdges<Item, IItemDbRecord>({
+            repository: this.itemRepository,
+            transformFunction: rawRecordToItemEntity,
             decodedCursor,
-        );
+            limit,
+        });
         const hasNextPage = edges.length > limit;
         if (hasNextPage) edges.pop();
         const totalCount = await this.itemRepository.createQueryBuilder().getCount();

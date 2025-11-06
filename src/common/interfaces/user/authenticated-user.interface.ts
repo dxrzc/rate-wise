@@ -6,5 +6,5 @@ export interface AuthenticatedUser {
     email: string;
     username: string;
     status: AccountStatus;
-    role: UserRole;
+    roles: UserRole[];
 }

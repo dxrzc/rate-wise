@@ -9,7 +9,7 @@ type UserModel {
   updatedAt: DateTime!
   username: String!
   email: String!
-  role: UserRole!
+  roles: [UserRole!]!
   status: AccountStatus!
   reputationScore: Float!
 }

@@ -33,6 +33,7 @@ import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis'
 import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
 import { AuthController } from 'src/auth/auth.controller';
 import { appAccountStatusGuard } from './providers/guards/app-account-status.guard.provider';
+import { appRolesGuard } from './providers/guards/app-roles.guard.provider';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -51,6 +52,7 @@ import { appAccountStatusGuard } from './providers/guards/app-account-status.gua
         rateLimiterGuard,
         appAuthGuard,
         appAccountStatusGuard,
+        appRolesGuard,
     ],
     imports: [
         ConfigModule,
