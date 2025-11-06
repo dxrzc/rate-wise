@@ -9,7 +9,7 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { faker } from '@faker-js/faker/.';
+import { faker } from '@faker-js/faker';
 
 describe('GraphQL - suspendAccount', () => {
     describe('Session cookie not provided', () => {
@@ -143,7 +143,7 @@ describe('GraphQL - suspendAccount', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attempts in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
         test(`should return ${Code.TOO_MANY_REQUESTS} code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
             const ip = faker.internet.ip();
             const { sessionCookie: adminSess } = await createAccount({
