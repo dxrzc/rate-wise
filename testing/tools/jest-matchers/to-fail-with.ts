@@ -11,13 +11,11 @@ export const toFailWith: MatcherFunction<[code: unknown, message: unknown]> = fu
     if (!typedResponse.body) throw new TypeError('response must be a valid response object');
 
     const body = typedResponse.body;
+    if (typeof body !== 'object') throw new TypeError('body must be a valid response body');
 
-    if (typeof body !== 'object' || !body.errors)
-        throw new TypeError('body must be a valid response body');
+    if (!body.errors?.length) throw new Error('No errors found in the body');
 
     if (body.errors.length > 1) throw new Error('More than one error was found in the body');
-
-    if (body.errors.length === 0) throw new Error('No error was found in the body');
 
     const error = body.errors.at(0)!;
 
