@@ -10,6 +10,13 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { success } from '@integration/utils/no-errors.util';
 
 describe('GraphQL - requestAccountVerification', () => {
+    describe('Session cookie not provided', () => {
+        test(`return ${Code.UNAUTHORIZED} and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+            const res = await testKit.gqlClient.send(requestAccountVerification());
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+        });
+    });
+
     describe(`Account status is "${AccountStatus.ACTIVE}"`, () => {
         test(`return ${Code.BAD_REQUEST} and ${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED} message`, async () => {
             const { sessionCookie } = await createAccount(AccountStatus.ACTIVE);
