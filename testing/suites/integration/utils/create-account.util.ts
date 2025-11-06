@@ -13,11 +13,11 @@ interface ExtraData {
 // By default, account default values
 export async function createAccount(
     status: AccountStatus = AccountStatus.PENDING_VERIFICATION,
-    role: UserRole = UserRole.USER,
+    roles: UserRole[] = [UserRole.USER],
 ): Promise<UserModel & ExtraData> {
     const user = testKit.userSeed.signUpInput;
     const res = await testKit.gqlClient.send(signUp({ fields: 'ALL', args: user }));
-    await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, role });
+    await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, roles });
     return {
         ...(res.body.data.signUp as UserModel),
         password: user.password,
