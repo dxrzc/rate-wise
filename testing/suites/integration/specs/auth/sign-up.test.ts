@@ -25,10 +25,8 @@ describe('GraphQL - signUp', () => {
                 .expect(success);
             expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
-    });
 
-    describe('Successful sign up', () => {
-        test('should create user-sessions index redis set', async () => {
+        test('should create a set in Redis storing user sessions', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
@@ -37,22 +35,8 @@ describe('GraphQL - signUp', () => {
             expect(sessSet.length).toBe(1);
             expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
         });
-    });
 
-    describe('Successful sign up', () => {
-        test('should create user-sessions index redis set', async () => {
-            const res = await testKit.gqlClient
-                .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
-                .expect(success);
-            const redisKey = userSessionsSetKey(res.body.data.signUp.id as string);
-            const sessSet = await testKit.sessionsRedisClient.setMembers(redisKey);
-            expect(sessSet.length).toBe(1);
-            expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test('should create session-user relation record in redis', async () => {
+        test('should create a "user-session" record in Redis', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
@@ -61,27 +45,100 @@ describe('GraphQL - signUp', () => {
             const sessionOwner = await testKit.sessionsRedisClient.get(redisKey);
             expect(sessionOwner).toBe(res.body.data.signUp.id);
         });
-    });
 
-    describe('Successful sign up', () => {
-        test('old session should be removed from redis store (session rotation)', async () => {
-            const { sessionCookie } = await createAccount();
-            const oldSid = getSidFromCookie(sessionCookie);
-            // send old cookie with sign up request
-            await testKit.gqlClient.set('Cookie', sessionCookie).send(
-                signUp({
-                    fields: ['id'],
-                    args: testKit.userSeed.signUpInput,
-                }),
-            );
-            const redisKey = `${SESS_REDIS_PREFIX}:${oldSid}`;
-            const sessionInRedis = await testKit.sessionsRedisClient.get(redisKey);
-            expect(sessionInRedis).toBeNull();
+        describe('Session cookie provided', () => {
+            test('old session should be removed from redis store (session rotation)', async () => {
+                const { sessionCookie } = await createAccount();
+                const oldSid = getSidFromCookie(sessionCookie);
+                // send old cookie with sign up request
+                await testKit.gqlClient.set('Cookie', sessionCookie).send(
+                    signUp({
+                        fields: ['id'],
+                        args: testKit.userSeed.signUpInput,
+                    }),
+                );
+                const redisKey = `${SESS_REDIS_PREFIX}:${oldSid}`;
+                const sessionInRedis = await testKit.sessionsRedisClient.get(redisKey);
+                expect(sessionInRedis).toBeNull();
+            });
+        });
+
+        test(`default user roles should be "[${UserRole.USER}]"`, async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.roles).toStrictEqual([UserRole.USER]);
+        });
+
+        test(`default account status should be "${AccountStatus.PENDING_VERIFICATION}"`, async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.status).toBe(AccountStatus.PENDING_VERIFICATION);
+        });
+
+        test('user username should be stored as-is in database', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.username).toBe(user.username);
+        });
+
+        test('default reputation score should be 0', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.reputationScore).toBe(0);
+        });
+
+        test('user password should be hashed in database', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const { password } = await testKit.userRepos.findOneByOrFail({ id: userId });
+            const hashingSvc = testKit.app.get(HashingService);
+            const match = await hashingSvc.compare(user.password, password);
+            expect(match).toBe(true);
+        });
+
+        test('user email should be stored as-is in database', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.email).toBe(user.email);
+        });
+
+        test('createdAt and updatedAt should be defined in database', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: ['id'] }))
+                .expect(success);
+            const userId = res.body.data.signUp.id;
+            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+            expect(userDB.createdAt).toBeDefined();
+            expect(userDB.updatedAt).toBeDefined();
         });
     });
 
     describe('Email already exists', () => {
-        test(`should return CONFLICT code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -94,7 +151,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Password exceeds the max password length', () => {
-        test(`should return BAD REQUEST code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -106,8 +163,8 @@ describe('GraphQL - signUp', () => {
         });
     });
 
-    describe('Password queried in graphql operation', () => {
-        test('user password can not be queried from the response data', async () => {
+    describe('Attempt to provide password as a gql field', () => {
+        test(`should return "${Code.GRAPHQL_VALIDATION_FAILED}" code`, async () => {
             const res = await testKit.gqlClient.send(
                 signUp({
                     args: testKit.userSeed.signUpInput,
@@ -122,7 +179,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Username already exists', () => {
-        test(`should return CONFLICT code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
             const { username } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -155,95 +212,8 @@ describe('GraphQL - signUp', () => {
         });
     });
 
-    describe('Successful sign up', () => {
-        test(`default user role should be "[${UserRole.USER}]"`, async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.roles).toStrictEqual([UserRole.USER]);
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test(`default account status should be "${AccountStatus.PENDING_VERIFICATION}"`, async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.status).toBe(AccountStatus.PENDING_VERIFICATION);
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test('user username should be stored as-is in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.username).toBe(user.username);
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test('default reputation score should be 0', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.reputationScore).toBe(0);
-        });
-    });
-
-    describe('Succesful sign up', () => {
-        test('user password should be hashed in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const { password } = await testKit.userRepos.findOneByOrFail({ id: userId });
-            const hashingSvc = testKit.app.get(HashingService);
-            const match = await hashingSvc.compare(user.password, password);
-            expect(match).toBe(true);
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test('user email should be stored as-is in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.email).toBe(user.email);
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test('createdAt and updatedAt should be defined in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.createdAt).toBeDefined();
-            expect(userDB.updatedAt).toBeDefined();
-        });
-    });
-
     describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
             const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>

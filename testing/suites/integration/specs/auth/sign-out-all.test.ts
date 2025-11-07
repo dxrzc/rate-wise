@@ -13,8 +13,17 @@ import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants'
 import { success } from '@integration/utils/no-errors.util';
 
 describe('GraphQL - signOutAll', () => {
-    describe('Successful signOutAll', () => {
-        test("delete all the user's sessions from redis ", async () => {
+    describe('Session Cookie not provided', () => {
+        test(`return "${Code.UNAUTHORIZED}" code and "${AUTH_MESSAGES.UNAUTHORIZED}" message`, async () => {
+            const res = await testKit.gqlClient.send(
+                signOutAll({ args: { password: 'password' } }),
+            );
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+        });
+    });
+
+    describe('Successful', () => {
+        test('delete all user sessions in redis', async () => {
             const { email, password, sessionCookie } = await createAccount();
             const sid1 = getSidFromCookie(sessionCookie);
             // sign in
@@ -38,17 +47,8 @@ describe('GraphQL - signOutAll', () => {
         });
     });
 
-    describe('Session Cookie not provided', () => {
-        test(`return UNAUTHORIZED code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
-            const res = await testKit.gqlClient.send(
-                signOutAll({ args: { password: 'password' } }),
-            );
-            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
-        });
-    });
-
     describe('Password too long', () => {
-        test(`should return BAD REQUEST code and ${AUTH_MESSAGES.INVALID_CREDENTIALS} message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
             const longPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
@@ -61,7 +61,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Password does not match', () => {
-        test(`should return BAD_REQUEST code and ${AUTH_MESSAGES.INVALID_CREDENTIALS} message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
             const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -71,7 +71,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
+        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const ip = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
                 testKit.gqlClient

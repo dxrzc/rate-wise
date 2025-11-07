@@ -19,7 +19,7 @@ describe('GraphQL - signOut', () => {
     });
 
     describe('Successful signOut', () => {
-        test('session cookie should be removed from redis store', async () => {
+        test('session cookie should be removed from Redis store', async () => {
             const { sessionCookie } = await createAccount();
             await testKit.gqlClient.set('Cookie', sessionCookie).send(signOut()).expect(success);
             const redisKey = `${SESS_REDIS_PREFIX}${getSidFromCookie(sessionCookie)}`;
@@ -29,7 +29,7 @@ describe('GraphQL - signOut', () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
+        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
