@@ -21,7 +21,9 @@ services:
       migrate:
         condition: service_completed_successfully          
       redis_auth:
-        condition: service_started    
+        condition: service_started   
+      redis_queues: 
+        condition: service_started   
       mailpit:
         condition: service_started      
     environment:      
