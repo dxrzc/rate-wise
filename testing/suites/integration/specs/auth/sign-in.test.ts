@@ -22,9 +22,7 @@ describe('GraphQL - signIn', () => {
                 .expect(success);
             expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
-    });
 
-    describe('Successful sign in', () => {
         test('should add the new session to the user sessions index redis set', async () => {
             const { email, password } = await createAccount();
             const res = await testKit.gqlClient
@@ -36,9 +34,7 @@ describe('GraphQL - signIn', () => {
             expect(sessSet.length).toBe(2); // signUp and signIn
             expect(sessSet.find((key) => key === sessId)).toBeDefined();
         });
-    });
 
-    describe('Successful sign in', () => {
         test('should create session-user relation record in redis', async () => {
             const { email, password } = await createAccount();
             const res = await testKit.gqlClient
@@ -49,16 +45,11 @@ describe('GraphQL - signIn', () => {
             const sessionOwner = await testKit.sessionsRedisClient.get(key);
             expect(sessionOwner).toBe(res.body.data.signIn.id);
         });
-    });
 
-    describe('Successful sign in', () => {
         test('returned data should match user data in database', async () => {
             const { email, password, id } = await createAccount();
             const res = await testKit.gqlClient.send(
-                signIn({
-                    args: { email, password },
-                    fields: 'ALL',
-                }),
+                signIn({ args: { email, password }, fields: 'ALL' }),
             );
             const userDb = await testKit.userRepos.findOneByOrFail({ id });
             expect(res.body.data.signIn).toStrictEqual({
@@ -72,10 +63,23 @@ describe('GraphQL - signIn', () => {
                 id: userDb?.id,
             });
         });
+
+        describe('Session cookie is provided', () => {
+            test('old session should be removed from redis store (session rotation)', async () => {
+                const { sessionCookie, email, password } = await createAccount();
+                const oldSid = getSidFromCookie(sessionCookie);
+                await testKit.gqlClient
+                    .set('Cookie', sessionCookie)
+                    .send(signIn({ args: { email, password }, fields: ['id'] }))
+                    .expect(success);
+                const oldSessionKey = `session:${oldSid}`;
+                await expect(testKit.sessionsRedisClient.get(oldSessionKey)).resolves.toBeNull();
+            });
+        });
     });
 
     describe('Password is too long', () => {
-        test(`should return BAD REQUEST code and ${AUTH_MESSAGES.INVALID_CREDENTIALS} message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signIn({
@@ -88,7 +92,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('Password does not match', () => {
-        test(`should return BAD REQUEST code and ${AUTH_MESSAGES.INVALID_CREDENTIALS} message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
@@ -101,7 +105,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('User in email does not exist', () => {
-        test(`should return BAD REQUEST code and ${AUTH_MESSAGES.INVALID_CREDENTIALS} message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
             const res = await testKit.gqlClient.send(
                 signIn({
                     args: { email: testKit.userSeed.email, password: testKit.userSeed.password },
@@ -113,7 +117,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('User exceeds the maximum active sessions', () => {
-        test(`should return BAD REQUEST code and ${AUTH_MESSAGES.MAX_SESSIONS_REACHED} message`, async () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.MAX_SESSIONS_REACHED}" message`, async () => {
             const maxSessions = testKit.authConfig.maxUserSessions;
             const { email, password } = await createAccount(); // 1 session
             const signInPromises = Array.from({ length: maxSessions - 1 }, () =>
@@ -129,21 +133,8 @@ describe('GraphQL - signIn', () => {
         });
     });
 
-    describe('Successful sign in', () => {
-        test('old session should be removed from redis store (session rotation)', async () => {
-            const { sessionCookie, email, password } = await createAccount();
-            const oldSid = getSidFromCookie(sessionCookie);
-            await testKit.gqlClient
-                .set('Cookie', sessionCookie)
-                .send(signIn({ args: { email, password }, fields: ['id'] }))
-                .expect(success);
-            const oldSessionKey = `session:${oldSid}`;
-            await expect(testKit.sessionsRedisClient.get(oldSessionKey)).resolves.toBeNull();
-        });
-    });
-
-    describe('Password queried in graphql operation', () => {
-        test('should failed with graphql validation error', async () => {
+    describe('Attempt to provide password as a gql field ', () => {
+        test(`should return "${Code.GRAPHQL_VALIDATION_FAILED}" code`, async () => {
             const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({ args: { email, password }, fields: ['password' as any] }),
@@ -153,7 +144,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
+        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const ip = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
                 testKit.gqlClient

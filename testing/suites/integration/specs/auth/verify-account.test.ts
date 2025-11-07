@@ -32,9 +32,6 @@ describe(`GET ${verifyAccountUrl}`, () => {
             expect(res.status).toBe(HttpStatus.OK);
             expect(userInDb?.status).toBe(AccountStatus.ACTIVE);
         });
-    });
-
-    describe('Account successfully verified', () => {
         test('token should be blacklisted', async () => {
             const { id } = await createAccount();
             const token = await tokenService.generate({ id });
@@ -48,7 +45,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
     });
 
     describe('No token provided', () => {
-        test(`return BAD REQUEST and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
+        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
             const res = await testKit.restClient.get(verifyAccountUrl);
             expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
@@ -56,7 +53,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
     });
 
     describe('Invalid token', () => {
-        test(`return BAD REQUEST and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${invalidToken}`);
             expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
@@ -65,7 +62,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
     });
 
     describe('Target account is suspended', () => {
-        test(`return FORBIDDEN and "${AUTH_MESSAGES.ACCOUNT_SUSPENDED}" message`, async () => {
+        test(`return FORBIDDEN status code and "${AUTH_MESSAGES.ACCOUNT_SUSPENDED}" message`, async () => {
             const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
             const token = await tokenService.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
@@ -75,7 +72,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
     });
 
     describe('Target account is already verified', () => {
-        test(`return BAD REQUEST and "${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED}" message`, async () => {
+        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED}" message`, async () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await tokenService.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
@@ -85,7 +82,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+        test(`should return TOO MANY REQUESTS status code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

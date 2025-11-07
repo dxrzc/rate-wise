@@ -51,7 +51,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return ${Code.TOO_MANY_REQUESTS} code and ${COMMON_MESSAGES.TOO_MANY_REQUESTS} message`, async () => {
+        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
