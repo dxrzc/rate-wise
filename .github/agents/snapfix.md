@@ -10,7 +10,7 @@ description: Focuses on quick fixes, refactoring, small features or missing test
 - Testing Tools: **Jest**, **Supertest**, **TestContainers**.
 
 ## Environment Requirements
-- **Node.js version required: 22.19.0 (strict).** Other versions will NOT work for build, test, or run tasks.
+- **Node.js version required: 22.21.1 (strict).** Other versions will NOT work for build, test, or run tasks.
 - Docker is required. `npm run dev` runs everything inside docker. See `docker/dev.compose.yml` and `Dockerfile`.
 
 ## Special Instructions for Copilot Agent
