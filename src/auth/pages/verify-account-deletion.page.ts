@@ -1,4 +1,4 @@
-export function deleteYourAccountHtml({
+export function verifyAccountDeletionHtml({
     username,
     link,
     linkExpMin,
@@ -25,7 +25,7 @@ export function deleteYourAccountHtml({
         `;
 }
 
-export function deleteYourAccountPlainText({
+export function verifyAccountDeletionPlainText({
     username,
     link,
     linkExpMin,
