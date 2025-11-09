@@ -4,14 +4,13 @@ import { EmailsService } from 'src/emails/emails.service';
 import { TokensService } from 'src/tokens/tokens.service';
 import { ACCOUNT_VERIFICATION_TOKEN } from '../constants/tokens.provider.constant';
 import { IAccVerifTokenPayload } from '../interfaces/tokens-payload.interface';
-import {
-    accountVerificationEmailSentPage,
-    accountVerificationEmailSentText,
-} from '../pages/account-verification-email-sent.page';
+import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 
 @Injectable()
 export class AuthNotifications {
+    private readonly from = '"Ratewise" <no-reply@ratewise.app>';
+
     constructor(
         @Inject(ACCOUNT_VERIFICATION_TOKEN)
         private readonly accVerifToken: TokensService<IAccVerifTokenPayload>,
@@ -29,15 +28,15 @@ export class AuthNotifications {
         const link = await this.createAccountVerificationLink(user.id);
         const linkExpMin = 30;
         await this.emailsService.sendEmail({
-            from: '"Ratewise" <no-reply@ratewise.app>',
+            from: this.from,
             to: user.email,
             subject,
-            text: accountVerificationEmailSentText({
+            text: verifyYourEmailPlainText({
                 username: user.username,
                 linkExpMin,
                 link,
             }),
-            html: accountVerificationEmailSentPage({
+            html: verifyYourEmailHtml({
                 username: user.username,
                 linkExpMin,
                 link,
