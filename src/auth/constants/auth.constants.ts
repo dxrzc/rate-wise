@@ -1,11 +1,11 @@
 export const AUTH_LIMITS = {
     USERNAME: {
         MIN: 3,
-        MAX: 45,
+        MAX: 30,
     },
     PASSWORD: {
         MIN: 8,
-        MAX: 56,
+        MAX: 60,
     },
     EMAIL: {
         MAX: 45,

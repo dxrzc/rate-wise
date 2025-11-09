@@ -8,13 +8,21 @@ import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 export class UserSeedService {
     get username(): string {
         const randomNumber = faker.number.int({ max: 100 });
-        return randomNumber % 2 === 0
+        const baseUsername = randomNumber % 2 === 0
             ? `${faker.person.firstName()}_${randomNumber}${faker.person.lastName()}`
             : `${faker.person.lastName()}_${randomNumber}${faker.person.firstName()}`;
+        
+        // Ensure username does not exceed AUTH_LIMITS.USERNAME.MAX
+        return baseUsername.slice(0, AUTH_LIMITS.USERNAME.MAX);
     }
 
     get email(): string {
-        return faker.internet.email();
+        // Regenerate email until we get one that fits within the max length
+        let email = faker.internet.email();
+        while (email.length > AUTH_LIMITS.EMAIL.MAX) {
+            email = faker.internet.email();
+        }
+        return email;
     }
 
     get role(): UserRole {
