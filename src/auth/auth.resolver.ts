@@ -59,10 +59,8 @@ export class AuthResolver {
     @Roles([UserRole.USER, UserRole.MODERATOR])
     @AllAccountStatusesAllowed()
     @Mutation(() => Boolean)
-    async requestAccountDeletion(
-        @Args('user_id', { type: () => ID }) userId: string,
-    ): Promise<boolean> {
-        await this.authService.requestAccountDeletion(userId);
+    async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
+        await this.authService.requestAccountDeletion(req.user);
         return true;
     }
 
