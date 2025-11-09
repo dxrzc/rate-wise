@@ -1,12 +1,14 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 import { AUTH_LIMITS } from '../constants/auth.constants';
+import { Transform } from 'class-transformer';
 
 @InputType()
 export class SignUpInput {
     @IsString()
     @MinLength(AUTH_LIMITS.USERNAME.MIN)
     @MaxLength(AUTH_LIMITS.USERNAME.MAX)
+    @Transform(({ value }: { value: string }) => value.trim())
     @Field(() => String, {
         description: `        
         **Constraints:**
