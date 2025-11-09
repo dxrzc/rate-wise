@@ -3,16 +3,18 @@ import { Item } from 'src/items/entities/item.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { AccountStatus } from '../enums/account-status.enum';
+import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 
 @Entity('account')
 export class User extends BaseEntity {
-    @Column({ type: 'varchar', unique: true, length: 30 })
+    // Used here for consistency. However, max length is still 30.
+    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.USERNAME.MAX })
     username!: string;
 
-    @Column({ type: 'varchar', unique: true, length: 45 })
+    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.EMAIL.MAX })
     email!: string;
 
-    @Column({ type: 'varchar', length: 60 })
+    @Column({ type: 'varchar', length: AUTH_LIMITS.PASSWORD.MAX })
     password!: string;
 
     @Column({
