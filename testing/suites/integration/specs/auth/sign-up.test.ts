@@ -83,14 +83,16 @@ describe('GraphQL - signUp', () => {
             expect(userDB.status).toBe(AccountStatus.PENDING_VERIFICATION);
         });
 
-        test('user username should be stored as-is in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.username).toBe(user.username);
+        describe('Username is sent with no extra white spaces', () => {
+            test('user username should be stored as-is in database', async () => {
+                const user = testKit.userSeed.signUpInput;
+                const res = await testKit.gqlClient
+                    .send(signUp({ args: user, fields: ['id'] }))
+                    .expect(success);
+                const userId = res.body.data.signUp.id;
+                const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
+                expect(userDB.username).toBe(user.username);
+            });
         });
 
         test('default reputation score should be 0', async () => {
@@ -135,6 +137,42 @@ describe('GraphQL - signUp', () => {
             expect(userDB.createdAt).toBeDefined();
             expect(userDB.updatedAt).toBeDefined();
         });
+
+        test('response data should match the user in database', async () => {
+            const user = testKit.userSeed.signUpInput;
+            const res = await testKit.gqlClient
+                .send(signUp({ args: user, fields: 'ALL' }))
+                .expect(success);
+            const responseData = res.body.data.signUp;
+            const userDb = await testKit.userRepos.findOneByOrFail({ id: responseData.id });
+            expect(responseData).toStrictEqual({
+                username: userDb?.username,
+                reputationScore: userDb?.reputationScore,
+                createdAt: userDb?.createdAt.toISOString(),
+                updatedAt: userDb?.updatedAt.toISOString(),
+                email: userDb?.email,
+                status: userDb?.status.toUpperCase(),
+                roles: userDb?.roles.map((role) => role.toUpperCase()),
+                id: userDb?.id,
+            });
+        });
+
+        describe('Username contains leading and trailing white spaces', () => {
+            test('should strip spaces before saving in database', async () => {
+                const name = `  ${faker.string.alpha({ length: AUTH_LIMITS.USERNAME.MIN })} `;
+                const res = await testKit.gqlClient
+                    .send(
+                        signUp({
+                            args: { ...testKit.userSeed.signUpInput, username: name },
+                            fields: 'ALL',
+                        }),
+                    )
+                    .expect(success);
+                const responseData = res.body.data.signUp;
+                const userDb = await testKit.userRepos.findOneByOrFail({ id: responseData.id });
+                expect(userDb.username).toBe(name.trim());
+            });
+        });
     });
 
     describe('Email already exists', () => {
@@ -143,6 +181,19 @@ describe('GraphQL - signUp', () => {
             const res = await testKit.gqlClient.send(
                 signUp({
                     args: { ...testKit.userSeed.signUpInput, email },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.CONFLICT, USER_MESSAGES.ALREADY_EXISTS);
+        });
+    });
+
+    describe('Username already exists', () => {
+        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+            const { username } = await createAccount();
+            const res = await testKit.gqlClient.send(
+                signUp({
+                    args: { ...testKit.userSeed.signUpInput, username },
                     fields: ['id'],
                 }),
             );
@@ -163,6 +214,19 @@ describe('GraphQL - signUp', () => {
         });
     });
 
+    describe('Invalid email format', () => {
+        test(`should return "${Code.BAD_REQUEST}" code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
+            const badEmail = 'user@.com';
+            const res = await testKit.gqlClient.send(
+                signUp({
+                    args: { ...testKit.userSeed.signUpInput, email: badEmail },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+        });
+    });
+
     describe('Attempt to provide password as a gql field', () => {
         test(`should return "${Code.GRAPHQL_VALIDATION_FAILED}" code`, async () => {
             const res = await testKit.gqlClient.send(
@@ -175,40 +239,6 @@ describe('GraphQL - signUp', () => {
                 Code.GRAPHQL_VALIDATION_FAILED,
                 'Cannot query field "password" on type "UserModel".',
             );
-        });
-    });
-
-    describe('Username already exists', () => {
-        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
-            const { username } = await createAccount();
-            const res = await testKit.gqlClient.send(
-                signUp({
-                    args: { ...testKit.userSeed.signUpInput, username },
-                    fields: ['id'],
-                }),
-            );
-            expect(res).toFailWith(Code.CONFLICT, USER_MESSAGES.ALREADY_EXISTS);
-        });
-    });
-
-    describe('Successful sign up', () => {
-        test('response data should match the user in database', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: 'ALL' }))
-                .expect(success);
-            const responseData = res.body.data.signUp;
-            const userDb = await testKit.userRepos.findOneByOrFail({ id: responseData.id });
-            expect(responseData).toStrictEqual({
-                username: userDb?.username,
-                reputationScore: userDb?.reputationScore,
-                createdAt: userDb?.createdAt.toISOString(),
-                updatedAt: userDb?.updatedAt.toISOString(),
-                email: userDb?.email,
-                status: userDb?.status.toUpperCase(),
-                roles: userDb?.roles.map((role) => role.toUpperCase()),
-                id: userDb?.id,
-            });
         });
     });
 
