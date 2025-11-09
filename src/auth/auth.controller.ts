@@ -15,7 +15,7 @@ export class AuthController {
 
     @Public()
     @UltraCriticalThrottle()
-    @Get('verifyAccount')
+    @Get('verify-account')
     async verifyAccount(@Query('token') token: string) {
         if (!token) {
             this.logger.error('No token provided in verifyAccount');

@@ -32,8 +32,7 @@ export class AuthNotifications {
 
     private async createAccountVerificationLink(id: string) {
         const token = await this.accVerifToken.generate({ id });
-        // TODO: hyphen
-        return `${this.serverConfig.apiBaseUrl}/auth/verifyAccount?token=${token}`;
+        return `${this.serverConfig.apiBaseUrl}/auth/verify-account?token=${token}`;
     }
 
     private async createAccountDeletionLink(id: string) {
