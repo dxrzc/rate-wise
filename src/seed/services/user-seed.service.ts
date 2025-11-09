@@ -17,9 +17,12 @@ export class UserSeedService {
     }
 
     get email(): string {
-        const baseEmail = faker.internet.email();
-        // Ensure email does not exceed AUTH_LIMITS.EMAIL.MAX
-        return baseEmail.slice(0, AUTH_LIMITS.EMAIL.MAX);
+        // Regenerate email until we get one that fits within the max length
+        let email = faker.internet.email();
+        while (email.length > AUTH_LIMITS.EMAIL.MAX) {
+            email = faker.internet.email();
+        }
+        return email;
     }
 
     get role(): UserRole {
