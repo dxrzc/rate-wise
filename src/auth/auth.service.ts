@@ -52,7 +52,7 @@ export class AuthService {
             throw new BadRequestException(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
         user.status = AccountStatus.ACTIVE;
-        await this.userService.saveOne(user);
+        await Promise.all([this.userService.saveOne(user), this.accVerifToken.blacklist(jti, exp)]);
         this.logger.info(`Account ${user.id} verified successfully`);
         await this.accVerifToken.blacklist(jti, exp);
         this.logger.debug(`Verification token blacklisted for account ${user.id}`);
