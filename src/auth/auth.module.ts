@@ -24,6 +24,7 @@ import { AuthController } from './auth.controller';
                 },
             }),
         }),
+        // TODO: use config service
         TokensModule.forFeatureAsync({
             provide: ACCOUNT_VERIFICATION_TOKEN,
             useFactory: () => ({
