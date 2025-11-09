@@ -72,6 +72,8 @@ services:
         condition: service_healthy  
     environment:
       POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
+    profiles: 
+      - explicitly-enabled
 
   postgres:        
     image: postgres:17.5-alpine          
