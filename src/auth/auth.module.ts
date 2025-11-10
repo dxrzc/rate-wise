@@ -1,19 +1,20 @@
-import { HashingService } from 'src/common/services/hashing.service';
+import { Module } from '@nestjs/common';
 import { CommonModule } from 'src/common/common.module';
+import { HashingService } from 'src/common/services/hashing.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
+import { EmailsModule } from 'src/emails/emails.module';
+import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
+import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
+import { TokensModule } from 'src/tokens/tokens.module';
 import { UsersModule } from 'src/users/users.module';
+import { AuthController } from './auth.controller';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
-import { Module } from '@nestjs/common';
-import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import { EmailsModule } from 'src/emails/emails.module';
-import { AuthNotifications } from './notifications/auth.notifications';
-import { TokensModule } from 'src/tokens/tokens.module';
-import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
 } from './constants/tokens.provider.constant';
-import { AuthController } from './auth.controller';
+import { AuthNotifications } from './notifications/auth.notifications';
 
 @Module({
     imports: [
@@ -27,24 +28,25 @@ import { AuthController } from './auth.controller';
                 },
             }),
         }),
-        // TODO: use config service
         TokensModule.forFeatureAsync({
             provide: ACCOUNT_VERIFICATION_TOKEN,
-            useFactory: () => ({
-                secret: '123xdd',
-                expiresIn: '10m',
+            useFactory: (authConfigService: AuthConfigService) => ({
+                secret: authConfigService.accountVerificationTokenSecret,
+                expiresIn: authConfigService.accountVerificationTokenExp,
                 purpose: JwtPurpose.ACCOUNT_VERIFICATION,
                 dataInToken: ['id'],
             }),
+            inject: [AuthConfigService],
         }),
         TokensModule.forFeatureAsync({
             provide: ACCOUNT_DELETION_TOKEN,
-            useFactory: () => ({
-                secret: 'aDifferentSecret',
-                expiresIn: '20m',
+            useFactory: (authConfigService: AuthConfigService) => ({
+                secret: authConfigService.accountDeletionTokenSecret,
+                expiresIn: authConfigService.accountDeletionTokenExp,
                 purpose: JwtPurpose.ACCOUNT_DELETION,
                 dataInToken: ['id'],
             }),
+            inject: [AuthConfigService],
         }),
     ],
     controllers: [AuthController],
