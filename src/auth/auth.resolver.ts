@@ -56,7 +56,7 @@ export class AuthResolver {
     }
 
     @CriticalThrottle()
-    @Roles([UserRole.USER, UserRole.MODERATOR])
+    @AllRolesAllowed()
     @AllAccountStatusesAllowed()
     @Mutation(() => Boolean)
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
