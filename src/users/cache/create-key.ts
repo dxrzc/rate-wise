@@ -1,1 +1,1 @@
-export const usersCacheKey = (userId: string): string => `cache:user:${userId}`;
+export const createUserCacheKey = (userId: string): string => `cache:user:${userId}`;
