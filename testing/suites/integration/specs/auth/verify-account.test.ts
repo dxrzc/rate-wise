@@ -14,7 +14,7 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 const verifyAccountUrl = testKit.endpointsREST.verifyAccount;
 
-describe(`GET ${verifyAccountUrl}`, () => {
+describe(`GET ${verifyAccountUrl}?token=...`, () => {
     let tokenService: TokensService<IAccVerifTokenPayload>;
 
     beforeAll(() => {
