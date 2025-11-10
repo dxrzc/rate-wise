@@ -9,6 +9,7 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { success } from '@integration/utils/no-errors.util';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 describe('GraphQL - requestAccountVerification', () => {
     describe('Session cookie not provided', () => {
@@ -48,6 +49,17 @@ describe('GraphQL - requestAccountVerification', () => {
                 .send(requestAccountVerification())
                 .expect(success);
             await expect(email).emailSentToThisAddress();
+        });
+    });
+
+    describe('User in session cookie does not exist', () => {
+        test(`should return code "${Code.NOT_FOUND}" and "${USER_MESSAGES.NOT_FOUND}" message`, async () => {
+            const { sessionCookie, id } = await createAccount();
+            await testKit.userRepos.delete({ id });
+            const res = await testKit.gqlClient
+                .send(requestAccountVerification())
+                .set('Cookie', sessionCookie);
+            expect(res).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
         });
     });
 
