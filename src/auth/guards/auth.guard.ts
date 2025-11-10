@@ -38,6 +38,7 @@ export class AuthGuard implements CanActivate {
         }
 
         const userInSession = session.userId;
+        // TODO: return unauthorized if user not found
         const user = await this.userService.findOneByIdOrThrow(userInSession);
 
         this.logger.info(`Access granted for user ${user.id}`);
