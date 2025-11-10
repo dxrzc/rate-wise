@@ -35,6 +35,21 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             expect(res.status).toBe(HttpStatus.OK);
             expect(isBlacklisted).toBe(1);
         });
+
+        test('User should be deleted from redis cache', async () => {
+            const { id } = await createAccount();
+            const cacheKey = createUserCacheKey(id);
+            // trigger caching
+            await testKit.gqlClient
+                .send(findUserById({ fields: ['id'], args: id }))
+                .expect(success);
+            await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
+            // verify account
+            const token = await testKit.accVerifToken.generate({ id });
+            await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`).expect(status2xx);
+            const userInCache = await testKit.cacheManager.get(cacheKey);
+            expect(userInCache).toBeUndefined();
+        });
     });
 
     describe('Account does not exist', () => {
@@ -114,18 +129,5 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
         });
-    });
-
-    test('User should be deleted from redis cache', async () => {
-        const { id } = await createAccount();
-        const cacheKey = createUserCacheKey(id);
-        // trigger caching
-        await testKit.gqlClient.send(findUserById({ fields: ['id'], args: id })).expect(success);
-        await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
-        // verify account
-        const token = await testKit.accVerifToken.generate({ id });
-        await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`).expect(status2xx);
-        const userInCache = await testKit.cacheManager.get(cacheKey);
-        expect(userInCache).toBeUndefined();
     });
 });

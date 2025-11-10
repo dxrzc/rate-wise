@@ -39,6 +39,32 @@ describe('GraphQL - suspendAccount', () => {
             const userInDb = await testKit.userRepos.findOneByOrFail({ id: targetUserId });
             expect(userInDb.status).toBe(AccountStatus.SUSPENDED);
         });
+
+        test('User should be deleted from redis cache', async () => {
+            // suspend an account
+            const { sessionCookie: adminSess } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER, UserRole.ADMIN],
+            });
+            const { id: targetUserId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER],
+            });
+            // trigger caching
+            const cacheKey = createUserCacheKey(targetUserId);
+            await testKit.gqlClient
+                .send(findUserById({ fields: ['id'], args: targetUserId }))
+                .expect(success);
+            await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
+            // suspend account
+            await testKit.gqlClient
+                .set('Cookie', adminSess)
+                .send(suspendAccount({ args: targetUserId }))
+                .expect(success);
+            // user should have been removed from cache
+            const userInCache = await testKit.cacheManager.get(cacheKey);
+            expect(userInCache).toBeUndefined();
+        });
     });
 
     describe('User roles are not ADMIN or MODERATOR', () => {
@@ -190,31 +216,5 @@ describe('GraphQL - suspendAccount', () => {
                 .send(suspendAccount({ args: targetUserId }));
             expect(response).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
-    });
-
-    test('User should be deleted from redis cache', async () => {
-        // suspend an account
-        const { sessionCookie: adminSess } = await createAccount({
-            status: AccountStatus.ACTIVE,
-            roles: [UserRole.USER, UserRole.ADMIN],
-        });
-        const { id: targetUserId } = await createAccount({
-            status: AccountStatus.ACTIVE,
-            roles: [UserRole.USER],
-        });
-        // trigger caching
-        const cacheKey = createUserCacheKey(targetUserId);
-        await testKit.gqlClient
-            .send(findUserById({ fields: ['id'], args: targetUserId }))
-            .expect(success);
-        await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
-        // suspend account
-        await testKit.gqlClient
-            .set('Cookie', adminSess)
-            .send(suspendAccount({ args: targetUserId }))
-            .expect(success);
-        // user should have been removed from cache
-        const userInCache = await testKit.cacheManager.get(cacheKey);
-        expect(userInCache).toBeUndefined();
     });
 });
