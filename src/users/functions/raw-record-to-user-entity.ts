@@ -3,6 +3,7 @@ import { AccountStatus } from '../enums/account-status.enum';
 import { UserRole } from '../enums/user-role.enum';
 import { User } from '../entities/user.entity';
 
+// transform raw database record into User entity (db records uses snake_case, entity uses camelCase)
 export function rawRecordTouserEntity(rawData: IUserDbRecord): User {
     return {
         createdAt: rawData.created_at,

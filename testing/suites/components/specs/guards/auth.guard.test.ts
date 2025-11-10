@@ -21,6 +21,7 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { readPostgresUrl } from '@components/utils/read-postgres-uri';
+import { createCacheImport } from '@components/imports/create-cache.import';
 
 // Test AuthGuard isolated and how it behaves with REST and GQL contexts.
 
@@ -63,6 +64,7 @@ describe('AuthGuard', () => {
             imports: [
                 ...createTypeormImport(postgresUrl),
                 ...createDisabledLoggerImport(),
+                ...createCacheImport(),
                 ...createGqlImport(),
                 SeedModule,
                 UsersModule,

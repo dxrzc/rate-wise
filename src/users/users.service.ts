@@ -4,7 +4,7 @@ import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
 import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { IUserDbRecord } from './interfaces/user-db-record.interface';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
@@ -15,6 +15,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { deserializeUser } from './functions/user-deserializer';
+import { createUserCacheKey } from './cache/create-key';
 
 @Injectable()
 export class UsersService {
@@ -22,7 +25,15 @@ export class UsersService {
         private readonly logger: HttpLoggerService,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @Inject(CACHE_MANAGER)
+        private cacheManager: Cache,
     ) {}
+
+    private async deleteUserFromCache(id: string): Promise<void> {
+        const cacheKey = createUserCacheKey(id);
+        const wasCached = await this.cacheManager.del(cacheKey);
+        if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
+    }
 
     async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         const limit = pagArgs.limit;
@@ -58,6 +69,20 @@ export class UsersService {
         return userFound;
     }
 
+    async findOneByIdOrThrowCached(id: string): Promise<User> {
+        const cacheKey = createUserCacheKey(id);
+        const userInCache = await this.cacheManager.get<User>(cacheKey);
+        if (!userInCache) {
+            const userFound = await this.findOneByIdOrThrow(id);
+            await this.cacheManager.set(cacheKey, userFound);
+            this.logger.info(`User with id ${id} cached`);
+            return userFound;
+        }
+        const userInCacheDeserialized = deserializeUser(userInCache);
+        this.logger.info(`User with id ${id} retrieved from cache`);
+        return userInCacheDeserialized;
+    }
+
     async findOneByEmail(email: string): Promise<User | null> {
         const userFound = await this.userRepository.findOneBy({ email });
         return userFound;
@@ -76,6 +101,7 @@ export class UsersService {
         try {
             const saved = await this.userRepository.save(user);
             this.logger.info(`User with id ${user.id} saved to database`);
+            await this.deleteUserFromCache(user.id);
             return saved;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
@@ -92,6 +118,7 @@ export class UsersService {
         try {
             const updated = await this.userRepository.save(userToUpdate);
             this.logger.info(`User with id ${id} updated in database`);
+            await this.deleteUserFromCache(id);
             return updated;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
@@ -106,6 +133,7 @@ export class UsersService {
         const userToDelete = await this.findOneByIdOrThrow(id);
         await this.userRepository.remove(userToDelete);
         this.logger.info(`User with id ${id} deleted from database`);
+        await this.deleteUserFromCache(id);
     }
 
     async createOne(user: SignUpInput): Promise<User> {

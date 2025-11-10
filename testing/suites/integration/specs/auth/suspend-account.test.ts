@@ -10,12 +10,60 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { faker } from '@faker-js/faker';
+import { createUserCacheKey } from 'src/users/cache/create-key';
+import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
 
 describe('GraphQL - suspendAccount', () => {
     describe('Session cookie not provided', () => {
         test(`return UNAUTHORIZED code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
             const response = await testKit.gqlClient.send(suspendAccount({ args: '123' }));
             expect(response).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+        });
+    });
+
+    describe('Account successfuly suspended', () => {
+        test(`account status should be updated to "${AccountStatus.SUSPENDED}"`, async () => {
+            const { sessionCookie: adminSess } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER, UserRole.ADMIN],
+            });
+            const { id: targetUserId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER],
+            });
+            // suspend account
+            await testKit.gqlClient
+                .set('Cookie', adminSess)
+                .send(suspendAccount({ args: targetUserId }))
+                .expect(success);
+            const userInDb = await testKit.userRepos.findOneByOrFail({ id: targetUserId });
+            expect(userInDb.status).toBe(AccountStatus.SUSPENDED);
+        });
+
+        test('User should be deleted from redis cache', async () => {
+            // suspend an account
+            const { sessionCookie: adminSess } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER, UserRole.ADMIN],
+            });
+            const { id: targetUserId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.USER],
+            });
+            // trigger caching
+            const cacheKey = createUserCacheKey(targetUserId);
+            await testKit.gqlClient
+                .send(findUserById({ fields: ['id'], args: targetUserId }))
+                .expect(success);
+            await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
+            // suspend account
+            await testKit.gqlClient
+                .set('Cookie', adminSess)
+                .send(suspendAccount({ args: targetUserId }))
+                .expect(success);
+            // user should have been removed from cache
+            const userInCache = await testKit.cacheManager.get(cacheKey);
+            expect(userInCache).toBeUndefined();
         });
     });
 

@@ -30,6 +30,7 @@ services:
       POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
       REDIS_AUTH_URI: redis://redis_auth:6379
       REDIS_QUEUES_URI: redis://redis_queues:6378
+      REDIS_CACHE_URI: redis://redis_cache:6380
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
       SMTP_USER: dev
@@ -119,7 +120,17 @@ services:
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6378"]
     volumes:    
       - redis_queues:/data
-      - ../redis/redis-queues.conf:/usr/local/etc/redis/redis.conf      
+      - ../redis/redis-queues.conf:/usr/local/etc/redis/redis.conf   
+
+  redis_cache:       
+    image: redis:8.0-alpine    
+    restart: always
+    ports: 
+      - 6380  
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6380"]
+    volumes:    
+      - redis_cache:/data
+      - ../redis/redis-cache.conf:/usr/local/etc/redis/redis.conf        
 
   mailpit:        
     image: axllent/mailpit:v1.27.6     
@@ -143,6 +154,9 @@ volumes:
     external: false
   redis_auth: 
     name: rate-wise-redis-auth
+    external: false
+  redis_cache: 
+    name: rate-wise-redis-cache
     external: false
   redis_queues: 
     name: rate-wise-redis-queues

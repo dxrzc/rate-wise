@@ -1,12 +1,18 @@
+import KeyvRedis from '@keyv/redis';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { BullModule } from '@nestjs/bullmq';
+import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConditionalModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { minutes, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
+import { AuthController } from 'src/auth/auth.controller';
 import { AuthModule } from 'src/auth/auth.module';
 import { Environment } from 'src/common/enum/environment.enum';
+import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
 import { ConfigModule } from 'src/config/config.module';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
@@ -19,21 +25,17 @@ import { ItemsModule } from 'src/items/items.module';
 import { SeedModule } from 'src/seed/seed.module';
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { SessionsModule } from 'src/sessions/sessions.module';
+import { TokensModule } from 'src/tokens/tokens.module';
 import { UsersModule } from 'src/users/users.module';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
 import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
-import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
-import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
-import { TokensModule } from 'src/tokens/tokens.module';
-import { rateLimiterGuard } from './providers/guards/graphql-throttler.guard.provider';
-import { minutes, ThrottlerModule } from '@nestjs/throttler';
-import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
-import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
-import { AuthController } from 'src/auth/auth.controller';
 import { appAccountStatusGuard } from './providers/guards/app-account-status.guard.provider';
+import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appRolesGuard } from './providers/guards/app-roles.guard.provider';
+import { rateLimiterGuard } from './providers/guards/graphql-throttler.guard.provider';
+import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -57,6 +59,14 @@ import { appRolesGuard } from './providers/guards/app-roles.guard.provider';
     imports: [
         ConfigModule,
         EmailsModule,
+        CacheModule.registerAsync({
+            isGlobal: true,
+            inject: [DbConfigService, ServerConfigService],
+            useFactory: (dbConfig: DbConfigService, serverConfig: ServerConfigService) => ({
+                ttl: serverConfig.cacheTtlSeconds * 1000, // milliseconds
+                stores: [new KeyvRedis(dbConfig.redisCacheUri)],
+            }),
+        }),
         ThrottlerModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: ({ redisAuthUri }: DbConfigService) => ({

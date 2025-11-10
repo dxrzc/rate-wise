@@ -1,4 +1,5 @@
 import { testKit } from '@integration/utils/test-kit.util';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
@@ -27,4 +28,5 @@ beforeAll(() => {
     testKit.accVerifToken = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
         ACCOUNT_VERIFICATION_TOKEN,
     );
+    testKit.cacheManager = testKit.app.get<Cache>(CACHE_MANAGER);
 });

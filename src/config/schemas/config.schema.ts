@@ -7,6 +7,7 @@ export const envSchema = Joi.object<IConfigs, true>({
     POSTGRES_URI: Joi.string().uri().required(),
     REDIS_AUTH_URI: Joi.string().uri().required(),
     REDIS_QUEUES_URI: Joi.string().uri().required(),
+    REDIS_CACHE_URI: Joi.string().uri().required(),
     // Auth
     SESS_COOKIE_SECRET: Joi.string().required(),
     SESS_COOKIE_MAX_AGE_MS: Joi.number().integer().positive().required(),
@@ -28,4 +29,5 @@ export const envSchema = Joi.object<IConfigs, true>({
         .valid(...Object.values(Environment))
         .required(),
     API_BASE_URL: Joi.string().uri().required(),
+    CACHE_TTL_SECONDS: Joi.number().positive().required(),
 });
