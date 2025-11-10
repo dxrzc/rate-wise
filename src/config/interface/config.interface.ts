@@ -3,6 +3,7 @@ import { Environment } from 'src/common/enum/environment.enum';
 export interface IConfigs {
     NODE_ENV: Environment;
     PORT: number;
+    CACHE_TTL_SECONDS: number;
     PASSWORD_SALT_ROUNDS: number;
     POSTGRES_URI: string;
     REDIS_AUTH_URI: string;
