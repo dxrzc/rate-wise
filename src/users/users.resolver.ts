@@ -5,16 +5,20 @@ import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.
 import { UserPaginationModel } from './models/pagination.model';
 import { UserModel } from './models/user.model';
 import { UsersService } from './users.service';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Resolver(() => UserModel)
 export class UsersResolver {
     constructor(private readonly userService: UsersService) {}
 
+    @Public()
     @RelaxedThrottle()
     @Query(() => UserModel, { name: 'findUserById' })
     async findOneById(@Args('user_id', { type: () => ID }) id: string): Promise<UserModel> {
-        return await this.userService.findOneByIdOrThrow(id);
+        return await this.userService.findOneByIdOrThrowCached(id);
     }
+
+    // TODO: find by email
 
     @BalancedThrottle()
     @Query(() => UserPaginationModel, { name: 'users' })

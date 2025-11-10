@@ -22,7 +22,15 @@ export class UsersService {
         private readonly logger: HttpLoggerService,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @Inject(CACHE_MANAGER)
+        private cacheManager: Cache,
     ) {}
+
+    private async deleteUserFromCache(id: string): Promise<void> {
+        const cacheKey = usersCacheKey(id);
+        const wasCached = await this.cacheManager.del(cacheKey);
+        if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
+    }
 
     async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         const limit = pagArgs.limit;
@@ -56,6 +64,20 @@ export class UsersService {
             throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
         }
         return userFound;
+    }
+
+    async findOneByIdOrThrowCached(id: string): Promise<User> {
+        const cacheKey = usersCacheKey(id);
+        const userInCache = await this.cacheManager.get<User>(cacheKey);
+        if (!userInCache) {
+            const userFound = await this.findOneByIdOrThrow(id);
+            await this.cacheManager.set(cacheKey, userFound);
+            this.logger.info(`User with id ${id} cached`);
+            return userFound;
+        }
+        const userInCacheDeserialized = deserializeUser(userInCache);
+        this.logger.info(`User with id ${id} retrieved from cache`);
+        return userInCacheDeserialized;
     }
 
     async findOneByEmail(email: string): Promise<User | null> {
