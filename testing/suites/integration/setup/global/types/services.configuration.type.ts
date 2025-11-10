@@ -6,5 +6,6 @@ export type ServicesConfig = {
     };
     redisUrls: {
         auth: string;
+        cache: string;
     };
 };

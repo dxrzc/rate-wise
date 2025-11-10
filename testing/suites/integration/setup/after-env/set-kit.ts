@@ -27,4 +27,5 @@ beforeAll(() => {
     testKit.accVerifToken = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
         ACCOUNT_VERIFICATION_TOKEN,
     );
+    testKit.cacheRedisClient = new RedisClientAdapter(process.env.REDIS_CACHE_URI, 'cache');
 });

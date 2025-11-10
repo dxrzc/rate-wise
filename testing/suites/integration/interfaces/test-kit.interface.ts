@@ -20,6 +20,7 @@ export interface ITestKit {
     userRepos: Repository<User>;
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
+    cacheRedisClient: RedisClientAdapter;
     gqlClient: Test;
     restClient: RestClient;
     accDeletionToken: TokensService<IAccDeletionTokenPayload>;
