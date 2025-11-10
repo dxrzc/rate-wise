@@ -13,8 +13,10 @@ export const envSchema = Joi.object<IConfigs, true>({
     SESS_COOKIE_NAME: Joi.string().required(),
     MAX_USER_SESSIONS: Joi.number().integer().positive().required(),
     PASSWORD_SALT_ROUNDS: Joi.number().integer().positive().required(),
-    EMAIL_AUTH_TOKEN_SECRET: Joi.string().required(),
-    EMAIL_AUTH_TOKEN_EXP: Joi.string().required(),
+    ACCOUNT_VERIFICATION_TOKEN_EXP: Joi.string().required(),
+    ACCOUNT_VERIFICATION_TOKEN_SECRET: Joi.string().required(),
+    ACCOUNT_DELETION_TOKEN_EXP: Joi.string().required(),
+    ACCOUNT_DELETION_TOKEN_SECRET: Joi.string().required(),
     // SMTP
     SMTP_HOST: Joi.string().hostname().required(),
     SMTP_PORT: Joi.number().port().required(),
