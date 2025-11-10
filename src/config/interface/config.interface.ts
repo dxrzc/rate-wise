@@ -4,8 +4,6 @@ export interface IConfigs {
     NODE_ENV: Environment;
     PORT: number;
     PASSWORD_SALT_ROUNDS: number;
-    EMAIL_AUTH_TOKEN_SECRET: string;
-    EMAIL_AUTH_TOKEN_EXP: string;
     POSTGRES_URI: string;
     REDIS_AUTH_URI: string;
     REDIS_QUEUES_URI: string;
@@ -18,4 +16,8 @@ export interface IConfigs {
     SMTP_USER: string;
     SMTP_PASS: string;
     API_BASE_URL: string;
+    ACCOUNT_VERIFICATION_TOKEN_EXP: string;
+    ACCOUNT_VERIFICATION_TOKEN_SECRET: string;
+    ACCOUNT_DELETION_TOKEN_EXP: string;
+    ACCOUNT_DELETION_TOKEN_SECRET: string;
 }

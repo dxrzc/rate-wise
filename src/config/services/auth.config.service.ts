@@ -1,10 +1,27 @@
 import { IConfigs } from '../interface/config.interface';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
+import { StringValue } from 'src/common/types/others/string-value.type';
 
 @Injectable()
 export class AuthConfigService {
     constructor(private readonly configService: ConfigService<IConfigs, true>) {}
+
+    get accountVerificationTokenExp(): StringValue {
+        return this.configService.get('ACCOUNT_VERIFICATION_TOKEN_EXP');
+    }
+
+    get accountVerificationTokenSecret(): string {
+        return this.configService.get('ACCOUNT_VERIFICATION_TOKEN_SECRET');
+    }
+
+    get accountDeletionTokenExp(): StringValue {
+        return this.configService.get('ACCOUNT_DELETION_TOKEN_EXP');
+    }
+
+    get accountDeletionTokenSecret(): string {
+        return this.configService.get('ACCOUNT_DELETION_TOKEN_SECRET');
+    }
 
     get sessCookieSecret(): string {
         return this.configService.get('SESS_COOKIE_SECRET');
@@ -24,13 +41,5 @@ export class AuthConfigService {
 
     get passwordSaltRounds(): number {
         return this.configService.get('PASSWORD_SALT_ROUNDS');
-    }
-
-    get emailTokenExpTime(): string {
-        return this.configService.get('EMAIL_AUTH_TOKEN_EXP');
-    }
-
-    get emailTokenSecret(): string {
-        return this.configService.get('EMAIL_AUTH_TOKEN_SECRET');
     }
 }
