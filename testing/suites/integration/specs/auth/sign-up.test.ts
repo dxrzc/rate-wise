@@ -50,6 +50,8 @@ describe('GraphQL - signUp', () => {
             test('old session should be removed from redis store (session rotation)', async () => {
                 const { sessionCookie } = await createAccount();
                 const oldSid = getSidFromCookie(sessionCookie);
+                const redisKey = `${SESS_REDIS_PREFIX}${oldSid}`;
+                await expect(testKit.sessionsRedisClient.get(redisKey)).resolves.not.toBeNull();
                 // send old cookie with sign up request
                 await testKit.gqlClient.set('Cookie', sessionCookie).send(
                     signUp({
@@ -57,7 +59,6 @@ describe('GraphQL - signUp', () => {
                         args: testKit.userSeed.signUpInput,
                     }),
                 );
-                const redisKey = `${SESS_REDIS_PREFIX}:${oldSid}`;
                 const sessionInRedis = await testKit.sessionsRedisClient.get(redisKey);
                 expect(sessionInRedis).toBeNull();
             });
