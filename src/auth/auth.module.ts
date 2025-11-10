@@ -9,7 +9,10 @@ import { EmailsModule } from 'src/emails/emails.module';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { TokensModule } from 'src/tokens/tokens.module';
 import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
-import { ACCOUNT_VERIFICATION_TOKEN } from './constants/tokens.provider.constant';
+import {
+    ACCOUNT_DELETION_TOKEN,
+    ACCOUNT_VERIFICATION_TOKEN,
+} from './constants/tokens.provider.constant';
 import { AuthController } from './auth.controller';
 
 @Module({
@@ -24,12 +27,22 @@ import { AuthController } from './auth.controller';
                 },
             }),
         }),
+        // TODO: use config service
         TokensModule.forFeatureAsync({
             provide: ACCOUNT_VERIFICATION_TOKEN,
             useFactory: () => ({
                 secret: '123xdd',
                 expiresIn: '10m',
                 purpose: JwtPurpose.ACCOUNT_VERIFICATION,
+                dataInToken: ['id'],
+            }),
+        }),
+        TokensModule.forFeatureAsync({
+            provide: ACCOUNT_DELETION_TOKEN,
+            useFactory: () => ({
+                secret: 'aDifferentSecret',
+                expiresIn: '20m',
+                purpose: JwtPurpose.ACCOUNT_DELETION,
                 dataInToken: ['id'],
             }),
         }),

@@ -1,4 +1,4 @@
-export function accountVerificationEmailSentPage({
+export function verifyYourEmailHtml({
     username,
     link,
     linkExpMin,
@@ -22,7 +22,7 @@ export function accountVerificationEmailSentPage({
         `;
 }
 
-export function accountVerificationEmailSentText({
+export function verifyYourEmailPlainText({
     username,
     link,
     linkExpMin,

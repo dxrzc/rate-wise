@@ -8,6 +8,8 @@ import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { success } from '@integration/utils/no-errors.util';
+import { UserRole } from 'src/users/enums/user-role.enum';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 describe('GraphQL - requestAccountVerification', () => {
     describe('Session cookie not provided', () => {
@@ -27,7 +29,7 @@ describe('GraphQL - requestAccountVerification', () => {
         });
     });
 
-    describe(`Account is status "${AccountStatus.SUSPENDED}"`, () => {
+    describe(`Account status is "${AccountStatus.SUSPENDED}"`, () => {
         test(`return ${Code.FORBIDDEN} and ${AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED} message`, async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.SUSPENDED });
             const res = await testKit.gqlClient
@@ -37,7 +39,7 @@ describe('GraphQL - requestAccountVerification', () => {
         });
     });
 
-    describe(`Account is status "${AccountStatus.PENDING_VERIFICATION}"`, () => {
+    describe(`Account status is "${AccountStatus.PENDING_VERIFICATION}"`, () => {
         test('email should be sent to user email address', async () => {
             const { sessionCookie, email } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
@@ -46,6 +48,27 @@ describe('GraphQL - requestAccountVerification', () => {
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification())
                 .expect(success);
+            await expect(email).emailSentToThisAddress();
+        });
+    });
+
+    describe('User in session cookie does not exist', () => {
+        test(`should return code "${Code.NOT_FOUND}" and "${USER_MESSAGES.NOT_FOUND}" message`, async () => {
+            const { sessionCookie, id } = await createAccount();
+            await testKit.userRepos.delete({ id });
+            const res = await testKit.gqlClient
+                .send(requestAccountVerification())
+                .set('Cookie', sessionCookie);
+            expect(res).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
+        test('email should be sent to the user email address', async () => {
+            const { email, sessionCookie } = await createAccount({
+                roles: [role],
+            });
+            await testKit.gqlClient.send(requestAccountVerification()).set('Cookie', sessionCookie);
             await expect(email).emailSentToThisAddress();
         });
     });

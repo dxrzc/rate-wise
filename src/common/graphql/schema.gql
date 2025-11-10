@@ -92,6 +92,7 @@ type Mutation {
   signUp(user_data: SignUpInput!): UserModel!
   signIn(credentials: SignInInput!): UserModel!
   requestAccountVerification: Boolean!
+  requestAccountDeletion: Boolean!
   signOut: Boolean!
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
   suspendAccount(user_id: ID!): Boolean!

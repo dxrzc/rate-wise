@@ -70,12 +70,24 @@ export class TokensService<CustomData extends object> {
         return payload;
     }
 
-    async generate(payload: CustomData): Promise<string> {
+    async generate(payload: CustomData): Promise<string>;
+    async generate(
+        payload: CustomData,
+        options: { metadata: true },
+    ): Promise<{ token: string; jti: string }>;
+    async generate(
+        payload: CustomData,
+        options?: { metadata: boolean },
+    ): Promise<string | { token: string; jti: string }> {
+        const jti = uuidv4();
         const token = await this.jwtService.signAsync({
             purpose: this.tokensOpts.purpose,
-            jti: uuidv4(),
+            jti,
             ...payload,
         });
+        if (options?.metadata) {
+            return { token, jti };
+        }
         return token;
     }
 }

@@ -55,6 +55,15 @@ export class AuthResolver {
         return true;
     }
 
+    @CriticalThrottle()
+    @AllRolesAllowed()
+    @AllAccountStatusesAllowed()
+    @Mutation(() => Boolean)
+    async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
+        await this.authService.requestAccountDeletion(req.user);
+        return true;
+    }
+
     @AllRolesAllowed()
     @CriticalThrottle()
     @AllAccountStatusesAllowed()

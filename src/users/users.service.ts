@@ -102,6 +102,12 @@ export class UsersService {
         }
     }
 
+    async deleteOne(id: string): Promise<void> {
+        const userToDelete = await this.findOneByIdOrThrow(id);
+        await this.userRepository.remove(userToDelete);
+        this.logger.info(`User with id ${id} deleted from database`);
+    }
+
     async createOne(user: SignUpInput): Promise<User> {
         try {
             const created = await this.userRepository.save(user);

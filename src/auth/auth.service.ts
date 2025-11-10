@@ -10,11 +10,17 @@ import { TokensService } from 'src/tokens/tokens.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { AUTH_LIMITS } from './constants/auth.constants';
-import { ACCOUNT_VERIFICATION_TOKEN } from './constants/tokens.provider.constant';
+import {
+    ACCOUNT_DELETION_TOKEN,
+    ACCOUNT_VERIFICATION_TOKEN,
+} from './constants/tokens.provider.constant';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
-import { IAccVerifTokenPayload } from './interfaces/tokens-payload.interface';
+import {
+    IAccDeletionTokenPayload,
+    IAccVerifTokenPayload,
+} from './interfaces/tokens-payload.interface';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { RequestContext } from './types/request-context.type';
@@ -27,6 +33,8 @@ export class AuthService {
     constructor(
         @Inject(ACCOUNT_VERIFICATION_TOKEN)
         private readonly accVerifToken: TokensService<IAccVerifTokenPayload>,
+        @Inject(ACCOUNT_DELETION_TOKEN)
+        private readonly accDeletionToken: TokensService<IAccDeletionTokenPayload>,
         private readonly authConfig: AuthConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionsService,
@@ -52,10 +60,23 @@ export class AuthService {
             throw new BadRequestException(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
         user.status = AccountStatus.ACTIVE;
-        await this.userService.saveOne(user);
+        await Promise.all([this.userService.saveOne(user), this.accVerifToken.blacklist(jti, exp)]);
         this.logger.info(`Account ${user.id} verified successfully`);
-        await this.accVerifToken.blacklist(jti, exp);
-        this.logger.debug(`Verification token blacklisted for account ${user.id}`);
+    }
+
+    // REST endpoint related
+    async deleteAccount(tokenInUrl: string): Promise<void> {
+        const { id, jti, exp } = await verifyTokenOrThrow(
+            this.accDeletionToken,
+            this.logger,
+            tokenInUrl,
+        );
+        await Promise.all([
+            this.userService.deleteOne(id),
+            this.accDeletionToken.blacklist(jti, exp),
+            this.sessionService.deleteAll(id),
+        ]);
+        this.logger.info(`Account ${id} deleted successfully`);
     }
 
     async requestAccountVerification(user: AuthenticatedUser) {
@@ -64,7 +85,12 @@ export class AuthService {
             throw GqlHttpError.BadRequest(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
         await this.authNotifs.sendAccountVerificationEmail(user);
-        this.logger.info(`Verification account email sent to ${user.email}`);
+        this.logger.info(`Queued account verification email for user ${user.id}`);
+    }
+
+    async requestAccountDeletion(user: AuthenticatedUser) {
+        await this.authNotifs.sendAccountDeletionEmail(user);
+        this.logger.info(`Queued account deletion email for user ${user.id}`);
     }
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {

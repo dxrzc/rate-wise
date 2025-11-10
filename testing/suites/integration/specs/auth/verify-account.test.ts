@@ -2,45 +2,45 @@ import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
-import { ACCOUNT_VERIFICATION_TOKEN } from 'src/auth/constants/tokens.provider.constant';
-import { IAccVerifTokenPayload } from 'src/auth/interfaces/tokens-payload.interface';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
-import { TokensService } from 'src/tokens/tokens.service';
-import { JwtPayload } from 'src/tokens/types/jwt-payload.type';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const verifyAccountUrl = testKit.endpointsREST.verifyAccount;
 
-describe(`GET ${verifyAccountUrl}`, () => {
-    let tokenService: TokensService<IAccVerifTokenPayload>;
-
-    beforeAll(() => {
-        tokenService = testKit.app.get<TokensService<IAccVerifTokenPayload>>(
-            ACCOUNT_VERIFICATION_TOKEN,
-        );
-    });
-
+describe(`GET ${verifyAccountUrl}?token=...`, () => {
     describe('Account successfully verified', () => {
         test('account status should be updated to ACTIVE', async () => {
             const { id } = await createAccount();
-            const token = await tokenService.generate({ id });
+            const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             const userInDb = await testKit.userRepos.findOneBy({ id });
             expect(res.status).toBe(HttpStatus.OK);
             expect(userInDb?.status).toBe(AccountStatus.ACTIVE);
         });
+
         test('token should be blacklisted', async () => {
             const { id } = await createAccount();
-            const token = await tokenService.generate({ id });
+            const { token, jti } = await testKit.accVerifToken.generate({ id }, { metadata: true });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
-            const { jti } = await tokenService['verifyTokenOrThrow']<JwtPayload<any>>(token);
             const redisKey = blacklistTokenKey(jti);
             const isBlacklisted = await testKit.tokensRedisClient.get(redisKey);
             expect(res.status).toBe(HttpStatus.OK);
             expect(isBlacklisted).toBe(1);
+        });
+    });
+
+    describe('Account does not exist', () => {
+        test(`should return "${HttpStatus.NOT_FOUND}" code and "${USER_MESSAGES.NOT_FOUND}" message`, async () => {
+            const { id } = await createAccount();
+            const token = await testKit.accVerifToken.generate({ id });
+            await testKit.userRepos.delete(id); // user deleted
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
+            expect(res.body).toStrictEqual({ error: USER_MESSAGES.NOT_FOUND });
+            expect(res.statusCode).toBe(HttpStatus.NOT_FOUND);
         });
     });
 
@@ -61,10 +61,23 @@ describe(`GET ${verifyAccountUrl}`, () => {
         });
     });
 
+    describe('Token for account deletetion sent', () => {
+        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+            const { id } = await createAccount();
+            // account-deletion token
+            const accDeletionToken = await testKit.accDeletionToken.generate({ id });
+            const res = await testKit.restClient.get(
+                `${verifyAccountUrl}?token=${accDeletionToken}`,
+            );
+            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+        });
+    });
+
     describe('Target account is suspended', () => {
         test(`return FORBIDDEN status code and "${AUTH_MESSAGES.ACCOUNT_SUSPENDED}" message`, async () => {
             const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
-            const token = await tokenService.generate({ id });
+            const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
             expect(res.status).toBe(HttpStatus.FORBIDDEN);
@@ -74,7 +87,7 @@ describe(`GET ${verifyAccountUrl}`, () => {
     describe('Target account is already verified', () => {
         test(`return BAD REQUEST status code and "${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED}" message`, async () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
-            const token = await tokenService.generate({ id });
+            const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
