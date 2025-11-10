@@ -3,7 +3,7 @@ import { IOperation } from '../interfaces/operation.interface';
 
 // TODO: This is not gonna work for items operations.
 export function operationFactory(
-    { operationName, inputType, argumentName }: IOperationInfo,
+    { operationName, inputType, argumentName, operationType = 'mutation' }: IOperationInfo,
     { args, fields }: IOperation,
 ) {
     let dataFetched: string;
@@ -25,7 +25,7 @@ export function operationFactory(
 
     return {
         query: `
-               mutation ($args: ${inputType}!) {
+               ${operationType} ($args: ${inputType}!) {
                 ${operationName}(${argumentName}: $args)
                     ${fields ? `{ ${dataFetched} }` : ''}                    
               }
