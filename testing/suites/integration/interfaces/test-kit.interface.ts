@@ -19,5 +19,6 @@ export interface ITestKit {
     restClient: RestClient;
     endpointsREST: {
         verifyAccount: string;
+        deleteAccount: string;
     };
 }
