@@ -1,11 +1,15 @@
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
+import { success } from '@integration/utils/no-errors.util';
+import { status2xx } from '@integration/utils/status-2xx.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
+import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { createUserCacheKey } from 'src/users/cache/create-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
@@ -110,5 +114,18 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
         });
+    });
+
+    test('User should be deleted from redis cache', async () => {
+        const { id } = await createAccount();
+        const cacheKey = createUserCacheKey(id);
+        // trigger caching
+        await testKit.gqlClient.send(findUserById({ fields: ['id'], args: id })).expect(success);
+        await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
+        // verify account
+        const token = await testKit.accVerifToken.generate({ id });
+        await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`).expect(status2xx);
+        const userInCache = await testKit.cacheManager.get(cacheKey);
+        expect(userInCache).toBeUndefined();
     });
 });

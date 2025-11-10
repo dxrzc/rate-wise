@@ -7,11 +7,13 @@ import { status2xx } from '@integration/utils/status-2xx.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
+import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { createUserCacheKey } from 'src/users/cache/create-key';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
@@ -113,5 +115,16 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
             expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
         });
+    });
+
+    test('User should be deleted from redis cache', async () => {
+        const { id } = await createAccount();
+        const cacheKey = createUserCacheKey(id);
+        await testKit.gqlClient.send(findUserById({ fields: ['id'], args: id })).expect(success); // triggers caching
+        await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
+        const token = await testKit.accDeletionToken.generate({ id }); // delete
+        await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
+        const userInCache = await testKit.cacheManager.get(cacheKey);
+        expect(userInCache).toBeUndefined();
     });
 });
