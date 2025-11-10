@@ -12,6 +12,7 @@ import {
     IAccDeletionTokenPayload,
     IAccVerifTokenPayload,
 } from 'src/auth/interfaces/tokens-payload.interface';
+import { Cache } from '@nestjs/cache-manager';
 
 export interface ITestKit {
     app: INestApplication<App>;
@@ -20,7 +21,7 @@ export interface ITestKit {
     userRepos: Repository<User>;
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
-    cacheRedisClient: RedisClientAdapter;
+    cacheManager: Cache;
     gqlClient: Test;
     restClient: RestClient;
     accDeletionToken: TokensService<IAccDeletionTokenPayload>;
