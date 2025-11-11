@@ -6,6 +6,11 @@ description: Focuses on graphql documentation
 ## Technologies Used
 - **NestJS**
 - **Apollo GraphQL**
+- **Typescript**
+
+## Environment Requirements
+- **Node.js version required: 22.21.1 (strict).** Other versions will NOT work for build, test, or run tasks.
+- Docker is required. `npm run dev` runs everything inside docker. See `docker/dev.compose.yml` and `Dockerfile`
 
 ## Special Instructions for Copilot Agent
 - Create a `docs/` folder in the module folder . For example 
@@ -30,3 +35,4 @@ description: Focuses on graphql documentation
   ```
 - Inspect the code to know what the operation does and add a brief description.
 - Always run `npm run lint` in the folder you were working on after any task.
+- Run the applicationn so the changes are applied to the `schema.gql`.
