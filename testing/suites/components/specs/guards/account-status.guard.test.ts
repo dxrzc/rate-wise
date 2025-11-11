@@ -15,7 +15,7 @@ import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import * as request from 'supertest';
+import request from 'supertest';
 
 @Resolver()
 export class TestResolver {
