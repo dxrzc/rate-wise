@@ -2,9 +2,13 @@ import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
+// TODO: use constants
 @Entity()
 export class Item extends BaseEntity {
-    @Column('varchar', { length: 40 })
+    @Column('varchar', {
+        unique: true,
+        length: 40,
+    })
     title!: string;
 
     @Column('text')
@@ -13,7 +17,10 @@ export class Item extends BaseEntity {
     @Column('varchar', { length: 40 })
     category!: string;
 
-    @Column('varchar', { array: true, length: 20 })
+    @Column('varchar', {
+        array: true,
+        length: 20,
+    })
     tags!: string[];
 
     @Column('numeric', {
@@ -24,10 +31,19 @@ export class Item extends BaseEntity {
     })
     averageRating!: number;
 
-    @Column('integer', { name: 'review_count', default: 0 })
+    @Column('integer', {
+        name: 'review_count',
+        default: 0,
+    })
     reviewCount!: number;
 
-    @ManyToOne(() => User, (user) => user.items)
-    @JoinColumn({ name: 'account_id' })
+    @ManyToOne(() => User, (user) => user.items, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({
+        name: 'account_id',
+        foreignKeyConstraintName: 'FK_item_account_id',
+    })
     user!: User;
 }
