@@ -9,7 +9,9 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';
+import { stringValueToMinutes } from 'src/common/functions/utils/stringvalue-to.util';
 import { ServerConfigService } from 'src/config/services/server.config.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { AuthTokenService } from '../types/auth-tokens-service.type';
 import { EmailsService } from 'src/emails/emails.service';
 
@@ -24,6 +26,7 @@ export class AuthNotifications {
         private readonly accountDeletionToken: AuthTokenService,
         private readonly emailsService: EmailsService,
         private readonly serverConfig: ServerConfigService,
+        private readonly authConfig: AuthConfigService,
     ) {}
 
     private async createAccountVerificationLink(id: string) {
@@ -37,9 +40,9 @@ export class AuthNotifications {
     }
 
     async sendAccountVerificationEmail(user: AuthenticatedUser) {
-        const subject = 'Verify your Ratewise account';
+        const linkExpMin = stringValueToMinutes(this.authConfig.accountVerificationTokenExp);
         const link = await this.createAccountVerificationLink(user.id);
-        const linkExpMin = 30; // TODO: ConfigService
+        const subject = 'Verify your Ratewise account';
         await this.emailsService.sendEmail({
             from: this.from,
             to: user.email,
@@ -58,9 +61,9 @@ export class AuthNotifications {
     }
 
     async sendAccountDeletionEmail(user: AuthenticatedUser) {
-        const subject = 'Delete your Ratewise account';
+        const linkExpMin = stringValueToMinutes(this.authConfig.accountDeletionTokenExp);
         const link = await this.createAccountDeletionLink(user.id);
-        const linkExpMin = 30; // TODO: ConfigService
+        const subject = 'Delete your Ratewise account';
         await this.emailsService.sendEmail({
             from: this.from,
             to: user.email,
