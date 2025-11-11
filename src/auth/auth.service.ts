@@ -1,4 +1,8 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+    ACCOUNT_DELETION_TOKEN,
+    ACCOUNT_VERIFICATION_TOKEN,
+} from './constants/tokens.provider.constant';
+import { Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
@@ -6,35 +10,28 @@ import { HashingService } from 'src/common/services/hashing.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SessionsService } from 'src/sessions/sessions.service';
-import { TokensService } from 'src/tokens/tokens.service';
 import { User } from 'src/users/entities/user.entity';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 import { UsersService } from 'src/users/users.service';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw';
 import { AUTH_LIMITS } from './constants/auth.constants';
-import {
-    ACCOUNT_DELETION_TOKEN,
-    ACCOUNT_VERIFICATION_TOKEN,
-} from './constants/tokens.provider.constant';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
-import {
-    IAccDeletionTokenPayload,
-    IAccVerifTokenPayload,
-} from './interfaces/tokens-payload.interface';
+import { verifyTokenOrThrow } from './functions/verify-token-or-throw';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
+import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
-import { AccountStatus } from 'src/users/enums/account-status.enum';
-import { verifyTokenOrThrow } from './functions/verify-token-or-throw';
-import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class AuthService {
     constructor(
         @Inject(ACCOUNT_VERIFICATION_TOKEN)
-        private readonly accVerifToken: TokensService<IAccVerifTokenPayload>,
+        private readonly accountVerificationToken: AuthTokenService,
         @Inject(ACCOUNT_DELETION_TOKEN)
-        private readonly accDeletionToken: TokensService<IAccDeletionTokenPayload>,
+        private readonly accountDeletionToken: AuthTokenService,
         private readonly authConfig: AuthConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionsService,
@@ -43,37 +40,82 @@ export class AuthService {
         private readonly authNotifs: AuthNotifications,
     ) {}
 
-    // REST endpoint related
+    private async passwordsMatchOrThrow(dbPassword: string, incomingPassword: string) {
+        const passwordMatch = await this.hashingService.compare(incomingPassword, dbPassword);
+        if (!passwordMatch) {
+            this.logger.error('Password does not match');
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+    }
+
+    private async userDoesNotExceedMaxSessionsOrThrow(userId: string) {
+        const sessions = await this.sessionService.count(userId);
+        if (sessions >= this.authConfig.maxUserSessions) {
+            this.logger.error(`Maximum sessions reached for user ${userId}`);
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
+        }
+    }
+
+    private validatePasswordConstraintsOrThrow(password: string) {
+        if (!matchesConstraints(password, AUTH_LIMITS.PASSWORD)) {
+            this.logger.error('Invalid password length');
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+    }
+
+    private validateEmailConstraintsOrThrow(email: string) {
+        if (!matchesConstraints(email, AUTH_LIMITS.EMAIL)) {
+            this.logger.error('Invalid email length');
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+    }
+
+    private async hashPassword(password: string): Promise<string> {
+        const hash = await this.hashingService.hash(password, this.authConfig.passwordSaltRounds);
+        return hash;
+    }
+
+    private async getUserInEmailOrThrow(email: string): Promise<User> {
+        const user = await this.userService.findOneByEmail(email);
+        if (!user) {
+            this.logger.error(`Email not found`);
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+        return user;
+    }
+
     async verifyAccount(tokenInUrl: string) {
         const { id, jti, exp } = await verifyTokenOrThrow(
-            this.accVerifToken,
+            this.accountVerificationToken,
             this.logger,
             tokenInUrl,
         );
         const user = await this.userService.findOneByIdOrThrow(id);
         if (user.status === AccountStatus.SUSPENDED) {
             this.logger.error(`Account ${user.id} suspended`);
-            throw new ForbiddenException(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
+            throw GqlHttpError.Forbidden(AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
         }
         if (user.status !== AccountStatus.PENDING_VERIFICATION) {
             this.logger.error(`Account ${user.id} already verified`);
-            throw new BadRequestException(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
+            throw GqlHttpError.BadRequest(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
         user.status = AccountStatus.ACTIVE;
-        await Promise.all([this.userService.saveOne(user), this.accVerifToken.blacklist(jti, exp)]);
+        await runSettledOrThrow([
+            this.userService.saveOne(user),
+            this.accountVerificationToken.blacklist(jti, exp),
+        ]);
         this.logger.info(`Account ${user.id} verified successfully`);
     }
 
-    // REST endpoint related
     async deleteAccount(tokenInUrl: string): Promise<void> {
         const { id, jti, exp } = await verifyTokenOrThrow(
-            this.accDeletionToken,
+            this.accountDeletionToken,
             this.logger,
             tokenInUrl,
         );
-        await Promise.all([
+        await runSettledOrThrow([
             this.userService.deleteOne(id),
-            this.accDeletionToken.blacklist(jti, exp),
+            this.accountDeletionToken.blacklist(jti, exp),
             this.sessionService.deleteAll(id),
         ]);
         this.logger.info(`Account ${id} deleted successfully`);
@@ -94,10 +136,7 @@ export class AuthService {
     }
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
-        signUpInput.password = await this.hashingService.hash(
-            signUpInput.password,
-            this.authConfig.passwordSaltRounds,
-        );
+        signUpInput.password = await this.hashPassword(signUpInput.password);
         const user = await this.userService.createOne(signUpInput);
         await this.sessionService.create(req, user.id);
         this.logger.info(`Account ${user.id} created`);
@@ -105,38 +144,11 @@ export class AuthService {
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
-        if (!matchesConstraints(credentials.email, AUTH_LIMITS.EMAIL)) {
-            this.logger.error('Invalid email length');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-
-        if (!matchesConstraints(credentials.password, AUTH_LIMITS.PASSWORD)) {
-            this.logger.error('Invalid password length');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-
-        const user = await this.userService.findOneByEmail(credentials.email);
-
-        if (!user) {
-            this.logger.error(`Email not found`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-
-        const passwordMatch = await this.hashingService.compare(
-            credentials.password,
-            user.password,
-        );
-        if (!passwordMatch) {
-            this.logger.error('Password does not match');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-
-        const sessions = await this.sessionService.count(user.id);
-        if (sessions >= this.authConfig.maxUserSessions) {
-            this.logger.error(`Maximum sessions reached for user ${user.id}`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
-        }
-
+        this.validateEmailConstraintsOrThrow(credentials.email);
+        this.validatePasswordConstraintsOrThrow(credentials.password);
+        const user = await this.getUserInEmailOrThrow(credentials.email);
+        await this.passwordsMatchOrThrow(user.password, credentials.password);
+        await this.userDoesNotExceedMaxSessionsOrThrow(user.id);
         await this.sessionService.create(req, user.id);
         this.logger.info(`User ${user.id} signed in`);
         return user;
@@ -149,17 +161,9 @@ export class AuthService {
     }
 
     async signOutAll(auth: ReAuthenticationInput, userId: string): Promise<void> {
-        if (!matchesConstraints(auth.password, AUTH_LIMITS.PASSWORD)) {
-            this.logger.error('Invalid password length');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-
+        this.validatePasswordConstraintsOrThrow(auth.password);
         const user = await this.userService.findOneByIdOrThrow(userId);
-        const passwordMatches = await this.hashingService.compare(auth.password, user.password);
-        if (!passwordMatches) {
-            this.logger.warn(`Invalid credentials for userId: ${userId}`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
+        await this.passwordsMatchOrThrow(user.password, auth.password);
         await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
     }
