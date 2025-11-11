@@ -52,6 +52,12 @@ export class UsersService {
         return userFound;
     }
 
+    async findOneById(id: string): Promise<User | null> {
+        this.validUuidOrThrow(id);
+        const userFound = await this.userRepository.findOneBy({ id });
+        return userFound;
+    }
+
     async findOneByIdOrThrow(id: string): Promise<User> {
         this.validUuidOrThrow(id);
         return await this.findByIdOrThrowPrivate(id);
