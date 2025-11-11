@@ -78,12 +78,40 @@ type Query {
 type Mutation {
   seedUsers(quantity: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
+
+  """
+  Register a new user account with email and password. Creates a new user session upon successful registration.
+  """
   signUp(user_data: SignUpInput!): UserModel!
+
+  """
+  Authenticate a user with email and password credentials. Creates a new user session upon successful authentication.
+  """
   signIn(credentials: SignInInput!): UserModel!
+
+  """
+  Send an account verification email to the authenticated user. Only available for users with PENDING_VERIFICATION status.
+  """
   requestAccountVerification: Boolean!
+
+  """
+  Send an account deletion confirmation email to the authenticated user. The user must confirm deletion via the email link.
+  """
   requestAccountDeletion: Boolean!
+
+  """
+  Sign out the authenticated user from the current session. Destroys the current session and clears authentication cookies.
+  """
   signOut: Boolean!
+
+  """
+  Sign out the authenticated user from all active sessions. Requires password re-authentication for security. Destroys all user sessions and clears authentication cookies.
+  """
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
+
+  """
+  Suspend a user account, preventing them from accessing the system. Only available to administrators and moderators. Admin accounts cannot be suspended.
+  """
   suspendAccount(user_id: ID!): Boolean!
 }
 
