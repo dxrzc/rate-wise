@@ -1,5 +1,5 @@
 import { testKit } from '@integration/utils/test-kit.util';
-import * as request from 'supertest';
+import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
 beforeAll(() => {
