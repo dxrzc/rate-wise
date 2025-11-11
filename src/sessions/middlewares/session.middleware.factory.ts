@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as session from 'express-session';
+import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { ISessionsRootOptions } from '../interfaces/sessions.root.options.interface';
 import {
