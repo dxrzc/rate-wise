@@ -35,7 +35,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
                     return;
                 }
                 if (exception instanceof HttpException) {
-                    response.status(exception.getStatus()).json(exception.getResponse());
+                    response.status(exception.getStatus()).json({ error: exception.message });
                     return;
                 }
                 // Unknown error

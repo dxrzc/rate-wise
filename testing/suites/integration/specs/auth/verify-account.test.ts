@@ -66,7 +66,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
     describe('No token provided', () => {
         test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
             const res = await testKit.restClient.get(verifyAccountUrl);
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_URL });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -75,7 +75,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
         test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${invalidToken}`);
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -88,17 +88,17 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             const res = await testKit.restClient.get(
                 `${verifyAccountUrl}?token=${accDeletionToken}`,
             );
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
 
     describe('Target account is suspended', () => {
-        test(`return FORBIDDEN status code and "${AUTH_MESSAGES.ACCOUNT_SUSPENDED}" message`, async () => {
+        test(`return FORBIDDEN status code and "${AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED}" message`, async () => {
             const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
-            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_SUSPENDED);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED });
             expect(res.status).toBe(HttpStatus.FORBIDDEN);
         });
     });
@@ -108,7 +108,8 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
-            expect(res.body.message).toBe(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
+            console.log({ body: res.body });
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -126,7 +127,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             const res = await testKit.restClient
                 .get(verifyAccountUrl)
                 .set('X-Forwarded-For', sameIp);
-            expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
+            expect(res.body).toStrictEqual({ error: COMMON_MESSAGES.TOO_MANY_REQUESTS });
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
         });
     });
