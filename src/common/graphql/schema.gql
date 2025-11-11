@@ -66,23 +66,12 @@ type ItemModel {
   tags: [String!]!
   averageRating: Float!
   reviewCount: Int!
-}
-
-type ItemModelEdge {
-  cursor: String!
-  node: ItemModel!
-}
-
-type ItemPaginationModel {
-  edges: [ItemModelEdge!]
-  nodes: [ItemModel!]
-  totalCount: Int!
-  hasNextPage: Boolean!
+  createdBy: ID!
 }
 
 type Query {
   findUserById(user_id: ID!): UserModel!
-  users(cursor: String, limit: Int!): ItemPaginationModel!
+  users(cursor: String, limit: Int!): UserPaginationModel!
   findItemById(item_id: ID!): ItemModel!
 }
 
