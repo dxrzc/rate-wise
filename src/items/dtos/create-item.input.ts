@@ -11,6 +11,7 @@ import { Field, InputType } from '@nestjs/graphql';
 import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.util';
 import { trimAndLowerCaseArray } from 'src/common/functions/utils/trim-and-lowercase-array.util';
 
+// TODO: use constants
 @InputType()
 export class CreateItemInput {
     @IsString()
