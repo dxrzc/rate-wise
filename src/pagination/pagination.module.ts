@@ -1,11 +1,23 @@
 import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
-import { PAGINATION_CACHE_QUEUE } from './constants/pagination.constants';
+import { DynamicModule, Module } from '@nestjs/common';
+import { PAGINATION_CACHE_QUEUE, REPOSITORY_TOKEN } from './constants/pagination.constants';
 import { PaginationService } from './pagination.service';
+import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
 
-@Module({
-    imports: [BullModule.registerQueue({ name: PAGINATION_CACHE_QUEUE })],
-    providers: [PaginationService],
-    exports: [PaginationService],
-})
-export class PaginationModule {}
+@Module({})
+export class PaginationModule {
+    static register(options: IPaginationModuleOptions): DynamicModule {
+        return {
+            module: PaginationModule,
+            imports: [BullModule.registerQueue({ name: PAGINATION_CACHE_QUEUE })],
+            providers: [
+                PaginationService,
+                {
+                    provide: REPOSITORY_TOKEN,
+                    useValue: options.repositoryToken,
+                },
+            ],
+            exports: [PaginationService],
+        };
+    }
+}
