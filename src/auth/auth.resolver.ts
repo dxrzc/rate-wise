@@ -17,6 +17,13 @@ import { SignUpInput } from './dtos/sign-up.input';
 import { RequestContext } from './types/request-context.type';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { requestAccountDeletionDocs } from './docs/request-account-deletion.docs';
+import { requestAccountVerificationDocs } from './docs/request-account-verification.docs';
+import { signInDocs } from './docs/sign-in.docs';
+import { signOutAllDocs } from './docs/sign-out-all.docs';
+import { signOutDocs } from './docs/sign-out.docs';
+import { signUpDocs } from './docs/sign-up.docs';
+import { suspendAccountDocs } from './docs/suspend-account.docs';
 
 @Resolver()
 export class AuthResolver {
@@ -28,7 +35,7 @@ export class AuthResolver {
 
     @Public()
     @CriticalThrottle()
-    @Mutation(() => UserModel, { name: 'signUp' })
+    @Mutation(() => UserModel, signUpDocs)
     async signUp(
         @Args('user_data') user: SignUpInput,
         @Context('req') req: RequestContext,
@@ -38,7 +45,7 @@ export class AuthResolver {
 
     @Public()
     @CriticalThrottle()
-    @Mutation(() => UserModel, { name: 'signIn' })
+    @Mutation(() => UserModel, signInDocs)
     async signIn(
         @Args('credentials') credentials: SignInInput,
         @Context('req') req: RequestContext,
@@ -49,7 +56,7 @@ export class AuthResolver {
     @AllRolesAllowed()
     @UltraCriticalThrottle()
     @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
-    @Mutation(() => Boolean, { name: 'requestAccountVerification' })
+    @Mutation(() => Boolean, requestAccountVerificationDocs)
     async requestAccountVerification(@Context('req') req: RequestContext) {
         await this.authService.requestAccountVerification(req.user);
         return true;
@@ -58,7 +65,7 @@ export class AuthResolver {
     @AllRolesAllowed()
     @CriticalThrottle()
     @AllAccountStatusesAllowed()
-    @Mutation(() => Boolean)
+    @Mutation(() => Boolean, requestAccountDeletionDocs)
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
         await this.authService.requestAccountDeletion(req.user);
         return true;
@@ -67,7 +74,7 @@ export class AuthResolver {
     @AllRolesAllowed()
     @CriticalThrottle()
     @AllAccountStatusesAllowed()
-    @Mutation(() => Boolean, { name: 'signOut' })
+    @Mutation(() => Boolean, signOutDocs)
     async signOut(
         @Context('req') req: RequestContext,
         @Context('res') res: Response,
@@ -80,7 +87,7 @@ export class AuthResolver {
     @AllRolesAllowed()
     @UltraCriticalThrottle()
     @AllAccountStatusesAllowed()
-    @Mutation(() => Boolean, { name: 'signOutAll' })
+    @Mutation(() => Boolean, signOutAllDocs)
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,
         @Context('req') req: RequestContext,
@@ -94,7 +101,7 @@ export class AuthResolver {
     @CriticalThrottle()
     @Roles([UserRole.ADMIN, UserRole.MODERATOR])
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Mutation(() => Boolean, { name: 'suspendAccount' })
+    @Mutation(() => Boolean, suspendAccountDocs)
     async suspendAccount(@Args('user_id', { type: () => ID }) userId: string): Promise<boolean> {
         await this.authService.suspendAccount(userId);
         return true;
