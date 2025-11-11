@@ -1,6 +1,6 @@
 import { Type } from '@nestjs/common';
 import { Field, ObjectType, Int } from '@nestjs/graphql';
-import { IPaginatedType } from '../interfaces/pagination/paginated-type.interface';
+import { IPaginatedType } from '../../pagination/interfaces/paginated-type.interface';
 
 export function Paginated<T>(classRef: Type<T>): Type<IPaginatedType<T>> {
     @ObjectType(`${classRef.name}Edge`)

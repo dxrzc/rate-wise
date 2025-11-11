@@ -1,0 +1,1 @@
+export const PAGINATION_CACHE_QUEUE = 'CACHE_QUEUE';

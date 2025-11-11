@@ -1,5 +1,5 @@
 import { ObjectLiteral, Repository } from 'typeorm';
-import { IDecodedCursor } from 'src/common/interfaces/pagination/decoded-cursor.interface';
+import { IDecodedCursor } from 'src/pagination/interfaces/decoded-cursor.interface';
 
 export type PaginationEdgesFactoryOptions<
     EntityType extends ObjectLiteral,
