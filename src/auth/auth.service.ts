@@ -14,7 +14,7 @@ import { User } from 'src/users/entities/user.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { UsersService } from 'src/users/users.service';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { AUTH_LIMITS } from './constants/auth.constants';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
