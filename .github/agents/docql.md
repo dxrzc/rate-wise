@@ -9,7 +9,7 @@ description: Focuses on graphql documentation
 - **Typescript**
 
 ## Environment Requirements
-- **Node.js version required: 22.21.1 (strict).** Other versions will NOT work for build, test, or run tasks.
+- **Node.js version required: 22.21.1 (strict).** Other versions will NOT work.
 - Docker is required. `npm run dev` runs everything inside docker. See `docker/dev.compose.yml` and `Dockerfile`
 
 ## Special Instructions for Copilot Agent
@@ -35,4 +35,4 @@ description: Focuses on graphql documentation
   ```
 - Inspect the code to know what the operation does and add a brief description.
 - Always run `npm run lint` in the folder you were working on after any task.
-- Run the applicationn so the changes are applied to the `schema.gql`.
+- Run the applicationn with `npm run dev` so the changes are applied to the `schema.gql` file.
