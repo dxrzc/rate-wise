@@ -2,9 +2,10 @@ import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
+// TODO: use constants
 @Entity()
 export class Item extends BaseEntity {
-    @Column('varchar', { length: 40 })
+    @Column('varchar', { unique: true, length: 40 })
     title!: string;
 
     @Column('text')
@@ -27,7 +28,7 @@ export class Item extends BaseEntity {
     @Column('integer', { name: 'review_count', default: 0 })
     reviewCount!: number;
 
-    @ManyToOne(() => User, (user) => user.items)
+    @ManyToOne(() => User, (user) => user.items, { nullable: false })
     @JoinColumn({ name: 'account_id' })
     user!: User;
 }
