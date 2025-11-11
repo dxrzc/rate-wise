@@ -108,7 +108,6 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
-            console.log({ body: res.body });
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
