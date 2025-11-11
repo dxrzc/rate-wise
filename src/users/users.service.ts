@@ -35,6 +35,54 @@ export class UsersService {
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
     }
 
+    private validUuidOrThrow(id: string) {
+        if (!validUUID(id)) {
+            this.logger.error('Invalid UUID');
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+        }
+    }
+
+    // id must be a valid uuid
+    private async findByIdOrThrowPrivate(uuid: string): Promise<User> {
+        const userFound = await this.userRepository.findOneBy({ id: uuid });
+        if (!userFound) {
+            this.logger.error(`Item with id ${uuid} not found`);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+        }
+        return userFound;
+    }
+
+    async findOneById(id: string): Promise<User | null> {
+        this.validUuidOrThrow(id);
+        const userFound = await this.userRepository.findOneBy({ id });
+        return userFound;
+    }
+
+    async findOneByIdOrThrow(id: string): Promise<User> {
+        this.validUuidOrThrow(id);
+        return await this.findByIdOrThrowPrivate(id);
+    }
+
+    async findOneByIdOrThrowCached(id: string): Promise<User> {
+        this.validUuidOrThrow(id);
+        const cacheKey = createUserCacheKey(id);
+        const userInCache = await this.cacheManager.get<User>(cacheKey);
+        if (!userInCache) {
+            const userFound = await this.findOneByIdOrThrow(id);
+            await this.cacheManager.set(cacheKey, userFound);
+            this.logger.info(`User with id ${id} cached`);
+            return userFound;
+        }
+        const userInCacheDeserialized = deserializeUser(userInCache);
+        this.logger.info(`User with id ${id} retrieved from cache`);
+        return userInCacheDeserialized;
+    }
+
+    async findOneByEmail(email: string): Promise<User | null> {
+        const userFound = await this.userRepository.findOneBy({ email });
+        return userFound;
+    }
+
     async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         const limit = pagArgs.limit;
         const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
@@ -54,47 +102,6 @@ export class UsersService {
             totalCount,
             hasNextPage,
         };
-    }
-
-    async findOneByIdOrThrow(id: string): Promise<User> {
-        if (!validUUID(id)) {
-            this.logger.error('Invalid UUID');
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
-        const userFound = await this.userRepository.findOneBy({ id });
-        if (!userFound) {
-            this.logger.error(`User with id ${id} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
-        return userFound;
-    }
-
-    async findOneByIdOrThrowCached(id: string): Promise<User> {
-        const cacheKey = createUserCacheKey(id);
-        const userInCache = await this.cacheManager.get<User>(cacheKey);
-        if (!userInCache) {
-            const userFound = await this.findOneByIdOrThrow(id);
-            await this.cacheManager.set(cacheKey, userFound);
-            this.logger.info(`User with id ${id} cached`);
-            return userFound;
-        }
-        const userInCacheDeserialized = deserializeUser(userInCache);
-        this.logger.info(`User with id ${id} retrieved from cache`);
-        return userInCacheDeserialized;
-    }
-
-    async findOneByEmail(email: string): Promise<User | null> {
-        const userFound = await this.userRepository.findOneBy({ email });
-        return userFound;
-    }
-
-    async findOneByEmailOrThrow(email: string): Promise<User> {
-        const userFound = await this.findOneByEmail(email);
-        if (!userFound) {
-            this.logger.error(`User with email ${email} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
-        return userFound;
     }
 
     async saveOne(user: User) {

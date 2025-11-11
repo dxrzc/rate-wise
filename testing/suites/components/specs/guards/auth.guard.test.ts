@@ -7,17 +7,16 @@ import { Mutation, Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { seconds } from '@nestjs/throttler';
-import * as session from 'express-session';
+import session from 'express-session';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { Code } from 'src/common/enum/code.enum';
 import { SeedModule } from 'src/seed/seed.module';
 import { UsersModule } from 'src/users/users.module';
-import * as request from 'supertest';
+import request from 'supertest';
 import { Query as RestQuery } from '@nestjs/common';
 import { Public } from 'src/common/decorators/public.decorator';
 import { deleteUser } from '@components/utils/delete-user.util';
-import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { readPostgresUrl } from '@components/utils/read-postgres-uri';
@@ -125,7 +124,7 @@ describe('AuthGuard', () => {
     });
 
     describe('User in cookie not found', () => {
-        test('should return NOT FOUND code and USER NOT FOUND message ', async () => {
+        test(`should return ${Code.UNAUTHORIZED} code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
             const { id } = await createUser(app);
             const cookie = await getSessionCookie(id);
             await deleteUser(app, id);
@@ -133,7 +132,7 @@ describe('AuthGuard', () => {
                 .post('/graphql')
                 .set('Cookie', cookie)
                 .send({ query: testOperation });
-            expect(res).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 });

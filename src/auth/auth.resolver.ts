@@ -1,13 +1,13 @@
+import {
+    CriticalThrottle,
+    UltraCriticalThrottle,
+} from 'src/common/decorators/throttling.decorator';
 import { Args, Context, ID, Mutation, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
 import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
 import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import {
-    CriticalThrottle,
-    UltraCriticalThrottle,
-} from 'src/common/decorators/throttling.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserModel } from 'src/users/models/user.model';
 import { AuthService } from './auth.service';
@@ -55,8 +55,8 @@ export class AuthResolver {
         return true;
     }
 
-    @CriticalThrottle()
     @AllRolesAllowed()
+    @CriticalThrottle()
     @AllAccountStatusesAllowed()
     @Mutation(() => Boolean)
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {

@@ -31,7 +31,7 @@ export class ItemsService {
         private cacheManager: Cache,
     ) {}
 
-    private invalidUuidOrThrow(id: string) {
+    private validUuidOrThrow(id: string) {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
             throw GqlHttpError.NotFound(ITEMS_MESSAGES.NOT_FOUND);
@@ -69,12 +69,12 @@ export class ItemsService {
     }
 
     async findOneByIdOrThrow(id: string): Promise<Item> {
-        this.invalidUuidOrThrow(id);
+        this.validUuidOrThrow(id);
         return await this.findByIdOrThrowPrivate(id);
     }
 
     async findOneByIdOrThrowCached(id: string): Promise<Item> {
-        this.invalidUuidOrThrow(id);
+        this.validUuidOrThrow(id);
         const cacheKey = createItemCacheKey(id);
         const itemInCache = await this.cacheManager.get<Item>(cacheKey);
         if (!itemInCache) {

@@ -1,21 +1,19 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
-import { ServerConfigService } from 'src/config/services/server.config.service';
-import { EmailsService } from 'src/emails/emails.service';
-import { TokensService } from 'src/tokens/tokens.service';
-import {
-    ACCOUNT_DELETION_TOKEN,
-    ACCOUNT_VERIFICATION_TOKEN,
-} from '../constants/tokens.provider.constant';
-import {
-    IAccDeletionTokenPayload,
-    IAccVerifTokenPayload,
-} from '../interfaces/tokens-payload.interface';
-import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';
 import {
     verifyAccountDeletionHtml,
     verifyAccountDeletionPlainText,
 } from '../pages/verify-account-deletion.page';
+import {
+    ACCOUNT_DELETION_TOKEN,
+    ACCOUNT_VERIFICATION_TOKEN,
+} from '../constants/tokens.provider.constant';
+import { Inject, Injectable } from '@nestjs/common';
+import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';
+import { stringValueToMinutes } from 'src/common/functions/utils/stringvalue-to.util';
+import { ServerConfigService } from 'src/config/services/server.config.service';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
+import { AuthTokenService } from '../types/auth-tokens-service.type';
+import { EmailsService } from 'src/emails/emails.service';
 
 @Injectable()
 export class AuthNotifications {
@@ -23,27 +21,28 @@ export class AuthNotifications {
 
     constructor(
         @Inject(ACCOUNT_VERIFICATION_TOKEN)
-        private readonly accVerifToken: TokensService<IAccVerifTokenPayload>,
+        private readonly accountVerificationToken: AuthTokenService,
         @Inject(ACCOUNT_DELETION_TOKEN)
-        private readonly accDeletionToken: TokensService<IAccDeletionTokenPayload>,
+        private readonly accountDeletionToken: AuthTokenService,
         private readonly emailsService: EmailsService,
         private readonly serverConfig: ServerConfigService,
+        private readonly authConfig: AuthConfigService,
     ) {}
 
     private async createAccountVerificationLink(id: string) {
-        const token = await this.accVerifToken.generate({ id });
+        const token = await this.accountVerificationToken.generate({ id });
         return `${this.serverConfig.apiBaseUrl}/auth/verify-account?token=${token}`;
     }
 
     private async createAccountDeletionLink(id: string) {
-        const token = await this.accDeletionToken.generate({ id });
+        const token = await this.accountDeletionToken.generate({ id });
         return `${this.serverConfig.apiBaseUrl}/auth/delete-account?token=${token}`;
     }
 
     async sendAccountVerificationEmail(user: AuthenticatedUser) {
-        const subject = 'Verify your Ratewise account';
+        const linkExpMin = stringValueToMinutes(this.authConfig.accountVerificationTokenExp);
         const link = await this.createAccountVerificationLink(user.id);
-        const linkExpMin = 30; // TODO: ConfigService
+        const subject = 'Verify your Ratewise account';
         await this.emailsService.sendEmail({
             from: this.from,
             to: user.email,
@@ -62,9 +61,9 @@ export class AuthNotifications {
     }
 
     async sendAccountDeletionEmail(user: AuthenticatedUser) {
-        const subject = 'Delete your Ratewise account';
+        const linkExpMin = stringValueToMinutes(this.authConfig.accountDeletionTokenExp);
         const link = await this.createAccountDeletionLink(user.id);
-        const linkExpMin = 30; // TODO: ConfigService
+        const subject = 'Delete your Ratewise account';
         await this.emailsService.sendEmail({
             from: this.from,
             to: user.email,

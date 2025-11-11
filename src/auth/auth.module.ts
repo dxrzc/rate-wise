@@ -23,9 +23,7 @@ import { AuthNotifications } from './notifications/auth.notifications';
         HttpLoggerModule.forFeature({ context: AuthService.name }),
         EmailsModule.forFeatureAsync({
             useFactory: () => ({
-                queues: {
-                    retryAttempts: 3,
-                },
+                queues: { retryAttempts: 3 },
             }),
         }),
         TokensModule.forFeatureAsync({

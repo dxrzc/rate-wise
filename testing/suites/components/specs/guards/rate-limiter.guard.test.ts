@@ -12,7 +12,7 @@ import { UltraCriticalThrottle } from 'src/common/decorators/throttling.decorato
 import { Code } from 'src/common/enum/code.enum';
 import { RateLimiterGuard } from 'src/common/guards/rate-limiter.guard';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import * as request from 'supertest';
+import request from 'supertest';
 
 @Resolver()
 class TestResolver {

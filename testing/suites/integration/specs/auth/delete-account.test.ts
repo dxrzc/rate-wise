@@ -89,7 +89,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
     describe('No token provided', () => {
         test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
             const res = await testKit.restClient.get(deleteAccUrl);
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_URL);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_URL });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -98,7 +98,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
         test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${invalidToken}`);
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -109,7 +109,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
             // verification token
             const accVerifToken = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${accVerifToken}`);
-            expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_TOKEN);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
         });
     });
@@ -125,7 +125,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
             );
             await Promise.all(requests);
             const res = await testKit.restClient.get(deleteAccUrl).set('X-Forwarded-For', sameIp);
-            expect(res.body.message).toBe(COMMON_MESSAGES.TOO_MANY_REQUESTS);
+            expect(res.body).toStrictEqual({ error: COMMON_MESSAGES.TOO_MANY_REQUESTS });
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
         });
     });
