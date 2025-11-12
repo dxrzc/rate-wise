@@ -1,6 +1,10 @@
 import { BullModule } from '@nestjs/bullmq';
 import { DynamicModule, Module } from '@nestjs/common';
-import { PAGINATION_CACHE_QUEUE, REPOSITORY_TOKEN } from './constants/pagination.constants';
+import {
+    PAGINATION_CACHE_QUEUE,
+    REPOSITORY_TOKEN,
+    TRANSFORM_FUNCTION,
+} from './constants/pagination.constants';
 import { PaginationService } from './pagination.service';
 import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
 
@@ -15,6 +19,10 @@ export class PaginationModule {
                 {
                     provide: REPOSITORY_TOKEN,
                     useValue: options.repositoryToken,
+                },
+                {
+                    provide: TRANSFORM_FUNCTION,
+                    useValue: options.transformFunction,
                 },
             ],
             exports: [PaginationService],
