@@ -81,7 +81,7 @@ describe('AccountStatus Guard', () => {
     });
 
     describe('No decorator provided in Graphql operation', () => {
-        test('return INTERNAL SERVER code and error message', async () => {
+        test('return internal server error code and error message', async () => {
             const query = generateGqlQuery(resolver.noDecorator.name);
             const res = await request(app.getHttpServer()).post('/graphql').send({ query });
             expect(res).toFailWith(
@@ -101,7 +101,7 @@ describe('AccountStatus Guard', () => {
 
     describe('Account status required is "ACTIVE"', () => {
         describe('User account status is "PENDING_VERIFICATION"', () => {
-            test('return FORBIDDEN code and ACCOUNT_IS_NOT_ACTIVE error message', async () => {
+            test('return forbidden code and account is not active error message', async () => {
                 const query = generateGqlQuery(resolver.activeOnly.name);
                 mockReqData.user.status = AccountStatus.PENDING_VERIFICATION;
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
@@ -112,7 +112,7 @@ describe('AccountStatus Guard', () => {
 
     describe('Account status required is "PENDING_VERIFICATION"', () => {
         describe('User account status is "SUSPENDED"', () => {
-            test('return FORBIDDEN code and ACCOUNT_IS_SUSPENDED error message', async () => {
+            test('return forbidden code and account is suspended error message', async () => {
                 const query = generateGqlQuery(resolver.pendingVerOnly.name);
                 mockReqData.user.status = AccountStatus.SUSPENDED;
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });

@@ -5,7 +5,7 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 
 describe('handleGqlError', () => {
     describe('when error.extensions.code is missing', () => {
-        test('return INTERNAL_SERVER_ERROR code and error message', () => {
+        test('return internal server error code and error message', () => {
             const error: GraphQLFormattedError = {
                 message: 'Some error occurred',
                 extensions: {},
@@ -20,7 +20,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('return INTERNAL_SERVER_ERROR when extensions is undefined', () => {
+        test('return internal server error when extensions is undefined', () => {
             const error: GraphQLFormattedError = {
                 message: 'Some error occurred',
             };
@@ -36,7 +36,7 @@ describe('handleGqlError', () => {
     });
 
     describe('when error.extensions.code is INTERNAL_SERVER_ERROR', () => {
-        test('return INTERNAL_SERVER_ERROR code and error message', () => {
+        test('return internal server error code and error message', () => {
             const error: GraphQLFormattedError = {
                 message: 'Original error message',
                 extensions: {
@@ -72,7 +72,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('handles UNAUTHORIZED code', () => {
+        test('handle unauthorized code', () => {
             const error: GraphQLFormattedError = {
                 message: 'Authentication required',
                 extensions: {
@@ -89,7 +89,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('handles BAD_REQUEST code', () => {
+        test('handle bad request code', () => {
             const error: GraphQLFormattedError = {
                 message: 'Invalid input provided',
                 extensions: {
@@ -106,7 +106,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('handles FORBIDDEN code', () => {
+        test('handle forbidden code', () => {
             const error: GraphQLFormattedError = {
                 message: 'Access denied',
                 extensions: {
@@ -123,7 +123,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('handles CONFLICT code', () => {
+        test('handle conflict code', () => {
             const error: GraphQLFormattedError = {
                 message: 'Resource already exists',
                 extensions: {
@@ -140,7 +140,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('handles TOO_MANY_REQUESTS code', () => {
+        test('handle too many requests code', () => {
             const error: GraphQLFormattedError = {
                 message: 'Rate limit exceeded',
                 extensions: {
@@ -233,7 +233,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('includes stackTrace for INTERNAL_SERVER_ERROR when opts.stackTrace is true', () => {
+        test('include stackTrace for internal server error when opts.stackTrace is true', () => {
             const stackTraceData = ['Error: internal', '  at handler (app.ts:20:10)'];
             const error: GraphQLFormattedError = {
                 message: 'Original message',
