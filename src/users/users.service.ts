@@ -1,13 +1,7 @@
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
-import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { rawRecordTouserEntity } from './functions/raw-record-to-user-entity';
-import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
-import { IUserDbRecord } from './interfaces/user-db-record.interface';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { USER_MESSAGES } from './messages/user.messages';
@@ -18,15 +12,19 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { deserializeUser } from './functions/user-deserializer';
 import { createUserCacheKey } from './cache/create-key';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 
 @Injectable()
 export class UsersService {
     constructor(
-        private readonly logger: HttpLoggerService,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
+        private readonly paginationService: PaginationService<User>,
+        private readonly logger: HttpLoggerService,
     ) {}
 
     private async deleteUserFromCache(id: string): Promise<void> {
@@ -83,25 +81,8 @@ export class UsersService {
         return userFound;
     }
 
-    async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<User>> {
-        const limit = pagArgs.limit;
-        const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
-        // fetches limit + 1 records so we can detect whether there’s a next page
-        const edges = await createPaginationEdges<User, IUserDbRecord>({
-            transformFunction: rawRecordTouserEntity,
-            repository: this.userRepository,
-            decodedCursor,
-            limit,
-        });
-        const hasNextPage = edges.length > limit;
-        if (hasNextPage) edges.pop();
-        const totalCount = await this.userRepository.createQueryBuilder().getCount();
-        return {
-            edges,
-            nodes: edges.map((edge) => edge.node),
-            totalCount,
-            hasNextPage,
-        };
+    async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
+        return await this.paginationService.create({ ...paginationArgs, cache: false });
     }
 
     async saveOne(user: User) {
