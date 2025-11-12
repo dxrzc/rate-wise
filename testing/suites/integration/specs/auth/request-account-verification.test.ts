@@ -19,12 +19,12 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('Account status is active', () => {
-        test('return bad request code and account already verified error message', async () => {
+        test('return forbidden code and account already verified error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
+            expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         });
     });
 

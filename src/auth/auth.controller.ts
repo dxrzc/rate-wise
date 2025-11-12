@@ -24,7 +24,10 @@ export class AuthController {
     @Get('verify-account')
     async verifyAccount(@Query('token') token: string) {
         if (!token) this.handleNonProvidedToken();
-        await this.authService.verifyAccount(token);
+        const result = await this.authService.verifyAccount(token);
+        if (result.alreadyVerified) {
+            return { message: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED_MESSAGE };
+        }
         return accountVerifiedPage();
     }
 

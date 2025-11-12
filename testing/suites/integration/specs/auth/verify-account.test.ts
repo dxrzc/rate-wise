@@ -104,12 +104,14 @@ describe('GET verify account endpoint with token', () => {
     });
 
     describe('Target account is already verified', () => {
-        test('return bad request status code and account already verified error message', async () => {
+        test('return ok status code and account already verified message', async () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
-            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.body).toStrictEqual({
+                message: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED_MESSAGE,
+            });
+            expect(res.status).toBe(HttpStatus.OK);
         });
     });
 
