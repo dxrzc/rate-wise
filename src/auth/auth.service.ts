@@ -44,7 +44,7 @@ export class AuthService {
         const passwordMatch = await this.hashingService.compare(incomingPassword, dbPassword);
         if (!passwordMatch) {
             this.logger.error('Password does not match');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
     }
 
@@ -59,14 +59,21 @@ export class AuthService {
     private validatePasswordConstraintsOrThrow(password: string) {
         if (!matchesConstraints(password, AUTH_LIMITS.PASSWORD)) {
             this.logger.error('Invalid password length');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
     }
 
     private validateEmailConstraintsOrThrow(email: string) {
         if (!matchesConstraints(email, AUTH_LIMITS.EMAIL)) {
             this.logger.error('Invalid email length');
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+    }
+
+    private accountIsNotAlreadyVerifiedOrThrow(user: Pick<User, 'status' | 'id'>) {
+        if (user.status === AccountStatus.ACTIVE) {
+            this.logger.error(`Account ${user.id} already verified`);
+            throw GqlHttpError.Conflict(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
     }
 
@@ -79,7 +86,7 @@ export class AuthService {
         const user = await this.userService.findOneByEmail(email);
         if (!user) {
             this.logger.error(`Email not found`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.INVALID_CREDENTIALS);
+            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
         return user;
     }
@@ -95,10 +102,7 @@ export class AuthService {
             this.logger.error(`Account ${user.id} suspended`);
             throw GqlHttpError.Forbidden(AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
         }
-        if (user.status !== AccountStatus.PENDING_VERIFICATION) {
-            this.logger.error(`Account ${user.id} already verified`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
-        }
+        this.accountIsNotAlreadyVerifiedOrThrow(user);
         user.status = AccountStatus.ACTIVE;
         await runSettledOrThrow([
             this.userService.saveOne(user),
@@ -122,10 +126,7 @@ export class AuthService {
     }
 
     async requestAccountVerification(user: AuthenticatedUser) {
-        if (user.status !== AccountStatus.PENDING_VERIFICATION) {
-            this.logger.error(`Account ${user.id} already verified`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
-        }
+        this.accountIsNotAlreadyVerifiedOrThrow(user);
         await this.authNotifs.sendAccountVerificationEmail(user);
         this.logger.info(`Queued account verification email for user ${user.id}`);
     }

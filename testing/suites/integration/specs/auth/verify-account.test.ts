@@ -72,16 +72,16 @@ describe('GET verify account endpoint with token', () => {
     });
 
     describe('Invalid token', () => {
-        test('return bad request status code and invalid token error message', async () => {
+        test('return unauthorized status code and invalid token error message', async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${invalidToken}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
     describe('Token for account deletetion sent', () => {
-        test('return bad request status code and invalid token error message', async () => {
+        test('return unauthorized status code and invalid token error message', async () => {
             const { id } = await createAccount();
             // account-deletion token
             const accDeletionToken = await testKit.accDeletionToken.generate({ id });
@@ -89,7 +89,7 @@ describe('GET verify account endpoint with token', () => {
                 `${verifyAccountUrl}?token=${accDeletionToken}`,
             );
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
@@ -104,12 +104,12 @@ describe('GET verify account endpoint with token', () => {
     });
 
     describe('Target account is already verified', () => {
-        test('return bad request status code and account already verified error message', async () => {
+        test('return conflict status code and account already verified error message', async () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.CONFLICT);
         });
     });
 

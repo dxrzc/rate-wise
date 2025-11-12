@@ -79,7 +79,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('Password is too long', () => {
-        test('return bad request code and invalid credentials error message', async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signIn({
@@ -87,12 +87,12 @@ describe('GraphQL - signIn', () => {
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
     describe('Password does not match', () => {
-        test('return bad request code and invalid credentials error message', async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
@@ -100,19 +100,19 @@ describe('GraphQL - signIn', () => {
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
     describe('User in email does not exist', () => {
-        test('return bad request code and invalid credentials error message', async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const res = await testKit.gqlClient.send(
                 signIn({
                     args: { email: testKit.userSeed.email, password: testKit.userSeed.password },
                     fields: ['id'],
                 }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
