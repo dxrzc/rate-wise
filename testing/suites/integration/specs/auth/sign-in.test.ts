@@ -117,7 +117,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('User exceeds the maximum active sessions', () => {
-        test('return bad request code and max sessions reached error message', async () => {
+        test('return forbidden code and max sessions reached error message', async () => {
             const maxSessions = testKit.authConfig.maxUserSessions;
             const { email, password } = await createAccount(); // 1 session
             const signInPromises = Array.from({ length: maxSessions - 1 }, () =>
@@ -129,7 +129,7 @@ describe('GraphQL - signIn', () => {
             const res = await testKit.gqlClient.send(
                 signIn({ args: { email, password }, fields: ['id'] }),
             );
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.MAX_SESSIONS_REACHED);
+            expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         });
     });
 
