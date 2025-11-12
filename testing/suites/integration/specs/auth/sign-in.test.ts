@@ -79,7 +79,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('Password is too long', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
+        test('returns bad request code and invalid credentials message', async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signIn({
@@ -92,7 +92,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('Password does not match', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
+        test('returns bad request code and invalid credentials message', async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({
@@ -105,7 +105,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('User in email does not exist', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
+        test('returns bad request code and invalid credentials message', async () => {
             const res = await testKit.gqlClient.send(
                 signIn({
                     args: { email: testKit.userSeed.email, password: testKit.userSeed.password },
@@ -117,7 +117,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('User exceeds the maximum active sessions', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.MAX_SESSIONS_REACHED}" message`, async () => {
+        test('returns bad request code and max sessions reached message', async () => {
             const maxSessions = testKit.authConfig.maxUserSessions;
             const { email, password } = await createAccount(); // 1 session
             const signInPromises = Array.from({ length: maxSessions - 1 }, () =>
@@ -134,7 +134,7 @@ describe('GraphQL - signIn', () => {
     });
 
     describe('Attempt to provide password as a gql field ', () => {
-        test(`should return "${Code.GRAPHQL_VALIDATION_FAILED}" code`, async () => {
+        test('returns graphql validation failed code', async () => {
             const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({ args: { email, password }, fields: ['password' as any] }),
@@ -143,8 +143,8 @@ describe('GraphQL - signIn', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
                 testKit.gqlClient

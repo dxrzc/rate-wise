@@ -64,7 +64,7 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test(`default user roles should be "[${UserRole.USER}]"`, async () => {
+        test('default user roles are user', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -74,7 +74,7 @@ describe('GraphQL - signUp', () => {
             expect(userDB.roles).toStrictEqual([UserRole.USER]);
         });
 
-        test(`default account status should be "${AccountStatus.PENDING_VERIFICATION}"`, async () => {
+        test('default account status is pending verification', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -177,7 +177,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Email already exists', () => {
-        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+        test('returns conflict code and already exists message', async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -190,7 +190,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Username already exists', () => {
-        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+        test('returns conflict code and already exists message', async () => {
             const { username } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -203,7 +203,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Password exceeds the max password length', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
+        test('returns bad request code and invalid input message', async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -216,7 +216,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Invalid email format', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
+        test('returns bad request code and invalid input message', async () => {
             const badEmail = 'user@.com';
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -229,7 +229,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Attempt to provide password as a gql field', () => {
-        test(`should return "${Code.GRAPHQL_VALIDATION_FAILED}" code`, async () => {
+        test('returns graphql validation failed code', async () => {
             const res = await testKit.gqlClient.send(
                 signUp({
                     args: testKit.userSeed.signUpInput,
@@ -243,8 +243,8 @@ describe('GraphQL - signUp', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
             const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>

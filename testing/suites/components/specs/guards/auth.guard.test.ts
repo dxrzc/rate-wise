@@ -115,7 +115,7 @@ describe('AuthGuard', () => {
     });
 
     describe('Session cookie not provided', () => {
-        test('should return UNAUTHORIZED code and UNAUTHORIZED message', async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const res = await request(app.getHttpServer())
                 .post('/graphql')
                 .send({ query: testOperation });
@@ -124,7 +124,7 @@ describe('AuthGuard', () => {
     });
 
     describe('User in cookie not found', () => {
-        test(`should return ${Code.UNAUTHORIZED} code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const { id } = await createUser(app);
             const cookie = await getSessionCookie(id);
             await deleteUser(app, id);
