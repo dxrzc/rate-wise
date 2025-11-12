@@ -95,22 +95,22 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('Invalid token', () => {
-        test('return bad request status code and invalid token error message', async () => {
+        test('return unauthorized status code and invalid token error message', async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${invalidToken}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
     describe('Token for account verification sent', () => {
-        test('return bad request status code and invalid token error message', async () => {
+        test('return unauthorized status code and invalid token error message', async () => {
             const { id } = await createAccount();
             // verification token
             const accVerifToken = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${accVerifToken}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
