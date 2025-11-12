@@ -1,52 +1,52 @@
 import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
 
 describe('matchesConstraints', () => {
-    test('returns true when no constraints are provided', () => {
+    test('return true when no constraints are provided', () => {
         expect(matchesConstraints('hello', {})).toBe(true);
     });
 
     describe('MIN constraint', () => {
-        test('returns false when input length is less than MIN', () => {
+        test('return false when input length is less than MIN', () => {
             expect(matchesConstraints('hi', { MIN: 5 })).toBe(false);
         });
 
-        test('returns true when input length equals MIN', () => {
+        test('return true when input length equals MIN', () => {
             expect(matchesConstraints('hello', { MIN: 5 })).toBe(true);
         });
 
-        test('returns true when input length is greater than MIN', () => {
+        test('return true when input length is greater than MIN', () => {
             expect(matchesConstraints('hello world', { MIN: 5 })).toBe(true);
         });
     });
 
     describe('MAX constraint', () => {
-        test('returns false when input length is greater than MAX', () => {
+        test('return false when input length is greater than MAX', () => {
             expect(matchesConstraints('hello world', { MAX: 5 })).toBe(false);
         });
 
-        test('returns true when input length equals MAX', () => {
+        test('return true when input length equals MAX', () => {
             expect(matchesConstraints('hello', { MAX: 5 })).toBe(true);
         });
 
-        test('returns true when input length is less than MAX', () => {
+        test('return true when input length is less than MAX', () => {
             expect(matchesConstraints('hi', { MAX: 5 })).toBe(true);
         });
     });
 
     describe('MIN and MAX constraints together', () => {
-        test('returns true when input length is within range', () => {
+        test('return true when input length is within range', () => {
             expect(matchesConstraints('hello', { MIN: 3, MAX: 10 })).toBe(true);
         });
 
-        test('returns false when input length is below MIN', () => {
+        test('return false when input length is below MIN', () => {
             expect(matchesConstraints('hi', { MIN: 3, MAX: 10 })).toBe(false);
         });
 
-        test('returns false when input length is above MAX', () => {
+        test('return false when input length is above MAX', () => {
             expect(matchesConstraints('this is too long', { MIN: 3, MAX: 10 })).toBe(false);
         });
 
-        test('returns true when input length equals both MIN and MAX', () => {
+        test('return true when input length equals both MIN and MAX', () => {
             expect(matchesConstraints('abc', { MIN: 3, MAX: 3 })).toBe(true);
         });
     });

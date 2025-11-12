@@ -14,7 +14,7 @@ import { success } from '@integration/utils/no-errors.util';
 
 describe('GraphQL - signOutAll', () => {
     describe('Session Cookie not provided', () => {
-        test('returns unauthorized code and unauthorized message', async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const res = await testKit.gqlClient.send(
                 signOutAll({ args: { password: 'password' } }),
             );
@@ -23,7 +23,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Successful', () => {
-        test('delete all user sessions in redis', async () => {
+        test('all user sessions in redis are deleted', async () => {
             const { email, password, sessionCookie } = await createAccount();
             const sid1 = getSidFromCookie(sessionCookie);
             // sign in
@@ -48,7 +48,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Password too long', () => {
-        test('returns bad request code and invalid credentials message', async () => {
+        test('return bad request code and invalid credentials error message', async () => {
             const longPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
@@ -61,7 +61,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Password does not match', () => {
-        test('returns bad request code and invalid credentials message', async () => {
+        test('return bad request code and invalid credentials error message', async () => {
             const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -71,7 +71,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('More than allowed attempts from same ip', () => {
-        test('returns too many requests code and too many requests message', async () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
                 testKit.gqlClient

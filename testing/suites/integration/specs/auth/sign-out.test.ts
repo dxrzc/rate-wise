@@ -12,14 +12,14 @@ import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 
 describe('GraphQL - signOut', () => {
     describe('Session cookie not provided', () => {
-        test('returns unauthorized code and unauthorized message', async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const res = await testKit.gqlClient.send(signOut());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
     describe('Successful signOut', () => {
-        test('session cookie should be removed from Redis store', async () => {
+        test('session cookie is removed from Redis store', async () => {
             const { sessionCookie } = await createAccount();
             await testKit.gqlClient.set('Cookie', sessionCookie).send(signOut()).expect(success);
             const redisKey = `${SESS_REDIS_PREFIX}${getSidFromCookie(sessionCookie)}`;
@@ -29,7 +29,7 @@ describe('GraphQL - signOut', () => {
     });
 
     describe('More than allowed attempts from same ip', () => {
-        test('returns too many requests code and too many requests message', async () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>

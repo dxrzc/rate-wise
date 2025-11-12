@@ -16,7 +16,7 @@ const metadata: ArgumentMetadata = {
 
 describe('SignInInput', () => {
     describe('Valid email but too long', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 email: 'a'.repeat(255) + '@example.com',
                 password: userSeed.password,
@@ -28,7 +28,7 @@ describe('SignInInput', () => {
     });
 
     describe('Invalid email format', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 email: 'invalid-email-format',
                 password: userSeed.password,

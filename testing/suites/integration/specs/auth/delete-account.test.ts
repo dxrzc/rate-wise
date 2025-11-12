@@ -20,7 +20,7 @@ const deleteAccUrl = testKit.endpointsREST.deleteAccount;
 
 describe('GET delete account endpoint with token', () => {
     describe('Success', () => {
-        test('account should be deleted from database', async () => {
+        test('account is deleted from database', async () => {
             const { id } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
@@ -29,7 +29,7 @@ describe('GET delete account endpoint with token', () => {
             expect(userInDb).toBeNull();
         });
 
-        test('token should be blacklisted', async () => {
+        test('token is blacklisted', async () => {
             const { id } = await createAccount();
             const { token, jti } = await testKit.accDeletionToken.generate(
                 { id },
@@ -41,7 +41,7 @@ describe('GET delete account endpoint with token', () => {
             expect(tokenInRedis).not.toBeNull();
         });
 
-        test('sessions associated with user should be removed from Redis', async () => {
+        test('sessions associated with user are removed from Redis', async () => {
             const { sessionCookie: sess1Cookie, password, email, id } = await createAccount(); // sess1
             const signInRes = await testKit.gqlClient // sess2
                 .send(signIn({ args: { email, password }, fields: ['id'] }))
@@ -61,7 +61,7 @@ describe('GET delete account endpoint with token', () => {
             await expect(testKit.sessionsRedisClient.get(sid2RedisKey)).resolves.toBeNull();
         });
 
-        test('User should be deleted from redis cache', async () => {
+        test('User is deleted from redis cache', async () => {
             const { id } = await createAccount();
             const cacheKey = createUserCacheKey(id);
             await testKit.gqlClient
@@ -76,7 +76,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('Account does not exist', () => {
-        test('returns not found code and not found message', async () => {
+        test('return not found code and not found error message', async () => {
             const { id } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             await testKit.userRepos.delete(id); // user deleted
@@ -87,7 +87,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('No token provided', () => {
-        test('returns bad request status code and invalid url message', async () => {
+        test('return bad request status code and invalid url error message', async () => {
             const res = await testKit.restClient.get(deleteAccUrl);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_URL });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
@@ -95,7 +95,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('Invalid token', () => {
-        test('returns bad request status code and invalid token message', async () => {
+        test('return bad request status code and invalid token error message', async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${invalidToken}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
@@ -104,7 +104,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('Token for account verification sent', () => {
-        test('returns bad request status code and invalid token message', async () => {
+        test('return bad request status code and invalid token error message', async () => {
             const { id } = await createAccount();
             // verification token
             const accVerifToken = await testKit.accVerifToken.generate({ id });
@@ -115,7 +115,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('More than allowed attempts from same ip', () => {
-        test('returns too many requests status code and too many requests message', async () => {
+        test('return too many requests status code and too many requests error message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
