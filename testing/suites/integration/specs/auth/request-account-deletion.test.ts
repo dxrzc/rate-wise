@@ -11,14 +11,14 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('GraphQL - requestAccountDeletion', () => {
     describe('Session cookie not provided', () => {
-        test(`return ${Code.UNAUTHORIZED} and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const res = await testKit.gqlClient.send(requestAccountDeletion());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
-    describe(`Account status is "${AccountStatus.SUSPENDED}"`, () => {
-        test('email should be sent to the user email address', async () => {
+    describe('Account status is suspended', () => {
+        test('email is sent to the user email address', async () => {
             const { email, sessionCookie } = await createAccount({
                 status: AccountStatus.SUSPENDED,
             });
@@ -28,7 +28,7 @@ describe('GraphQL - requestAccountDeletion', () => {
     });
 
     describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
-        test('email should be sent to the user email address', async () => {
+        test('email is sent to the user email address', async () => {
             const { email, sessionCookie } = await createAccount({
                 roles: [role],
             });
@@ -38,7 +38,7 @@ describe('GraphQL - requestAccountDeletion', () => {
     });
 
     describe('User in session cookie does not exist', () => {
-        test(`should return code "${Code.UNAUTHORIZED}" and "${AUTH_MESSAGES.UNAUTHORIZED}" message`, async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const { sessionCookie, id } = await createAccount();
             await testKit.userRepos.delete({ id });
             const res = await testKit.gqlClient
@@ -48,8 +48,8 @@ describe('GraphQL - requestAccountDeletion', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

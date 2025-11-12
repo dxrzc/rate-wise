@@ -15,14 +15,14 @@ import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.ope
 
 describe('GraphQL - suspendAccount', () => {
     describe('Session cookie not provided', () => {
-        test(`return UNAUTHORIZED code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const response = await testKit.gqlClient.send(suspendAccount({ args: '123' }));
             expect(response).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
     describe('Account successfuly suspended', () => {
-        test(`account status should be updated to "${AccountStatus.SUSPENDED}"`, async () => {
+        test('account status is updated to suspended', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.USER, UserRole.ADMIN],
@@ -40,7 +40,7 @@ describe('GraphQL - suspendAccount', () => {
             expect(userInDb.status).toBe(AccountStatus.SUSPENDED);
         });
 
-        test('User should be deleted from redis cache', async () => {
+        test('User is deleted from redis cache', async () => {
             // suspend an account
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
@@ -68,7 +68,7 @@ describe('GraphQL - suspendAccount', () => {
     });
 
     describe('User roles are not ADMIN or MODERATOR', () => {
-        test(`should return "${Code.FORBIDDEN}" code and "${AUTH_MESSAGES.FORBIDDEN}" message`, async () => {
+        test('return forbidden code and forbidden error message', async () => {
             const { sessionCookie: userSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.USER],
@@ -81,7 +81,7 @@ describe('GraphQL - suspendAccount', () => {
     });
 
     describe('ADMIN role attemp to suspend another ADMIN', () => {
-        test(`should return "${Code.FORBIDDEN}" code and "${AUTH_MESSAGES.FORBIDDEN}" message`, async () => {
+        test('return forbidden code and forbidden error message', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
@@ -98,7 +98,7 @@ describe('GraphQL - suspendAccount', () => {
     });
 
     describe('MODERATOR role attemp to suspend an ADMIN', () => {
-        test(`should return "${Code.FORBIDDEN}" code and "${AUTH_MESSAGES.FORBIDDEN}" message`, async () => {
+        test('return forbidden code and forbidden error message', async () => {
             const { sessionCookie: moderatorSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.USER, UserRole.MODERATOR],
@@ -145,7 +145,7 @@ describe('GraphQL - suspendAccount', () => {
     });
 
     describe('Target account is already suspended', () => {
-        test(`should return "${Code.CONFLICT}" code and "${AUTH_MESSAGES.ACCOUNT_ALREADY_SUSPENDED}" message`, async () => {
+        test('return conflict code and account already suspended error message', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
@@ -162,7 +162,7 @@ describe('GraphQL - suspendAccount', () => {
     });
 
     describe('Target account is not found', () => {
-        test(`should return "${Code.NOT_FOUND}" code and "${USER_MESSAGES.NOT_FOUND}" message`, async () => {
+        test('return not found code and not found error message', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
@@ -174,8 +174,8 @@ describe('GraphQL - suspendAccount', () => {
         });
     });
 
-    describe(`Account status is "${AccountStatus.PENDING_VERIFICATION}"`, () => {
-        test(`should return "${Code.FORBIDDEN}" code and "${AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE}" message`, async () => {
+    describe('Account status is pending verification', () => {
+        test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
                 roles: [UserRole.USER, UserRole.ADMIN],
@@ -191,8 +191,8 @@ describe('GraphQL - suspendAccount', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attempts in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,

@@ -88,7 +88,7 @@ describe('Roles Guard', () => {
     });
 
     describe('No role guard was applied', () => {
-        test(`should return INTERNAL SERVER ERROR code and ${COMMON_MESSAGES.INTERNAL_SERVER_ERROR} message`, async () => {
+        test('return internal server error code and internal server error error message', async () => {
             const query = generateGqlQuery(resolver.noRoleGuardApplied.name);
             const res = await request(app.getHttpServer()).post('/graphql').send({ query });
             expect(res).toFailWith(
@@ -99,7 +99,7 @@ describe('Roles Guard', () => {
     });
 
     describe('Operation has the @Public decorator', () => {
-        test('roles guard should grant access', async () => {
+        test('roles guard grant access', async () => {
             const query = generateGqlQuery(resolver.publicOperation.name);
             const res = await request(app.getHttpServer()).post('/graphql').send({ query });
             expect(res).notToFail();
@@ -108,7 +108,7 @@ describe('Roles Guard', () => {
 
     describe('Operation has the admin role applied', () => {
         describe('User does not have admin role in their roles', () => {
-            test(`should return FORBIDDEN CODE and ${AUTH_MESSAGES.FORBIDDEN} message`, async () => {
+            test('return forbidden code and forbidden error message', async () => {
                 mockReqData.user.roles = [UserRole.USER, UserRole.MODERATOR];
                 const query = generateGqlQuery(resolver.adminRoleApplied.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
@@ -119,7 +119,7 @@ describe('Roles Guard', () => {
 
     describe('Operation has only the user role applied', () => {
         describe('User has only the administrator role', () => {
-            test(`should return FORBIDDEN CODE and ${AUTH_MESSAGES.FORBIDDEN} message`, async () => {
+            test('return forbidden code and forbidden error message', async () => {
                 mockReqData.user.roles = [UserRole.ADMIN];
                 const query = generateGqlQuery(resolver.userRoleApplied.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
@@ -130,7 +130,7 @@ describe('Roles Guard', () => {
 
     describe('Operation has the user and admin role applied', () => {
         describe('User has the user role', () => {
-            test('guard should grant access', async () => {
+            test('guard grant access', async () => {
                 mockReqData.user.roles = [UserRole.USER];
                 const query = generateGqlQuery(resolver.userAndminRolesApplied.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
@@ -141,7 +141,7 @@ describe('Roles Guard', () => {
 
     describe('Operation has the @AllRolesAllowed decorator applied', () => {
         describe('User has all the roles', () => {
-            test('guard should grant access', async () => {
+            test('guard grant access', async () => {
                 mockReqData.user.roles = [UserRole.ADMIN, UserRole.USER, UserRole.MODERATOR];
                 const query = generateGqlQuery(resolver.allRoles.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });

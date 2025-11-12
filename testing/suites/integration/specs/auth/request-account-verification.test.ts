@@ -12,24 +12,24 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('GraphQL - requestAccountVerification', () => {
     describe('Session cookie not provided', () => {
-        test(`return ${Code.UNAUTHORIZED} and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const res = await testKit.gqlClient.send(requestAccountVerification());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
-    describe(`Account status is "${AccountStatus.ACTIVE}"`, () => {
-        test(`return ${Code.BAD_REQUEST} and ${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED} message`, async () => {
+    describe('Account status is active', () => {
+        test('return conflict code and account already verified error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification());
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
+            expect(res).toFailWith(Code.CONFLICT, AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         });
     });
 
-    describe(`Account status is "${AccountStatus.SUSPENDED}"`, () => {
-        test(`return ${Code.FORBIDDEN} and ${AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED} message`, async () => {
+    describe('Account status is suspended', () => {
+        test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.SUSPENDED });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -38,8 +38,8 @@ describe('GraphQL - requestAccountVerification', () => {
         });
     });
 
-    describe(`Account status is "${AccountStatus.PENDING_VERIFICATION}"`, () => {
-        test('email should be sent to user email address', async () => {
+    describe('Account status is pending verification', () => {
+        test('email is sent to user email address', async () => {
             const { sessionCookie, email } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
             });
@@ -52,7 +52,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('User in session cookie does not exist', () => {
-        test(`should return code "${Code.UNAUTHORIZED}" and "${AUTH_MESSAGES.UNAUTHORIZED}" message`, async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const { sessionCookie, id } = await createAccount();
             await testKit.userRepos.delete({ id });
             const res = await testKit.gqlClient
@@ -63,7 +63,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
-        test('email should be sent to the user email address', async () => {
+        test('email is sent to the user email address', async () => {
             const { email, sessionCookie } = await createAccount({
                 roles: [role],
             });
@@ -72,8 +72,8 @@ describe('GraphQL - requestAccountVerification', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

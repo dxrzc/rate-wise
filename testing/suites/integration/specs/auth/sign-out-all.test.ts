@@ -14,7 +14,7 @@ import { success } from '@integration/utils/no-errors.util';
 
 describe('GraphQL - signOutAll', () => {
     describe('Session Cookie not provided', () => {
-        test(`return "${Code.UNAUTHORIZED}" code and "${AUTH_MESSAGES.UNAUTHORIZED}" message`, async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const res = await testKit.gqlClient.send(
                 signOutAll({ args: { password: 'password' } }),
             );
@@ -23,7 +23,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Successful', () => {
-        test('delete all user sessions in redis', async () => {
+        test('all user sessions in redis are deleted', async () => {
             const { email, password, sessionCookie } = await createAccount();
             const sid1 = getSidFromCookie(sessionCookie);
             // sign in
@@ -48,7 +48,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Password too long', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const longPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
@@ -56,22 +56,22 @@ describe('GraphQL - signOutAll', () => {
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOutAll({ args: { password: longPassword } }));
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
     describe('Password does not match', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${AUTH_MESSAGES.INVALID_CREDENTIALS}" message`, async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOutAll({ args: { password: 'password' } }));
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
                 testKit.gqlClient

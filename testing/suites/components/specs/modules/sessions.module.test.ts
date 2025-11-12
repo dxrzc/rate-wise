@@ -76,13 +76,13 @@ describe('Sessions Service ', () => {
     });
 
     describe('create', () => {
-        test('req.session.regenerate should be called', async () => {
+        test('req.session.regenerate is called', async () => {
             mockRequest.sessionID = faker.string.uuid();
             await sessionsService.create(<any>mockRequest, 'test-user-id');
             expect(mockRequest.session.regenerate).toHaveBeenCalledTimes(1);
         });
 
-        test('should create user-sessions index redis set', async () => {
+        test('user-sessions index redis set is created', async () => {
             // create session
             const userId = faker.string.alpha(10);
             mockRequest.sessionID = faker.string.uuid();
@@ -95,7 +95,7 @@ describe('Sessions Service ', () => {
             expect(sessSet[0]).toBe(mockRequest.sessionID);
         });
 
-        test('should create session-user relation record in redis', async () => {
+        test('session-user relation record is created in redis', async () => {
             // create session
             const userId = faker.string.alpha(10);
             const sid = faker.string.uuid();
@@ -110,7 +110,7 @@ describe('Sessions Service ', () => {
     });
 
     describe('count', () => {
-        test('should return the number of sessions associated with the user', async () => {
+        test('number of sessions associated with the user is returned', async () => {
             const userId = faker.string.alpha(10);
 
             // session1
@@ -126,14 +126,14 @@ describe('Sessions Service ', () => {
     });
 
     describe('delete', () => {
-        test('req.session.destroy should be called', async () => {
+        test('req.session.destroy is called', async () => {
             await sessionsService.delete(<any>mockRequest);
             expect(mockRequest.session.destroy).toHaveBeenCalledTimes(1);
         });
     });
 
     describe('deleteAll', () => {
-        test('every sessions associated with user should be deleted from redis', async () => {
+        test('every sessions associated with user are deleted from redis', async () => {
             const userId = faker.string.alpha(10);
 
             // create sessions

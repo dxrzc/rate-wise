@@ -15,9 +15,9 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const verifyAccountUrl = testKit.endpointsREST.verifyAccount;
 
-describe(`GET ${verifyAccountUrl}?token=...`, () => {
+describe('GET verify account endpoint with token', () => {
     describe('Account successfully verified', () => {
-        test('account status should be updated to ACTIVE', async () => {
+        test('account status is updated to ACTIVE', async () => {
             const { id } = await createAccount();
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
@@ -26,7 +26,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             expect(userInDb?.status).toBe(AccountStatus.ACTIVE);
         });
 
-        test('token should be blacklisted', async () => {
+        test('token is blacklisted', async () => {
             const { id } = await createAccount();
             const { token, jti } = await testKit.accVerifToken.generate({ id }, { metadata: true });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
@@ -36,7 +36,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
             expect(isBlacklisted).toBe(1);
         });
 
-        test('User should be deleted from redis cache', async () => {
+        test('User is deleted from redis cache', async () => {
             const { id } = await createAccount();
             const cacheKey = createUserCacheKey(id);
             // trigger caching
@@ -53,7 +53,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
     });
 
     describe('Account does not exist', () => {
-        test(`should return "${HttpStatus.NOT_FOUND}" code and "${USER_MESSAGES.NOT_FOUND}" message`, async () => {
+        test('return not found code and not found error message', async () => {
             const { id } = await createAccount();
             const token = await testKit.accVerifToken.generate({ id });
             await testKit.userRepos.delete(id); // user deleted
@@ -64,7 +64,7 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
     });
 
     describe('No token provided', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
+        test('return bad request status code and invalid url error message', async () => {
             const res = await testKit.restClient.get(verifyAccountUrl);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_URL });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
@@ -72,16 +72,16 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
     });
 
     describe('Invalid token', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+        test('return unauthorized status code and invalid token error message', async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${invalidToken}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
     describe('Token for account deletetion sent', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+        test('return unauthorized status code and invalid token error message', async () => {
             const { id } = await createAccount();
             // account-deletion token
             const accDeletionToken = await testKit.accDeletionToken.generate({ id });
@@ -89,12 +89,12 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
                 `${verifyAccountUrl}?token=${accDeletionToken}`,
             );
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
     describe('Target account is suspended', () => {
-        test(`return FORBIDDEN status code and "${AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED}" message`, async () => {
+        test('return forbidden status code and account is suspended error message', async () => {
             const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
@@ -104,17 +104,17 @@ describe(`GET ${verifyAccountUrl}?token=...`, () => {
     });
 
     describe('Target account is already verified', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED}" message`, async () => {
+        test('return conflict status code and account already verified error message', async () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED });
-            expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            expect(res.status).toBe(HttpStatus.CONFLICT);
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS status code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('return too many requests status code and too many requests error message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

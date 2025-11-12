@@ -51,7 +51,7 @@ describe('convertGqlErrorToHttpError', () => {
     });
 
     describe('when error.extensions.code is INTERNAL_SERVER_ERROR', () => {
-        test('returns INTERNAL_SERVER_ERROR status and generic message', () => {
+        test('return INTERNAL_SERVER_ERROR status and generic error message', () => {
             const gqlError = new GraphQLError('Original error message', {
                 extensions: {
                     code: 'INTERNAL_SERVER_ERROR',
@@ -68,7 +68,7 @@ describe('convertGqlErrorToHttpError', () => {
     });
 
     describe('when error.extensions.code has valid HttpStatus code', () => {
-        test('handles BAD_REQUEST code', () => {
+        test('handle bad request code', () => {
             const gqlError = new GraphQLError('Invalid input provided', {
                 extensions: {
                     code: 'BAD_REQUEST',
@@ -83,7 +83,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles UNAUTHORIZED code', () => {
+        test('handle unauthorized code', () => {
             const gqlError = new GraphQLError('Authentication required', {
                 extensions: {
                     code: 'UNAUTHORIZED',
@@ -98,7 +98,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles FORBIDDEN code', () => {
+        test('handle forbidden code', () => {
             const gqlError = new GraphQLError('Access denied', {
                 extensions: {
                     code: 'FORBIDDEN',
@@ -113,7 +113,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles NOT_FOUND code', () => {
+        test('handle not found code', () => {
             const gqlError = new GraphQLError('Resource not found', {
                 extensions: {
                     code: 'NOT_FOUND',
@@ -128,7 +128,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles CONFLICT code', () => {
+        test('handle conflict code', () => {
             const gqlError = new GraphQLError('Resource already exists', {
                 extensions: {
                     code: 'CONFLICT',
@@ -143,7 +143,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles TOO_MANY_REQUESTS code', () => {
+        test('handle too many requests code', () => {
             const gqlError = new GraphQLError('Rate limit exceeded', {
                 extensions: {
                     code: 'TOO_MANY_REQUESTS',
@@ -158,7 +158,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles UNPROCESSABLE_ENTITY code', () => {
+        test('handle unprocessable entity code', () => {
             const gqlError = new GraphQLError('Unable to process entity', {
                 extensions: {
                     code: 'UNPROCESSABLE_ENTITY',
@@ -173,7 +173,7 @@ describe('convertGqlErrorToHttpError', () => {
             });
         });
 
-        test('handles SERVICE_UNAVAILABLE code', () => {
+        test('handle service unavailable code', () => {
             const gqlError = new GraphQLError('Service temporarily unavailable', {
                 extensions: {
                     code: 'SERVICE_UNAVAILABLE',

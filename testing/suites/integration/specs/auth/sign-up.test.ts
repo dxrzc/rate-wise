@@ -19,14 +19,14 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 describe('GraphQL - signUp', () => {
     describe('Successful sign up', () => {
-        test('should set a session cookie in headers', async () => {
+        test('session cookie is set in headers', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
             expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
 
-        test('should create a set in Redis storing user sessions', async () => {
+        test('set in Redis storing user sessions is created', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
@@ -36,7 +36,7 @@ describe('GraphQL - signUp', () => {
             expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
         });
 
-        test('should create a "user-session" record in Redis', async () => {
+        test('"user-session" record is created in Redis', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
@@ -47,7 +47,7 @@ describe('GraphQL - signUp', () => {
         });
 
         describe('Session cookie provided', () => {
-            test('old session should be removed from redis store (session rotation)', async () => {
+            test('old session is removed from redis store (session rotation)', async () => {
                 const { sessionCookie } = await createAccount();
                 const oldSid = getSidFromCookie(sessionCookie);
                 const redisKey = `${SESS_REDIS_PREFIX}${oldSid}`;
@@ -64,7 +64,7 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test(`default user roles should be "[${UserRole.USER}]"`, async () => {
+        test('default user roles are user', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -74,7 +74,7 @@ describe('GraphQL - signUp', () => {
             expect(userDB.roles).toStrictEqual([UserRole.USER]);
         });
 
-        test(`default account status should be "${AccountStatus.PENDING_VERIFICATION}"`, async () => {
+        test('default account status is pending verification', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -85,7 +85,7 @@ describe('GraphQL - signUp', () => {
         });
 
         describe('Username is sent with no extra white spaces', () => {
-            test('user username should be stored as-is in database', async () => {
+            test('user username is stored as-is in database', async () => {
                 const user = testKit.userSeed.signUpInput;
                 const res = await testKit.gqlClient
                     .send(signUp({ args: user, fields: ['id'] }))
@@ -96,7 +96,7 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test('default reputation score should be 0', async () => {
+        test('default reputation score is 0', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -106,7 +106,7 @@ describe('GraphQL - signUp', () => {
             expect(userDB.reputationScore).toBe(0);
         });
 
-        test('user password should be hashed in database', async () => {
+        test('user password is hashed in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -118,7 +118,7 @@ describe('GraphQL - signUp', () => {
             expect(match).toBe(true);
         });
 
-        test('user email should be stored as-is in database', async () => {
+        test('user email is stored as-is in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -128,7 +128,7 @@ describe('GraphQL - signUp', () => {
             expect(userDB.email).toBe(user.email);
         });
 
-        test('createdAt and updatedAt should be defined in database', async () => {
+        test('createdAt and updatedAt are defined in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
@@ -139,7 +139,7 @@ describe('GraphQL - signUp', () => {
             expect(userDB.updatedAt).toBeDefined();
         });
 
-        test('response data should match the user in database', async () => {
+        test('response data match the user in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: 'ALL' }))
@@ -159,7 +159,7 @@ describe('GraphQL - signUp', () => {
         });
 
         describe('Username contains leading and trailing white spaces', () => {
-            test('should strip spaces before saving in database', async () => {
+            test('spaces are stripped before saving in database', async () => {
                 const name = `  ${faker.string.alpha({ length: AUTH_LIMITS.USERNAME.MIN })} `;
                 const res = await testKit.gqlClient
                     .send(
@@ -177,7 +177,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Email already exists', () => {
-        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+        test('return conflict code and already exists error message', async () => {
             const { email } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -190,7 +190,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Username already exists', () => {
-        test(`should return "${Code.CONFLICT}" code and "${USER_MESSAGES.ALREADY_EXISTS}" message`, async () => {
+        test('return conflict code and already exists error message', async () => {
             const { username } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -203,7 +203,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Password exceeds the max password length', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
+        test('return bad request code and invalid input error message', async () => {
             const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -216,7 +216,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Invalid email format', () => {
-        test(`should return "${Code.BAD_REQUEST}" code and "${COMMON_MESSAGES.INVALID_INPUT}" message`, async () => {
+        test('return bad request code and invalid input error message', async () => {
             const badEmail = 'user@.com';
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -229,7 +229,7 @@ describe('GraphQL - signUp', () => {
     });
 
     describe('Attempt to provide password as a gql field', () => {
-        test(`should return "${Code.GRAPHQL_VALIDATION_FAILED}" code`, async () => {
+        test('return graphql validation failed code', async () => {
             const res = await testKit.gqlClient.send(
                 signUp({
                     args: testKit.userSeed.signUpInput,
@@ -243,8 +243,8 @@ describe('GraphQL - signUp', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+    describe('More than allowed attempts from same ip', () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
             const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
