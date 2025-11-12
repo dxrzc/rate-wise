@@ -76,7 +76,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
     });
 
     describe('Account does not exist', () => {
-        test(`should return "${HttpStatus.NOT_FOUND}" code and "${USER_MESSAGES.NOT_FOUND}" message`, async () => {
+        test('returns not found code and not found message', async () => {
             const { id } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             await testKit.userRepos.delete(id); // user deleted
@@ -115,7 +115,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return TOO MANY REQUESTS status code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+        test('returns too many requests status code and too many requests message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

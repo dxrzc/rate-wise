@@ -52,7 +52,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('User in session cookie does not exist', () => {
-        test(`should return code "${Code.UNAUTHORIZED}" and "${AUTH_MESSAGES.UNAUTHORIZED}" message`, async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const { sessionCookie, id } = await createAccount();
             await testKit.userRepos.delete({ id });
             const res = await testKit.gqlClient
@@ -73,7 +73,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
-        test(`should return "${Code.TOO_MANY_REQUESTS}" code and "${COMMON_MESSAGES.TOO_MANY_REQUESTS}" message`, async () => {
+        test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
