@@ -48,7 +48,7 @@ describe('GraphQL - signOutAll', () => {
     });
 
     describe('Password too long', () => {
-        test('return bad request code and invalid credentials error message', async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const longPassword = faker.internet.password({
                 length: AUTH_LIMITS.PASSWORD.MAX + 1,
             });
@@ -56,17 +56,17 @@ describe('GraphQL - signOutAll', () => {
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOutAll({ args: { password: longPassword } }));
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
     describe('Password does not match', () => {
-        test('return bad request code and invalid credentials error message', async () => {
+        test('return unauthorized code and invalid credentials error message', async () => {
             const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOutAll({ args: { password: 'password' } }));
-            expect(res).toFailWith(Code.BAD_REQUEST, AUTH_MESSAGES.INVALID_CREDENTIALS);
+            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
         });
     });
 
