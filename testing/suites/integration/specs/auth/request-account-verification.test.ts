@@ -12,14 +12,14 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('GraphQL - requestAccountVerification', () => {
     describe('Session cookie not provided', () => {
-        test('returns unauthorized code and unauthorized message', async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const res = await testKit.gqlClient.send(requestAccountVerification());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
     describe('Account status is active', () => {
-        test('returns bad request code and account already verified message', async () => {
+        test('return bad request code and account already verified error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -29,7 +29,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('Account status is suspended', () => {
-        test('returns forbidden code and account is suspended message', async () => {
+        test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.SUSPENDED });
             const res = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -39,7 +39,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('Account status is pending verification', () => {
-        test('email should be sent to user email address', async () => {
+        test('email is sent to user email address', async () => {
             const { sessionCookie, email } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
             });
@@ -52,7 +52,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('User in session cookie does not exist', () => {
-        test('returns unauthorized code and unauthorized message', async () => {
+        test('return unauthorized code and unauthorized error message', async () => {
             const { sessionCookie, id } = await createAccount();
             await testKit.userRepos.delete({ id });
             const res = await testKit.gqlClient
@@ -63,7 +63,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
-        test('email should be sent to the user email address', async () => {
+        test('email is sent to the user email address', async () => {
             const { email, sessionCookie } = await createAccount({
                 roles: [role],
             });
@@ -73,7 +73,7 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('More than allowed attempts from same ip', () => {
-        test('returns too many requests code and too many requests message', async () => {
+        test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

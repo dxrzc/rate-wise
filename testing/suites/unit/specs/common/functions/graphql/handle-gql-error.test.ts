@@ -5,7 +5,7 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 
 describe('handleGqlError', () => {
     describe('when error.extensions.code is missing', () => {
-        test('returns INTERNAL_SERVER_ERROR code and message', () => {
+        test('return INTERNAL_SERVER_ERROR code and error message', () => {
             const error: GraphQLFormattedError = {
                 message: 'Some error occurred',
                 extensions: {},
@@ -20,7 +20,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('returns INTERNAL_SERVER_ERROR when extensions is undefined', () => {
+        test('return INTERNAL_SERVER_ERROR when extensions is undefined', () => {
             const error: GraphQLFormattedError = {
                 message: 'Some error occurred',
             };
@@ -36,7 +36,7 @@ describe('handleGqlError', () => {
     });
 
     describe('when error.extensions.code is INTERNAL_SERVER_ERROR', () => {
-        test('returns INTERNAL_SERVER_ERROR code and message', () => {
+        test('return INTERNAL_SERVER_ERROR code and error message', () => {
             const error: GraphQLFormattedError = {
                 message: 'Original error message',
                 extensions: {
@@ -55,7 +55,7 @@ describe('handleGqlError', () => {
     });
 
     describe('when error.extensions.code has a custom code', () => {
-        test('returns the custom code and original message', () => {
+        test('return the custom code and original error message', () => {
             const error: GraphQLFormattedError = {
                 message: 'User not found',
                 extensions: {
@@ -197,7 +197,7 @@ describe('handleGqlError', () => {
             });
         });
 
-        test('returns undefined stackTrace when opts.stackTrace is true but no stacktrace in extensions', () => {
+        test('return undefined stackTrace when opts.stackTrace is true but no stacktrace in extensions', () => {
             const error: GraphQLFormattedError = {
                 message: 'Some error',
                 extensions: {

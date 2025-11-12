@@ -61,7 +61,7 @@ describe('RateLimiter Guard', () => {
 
     describe('User not authenticated', () => {
         describe('Requests from the same ip exceeds the rate limit stablished', () => {
-            test('return TOO MANY REQUESTS code and message', async () => {
+            test('return TOO MANY REQUESTS code and error message', async () => {
                 const commonReqsIp = faker.internet.ip();
                 for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
                     const req = await request(app.getHttpServer())
@@ -81,7 +81,7 @@ describe('RateLimiter Guard', () => {
 
     describe('User is authenticated', () => {
         describe('Requests coming from different ips exceeds the rate limit stablished', () => {
-            test('return TOO MANY REQUESTS code and message', async () => {
+            test('return TOO MANY REQUESTS code and error message', async () => {
                 mockReqData.user.id = faker.string.uuid(); // mock authenticated in req (req.user.id)
                 for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
                     const req = await request(app.getHttpServer())

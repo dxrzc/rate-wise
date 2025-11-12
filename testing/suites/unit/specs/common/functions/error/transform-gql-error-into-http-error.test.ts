@@ -51,7 +51,7 @@ describe('convertGqlErrorToHttpError', () => {
     });
 
     describe('when error.extensions.code is INTERNAL_SERVER_ERROR', () => {
-        test('returns INTERNAL_SERVER_ERROR status and generic message', () => {
+        test('return INTERNAL_SERVER_ERROR status and generic error message', () => {
             const gqlError = new GraphQLError('Original error message', {
                 extensions: {
                     code: 'INTERNAL_SERVER_ERROR',
