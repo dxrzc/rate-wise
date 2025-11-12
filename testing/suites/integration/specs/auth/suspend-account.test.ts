@@ -15,7 +15,7 @@ import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.ope
 
 describe('GraphQL - suspendAccount', () => {
     describe('Session cookie not provided', () => {
-        test(`return UNAUTHORIZED code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const response = await testKit.gqlClient.send(suspendAccount({ args: '123' }));
             expect(response).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
@@ -174,7 +174,7 @@ describe('GraphQL - suspendAccount', () => {
         });
     });
 
-    describe(`Account status is "${AccountStatus.PENDING_VERIFICATION}"`, () => {
+    describe('Account status is pending verification', () => {
         test('returns forbidden code and account is not active message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
@@ -191,7 +191,7 @@ describe('GraphQL - suspendAccount', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attempts in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe('More than allowed attempts from same ip', () => {
         test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             const { sessionCookie: adminSess } = await createAccount({

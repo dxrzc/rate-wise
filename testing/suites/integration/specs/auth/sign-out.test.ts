@@ -12,7 +12,7 @@ import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 
 describe('GraphQL - signOut', () => {
     describe('Session cookie not provided', () => {
-        test(`return UNAUTHORIZED code and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const res = await testKit.gqlClient.send(signOut());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
@@ -28,7 +28,7 @@ describe('GraphQL - signOut', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe('More than allowed attempts from same ip', () => {
         test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(

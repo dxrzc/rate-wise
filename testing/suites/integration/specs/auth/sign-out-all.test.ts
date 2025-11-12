@@ -14,7 +14,7 @@ import { success } from '@integration/utils/no-errors.util';
 
 describe('GraphQL - signOutAll', () => {
     describe('Session Cookie not provided', () => {
-        test(`return "${Code.UNAUTHORIZED}" code and "${AUTH_MESSAGES.UNAUTHORIZED}" message`, async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const res = await testKit.gqlClient.send(
                 signOutAll({ args: { password: 'password' } }),
             );
@@ -70,7 +70,7 @@ describe('GraphQL - signOutAll', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe('More than allowed attempts from same ip', () => {
         test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>

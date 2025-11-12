@@ -243,7 +243,7 @@ describe('GraphQL - signUp', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.CRITICAL.limit} attemps in ${THROTTLE_CONFIG.CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe('More than allowed attempts from same ip', () => {
         test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;

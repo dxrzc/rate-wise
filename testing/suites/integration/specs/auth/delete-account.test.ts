@@ -18,7 +18,7 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
 
-describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
+describe('GET delete account endpoint with token', () => {
     describe('Success', () => {
         test('account should be deleted from database', async () => {
             const { id } = await createAccount();
@@ -87,7 +87,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
     });
 
     describe('No token provided', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_URL}" message`, async () => {
+        test('returns bad request status code and invalid url message', async () => {
             const res = await testKit.restClient.get(deleteAccUrl);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_URL });
             expect(res.status).toBe(HttpStatus.BAD_REQUEST);
@@ -95,7 +95,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
     });
 
     describe('Invalid token', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+        test('returns bad request status code and invalid token message', async () => {
             const invalidToken = faker.string.uuid();
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${invalidToken}`);
             expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
@@ -104,7 +104,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
     });
 
     describe('Token for account verification sent', () => {
-        test(`return BAD REQUEST status code and "${AUTH_MESSAGES.INVALID_TOKEN}" message`, async () => {
+        test('returns bad request status code and invalid token message', async () => {
             const { id } = await createAccount();
             // verification token
             const accVerifToken = await testKit.accVerifToken.generate({ id });
@@ -114,7 +114,7 @@ describe(`GET ${testKit.endpointsREST.deleteAccount}?token=...`, () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe('More than allowed attempts from same ip', () => {
         test('returns too many requests status code and too many requests message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();

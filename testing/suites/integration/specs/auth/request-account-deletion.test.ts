@@ -11,13 +11,13 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('GraphQL - requestAccountDeletion', () => {
     describe('Session cookie not provided', () => {
-        test(`return ${Code.UNAUTHORIZED} and ${AUTH_MESSAGES.UNAUTHORIZED} message`, async () => {
+        test('returns unauthorized code and unauthorized message', async () => {
             const res = await testKit.gqlClient.send(requestAccountDeletion());
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
 
-    describe(`Account status is "${AccountStatus.SUSPENDED}"`, () => {
+    describe('Account status is suspended', () => {
         test('email should be sent to the user email address', async () => {
             const { email, sessionCookie } = await createAccount({
                 status: AccountStatus.SUSPENDED,
@@ -48,7 +48,7 @@ describe('GraphQL - requestAccountDeletion', () => {
         });
     });
 
-    describe(`More than ${THROTTLE_CONFIG.ULTRA_CRITICAL.limit} attemps in ${THROTTLE_CONFIG.ULTRA_CRITICAL.ttl / 1000}s from the same ip`, () => {
+    describe('More than allowed attempts from same ip', () => {
         test('returns too many requests code and too many requests message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
