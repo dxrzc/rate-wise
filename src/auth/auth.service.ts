@@ -52,7 +52,7 @@ export class AuthService {
         const sessions = await this.sessionService.count(userId);
         if (sessions >= this.authConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${userId}`);
-            throw GqlHttpError.BadRequest(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
+            throw GqlHttpError.Forbidden(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
         }
     }
 
