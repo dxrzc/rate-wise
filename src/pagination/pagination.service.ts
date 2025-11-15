@@ -1,16 +1,21 @@
 import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
 import { PAGINATION_MODULE_OPTIONS_TOKEN } from './module/config.module-definition';
-import { PaginationCacheService } from './cache/pagination.cache.service';
 import { PaginationOptionsType } from './types/pagination.options.type';
+import { PAGINATION_CACHE_QUEUE } from './constants/pagination.constants';
+import { IDecodedCursor } from './interfaces/decoded-cursor.interface';
 import { IPaginatedType } from './interfaces/paginated-type.interface';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { PaginatedRecord } from './interfaces/base-record.data';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { IEdgeType } from './interfaces/edge-type.interface';
 import { BaseEntity } from 'src/common/entites/base.entity';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { encodeCursor } from './functions/encode-cursor';
 import { decodeCursor } from './functions/decode-cursor';
+import { InjectQueue } from '@nestjs/bullmq';
 import { ModuleRef } from '@nestjs/core';
-import { Repository } from 'typeorm';
+import { Queue } from 'bullmq';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 
 @Injectable()
 export class PaginationService<T extends BaseEntity> implements OnModuleInit {
@@ -18,8 +23,11 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
 
     constructor(
         @Inject(PAGINATION_MODULE_OPTIONS_TOKEN)
-        private readonly options: IPaginationModuleOptions<T>,
-        private readonly paginationCacheSvc: PaginationCacheService<T>,
+        private readonly options: IPaginationModuleOptions,
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache,
+        @InjectQueue(PAGINATION_CACHE_QUEUE)
+        private readonly cacheQueue: Queue,
         private readonly moduleRef: ModuleRef,
     ) {}
 
@@ -29,30 +37,29 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         });
     }
 
-    private createEdges(rawData: PaginatedRecord[]): IEdgeType<T>[] {
-        const edges = rawData.map((rawRecord) => ({
-            cursor: encodeCursor(rawRecord.cursor, rawRecord.id),
-            node: this.options.transformFunction(rawRecord),
-        }));
-        return edges;
+    /**
+     * Fetch totalCount + sorted ids concurrently.
+     */
+    private async getPageAndTotalCount(limit: number, decodedCursor?: IDecodedCursor) {
+        const [totalCount, sortedIdsAndCursors] = await runSettledOrThrow<
+            [number, PaginatedRecord[]]
+        >([
+            this.repository.createQueryBuilder().getCount(),
+            this.getPageIdsAndEncodedCursors(limit, decodedCursor),
+        ]);
+        return { totalCount, page: sortedIdsAndCursors };
     }
-
-    private async createPages(edges: IEdgeType<T>[], limit: number): Promise<IPaginatedType<T>> {
-        const hasNextPage = edges.length > limit;
-        if (hasNextPage) edges.pop();
-        return {
-            totalCount: await this.repository.createQueryBuilder().getCount(),
-            nodes: edges.map((edge) => edge.node),
-            hasNextPage,
-            edges,
-        };
-    }
-
-    private async createPagination(limit: number, cursor: string): Promise<IPaginatedType<T>> {
-        const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
-        const rawData = await this.repository
+    /**
+     * Retrieves sorted IDs + encoded cursor.
+     * LIMIT+1 is required to detect hasNextPage.
+     */
+    private async getPageIdsAndEncodedCursors(
+        limit: number,
+        decodedCursor?: IDecodedCursor,
+    ): Promise<PaginatedRecord[]> {
+        const idsAndCursors = await this.repository
             .createQueryBuilder()
-            .select('*')
+            .select('id')
             .addSelect('created_at::text', 'cursor')
             .where(decodedCursor ? '(created_at, id) > (:date, :id)' : 'TRUE', {
                 date: decodedCursor?.createdAt,
@@ -61,14 +68,103 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
             .orderBy('created_at', 'ASC')
             .addOrderBy('id', 'ASC')
             .limit(limit + 1) // whether exists a next page or not
-            .getRawMany<PaginatedRecord>();
-        const edges = this.createEdges(rawData);
-        return await this.createPages(edges, limit);
+            .getRawMany<{ id: string; cursor: string }>();
+        return idsAndCursors.map(({ id, cursor }) => ({ id, cursor: encodeCursor(cursor, id) }));
+    }
+
+    /**
+     * Fetch DB records for the provided IDs.
+     * Order is NOT guaranteed; caller must sort using the ids array.
+     */
+    private async fetchRecords(ids: string[]): Promise<Map<string, T>> {
+        const where = <FindOptionsWhere<T>>{ id: In(ids) };
+        const dbRecords = await this.repository.findBy(where);
+        return new Map(dbRecords.map((rec) => [rec.id, rec]));
+    }
+
+    /**
+     * Attempt to get records from cache first and return an two arrays:
+     * 1. results: array of records with using a null placeholder for not in cache
+     * 2. idsNotInCache: array of ids not found in cache
+     */
+    private async getFromCache(idsForPage: PaginatedRecord[]) {
+        const results = new Array<T | null>();
+        const idsNotInCache = new Array<string>();
+        for (const { id } of idsForPage) {
+            const cached = await this.cacheManager.get<T>(this.options.createCacheKeyFunction(id));
+            if (cached) {
+                results.push(cached);
+            } else {
+                idsNotInCache.push(id);
+                results.push(null); // placeholder
+            }
+        }
+        return { results, idsNotInCache };
+    }
+
+    async createPaginationCached(limit: number, cursor: string): Promise<IPaginatedType<T>> {
+        const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
+        const { totalCount, page } = await this.getPageAndTotalCount(limit, decodedCursor);
+        // determine if there is a next page
+        const hasNextPage = page.length > limit;
+        if (hasNextPage) page.pop();
+        // attempt to get from cache first
+        const { results, idsNotInCache } = await this.getFromCache(page);
+        if (idsNotInCache.length > 0) {
+            // fetch not found records from DB
+            const fetchedRecordsMap = await this.fetchRecords(idsNotInCache);
+            for (let i = 0; i < results.length; i++) {
+                // replace null placeholders with fetched records
+                if (results[i] === null) {
+                    const { id } = page[i];
+                    const entity = fetchedRecordsMap.get(id)!;
+                    results[i] = entity;
+                }
+            }
+            console.log({ fetchedRecordsMap });
+        }
+        const fullResults = results as T[];
+        const edges = fullResults.map((record, index) => ({
+            cursor: page[index].cursor,
+            node: record,
+        }));
+        return {
+            totalCount,
+            nodes: edges.map((edge) => edge.node),
+            hasNextPage,
+            edges,
+        };
+    }
+
+    // No cache version
+    private async createPagination(limit: number, cursor: string): Promise<IPaginatedType<T>> {
+        const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
+        const { totalCount, page } = await this.getPageAndTotalCount(limit, decodedCursor);
+        // determine if there is a next page
+        const hasNextPage = page.length > limit;
+        if (hasNextPage) page.pop();
+        // fetch the records (unordered)
+        const sortedIds = page.map(({ id }) => id);
+        const idRecordMap = await this.fetchRecords(sortedIds); // returns Map<id, record> in random order
+        // rebuild records in the correct sorted order
+        const entities = page.map(({ id }) => idRecordMap.get(id)!);
+        // build edges
+        const edges: IEdgeType<T>[] = entities.map((record, index) => ({
+            cursor: page[index].cursor,
+            node: record,
+        }));
+        // total count
+        return {
+            totalCount,
+            nodes: entities,
+            hasNextPage,
+            edges,
+        };
     }
 
     async create(options: PaginationOptionsType): Promise<IPaginatedType<T>> {
         return options.cache
-            ? await this.paginationCacheSvc.createPagination(options.limit, options.cursor)
+            ? await this.createPaginationCached(options.limit, options.cursor)
             : await this.createPagination(options.limit, options.cursor);
     }
 }
