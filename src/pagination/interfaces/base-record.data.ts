@@ -1,4 +1,4 @@
 export interface PaginatedRecord {
     id: string;
-    cursor: string;
+    cursor: string; // created_at::text
 }
