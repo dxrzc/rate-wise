@@ -5,7 +5,6 @@ import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { ItemsResolver } from './items.resolver';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { PaginationModule } from 'src/pagination/pagination.module';
-import { rawRecordToItemEntity } from './functions/raw-record-to-item-entity';
 import { createItemCacheKey } from './cache/create-cache-key';
 
 @Module({
@@ -13,7 +12,6 @@ import { createItemCacheKey } from './cache/create-cache-key';
         PaginationModule.register({
             createCacheKeyFunction: createItemCacheKey,
             repositoryToken: getRepositoryToken(Item),
-            transformFunction: rawRecordToItemEntity,
         }),
         HttpLoggerModule.forFeature({ context: 'Items' }),
         TypeOrmModule.forFeature([Item]),
