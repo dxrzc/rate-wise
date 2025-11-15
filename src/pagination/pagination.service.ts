@@ -1,4 +1,5 @@
 import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { PAGINATION_MODULE_OPTIONS_TOKEN } from './module/config.module-definition';
 import { PaginationOptionsType } from './types/pagination.options.type';
 import { PAGINATION_CACHE_QUEUE } from './constants/pagination.constants';
@@ -15,7 +16,6 @@ import { decodeCursor } from './functions/decode-cursor';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ModuleRef } from '@nestjs/core';
 import { Queue } from 'bullmq';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 
 @Injectable()
 export class PaginationService<T extends BaseEntity> implements OnModuleInit {
@@ -87,16 +87,21 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
      * 1. results: array of records with using a null placeholder for not in cache
      * 2. idsNotInCache: array of ids not found in cache
      */
-    private async getFromCache(idsForPage: PaginatedRecord[]) {
-        const results = new Array<T | null>();
-        const idsNotInCache = new Array<string>();
-        for (const { id } of idsForPage) {
-            const cached = await this.cacheManager.get<T>(this.options.createCacheKeyFunction(id));
-            if (cached) {
-                results.push(cached);
+    private async getFromCache(page: PaginatedRecord[]) {
+        const idsForPage = page.map((p) => p.id);
+        const cacheKeys = idsForPage.map((id) => this.options.createCacheKeyFunction(id));
+        const cachedValues = await this.cacheManager.mget<T>(cacheKeys);
+
+        const idsNotInCache: string[] = [];
+        const results: (T | null)[] = [];
+
+        for (let i = 0; i < idsForPage.length; i++) {
+            const cached = cachedValues[i];
+            if (cached === undefined) {
+                idsNotInCache.push(idsForPage[i]);
+                results.push(null);
             } else {
-                idsNotInCache.push(id);
-                results.push(null); // placeholder
+                results.push(cached);
             }
         }
         return { results, idsNotInCache };
@@ -121,7 +126,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
                     results[i] = entity;
                 }
             }
-            console.log({ fetchedRecordsMap });
+            // TODO: enqueue redis console.log({ fetchedRecordsMap });
         }
         const fullResults = results as T[];
         const edges = fullResults.map((record, index) => ({
