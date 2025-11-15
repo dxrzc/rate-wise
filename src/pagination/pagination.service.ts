@@ -2,20 +2,19 @@ import { IPaginationModuleOptions } from './interfaces/pagination.module-options
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { PAGINATION_MODULE_OPTIONS_TOKEN } from './module/config.module-definition';
 import { PaginationOptionsType } from './types/pagination.options.type';
-import { PAGINATION_CACHE_QUEUE } from './constants/pagination.constants';
 import { IDecodedCursor } from './interfaces/decoded-cursor.interface';
 import { IPaginatedType } from './interfaces/paginated-type.interface';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { PaginatedRecord } from './interfaces/base-record.data';
+import { PaginatedRecord } from './interfaces/base-record.data.interface';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { IEdgeType } from './interfaces/edge-type.interface';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { encodeCursor } from './functions/encode-cursor';
 import { decodeCursor } from './functions/decode-cursor';
-import { InjectQueue } from '@nestjs/bullmq';
 import { ModuleRef } from '@nestjs/core';
-import { Queue } from 'bullmq';
+import { PaginationCacheProducer } from './queues/pagination.cache.producer';
+import { CacheJobData } from './types/cache-job.data.type';
 
 @Injectable()
 export class PaginationService<T extends BaseEntity> implements OnModuleInit {
@@ -26,8 +25,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         private readonly options: IPaginationModuleOptions,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        @InjectQueue(PAGINATION_CACHE_QUEUE)
-        private readonly cacheQueue: Queue,
+        private readonly cacheProducer: PaginationCacheProducer,
         private readonly moduleRef: ModuleRef,
     ) {}
 
@@ -126,7 +124,14 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
                     results[i] = entity;
                 }
             }
-            // TODO: enqueue redis console.log({ fetchedRecordsMap });
+            // enqueue cache job
+            const dataToSave: CacheJobData<T> = Array.from(fetchedRecordsMap.values()).map(
+                (e: T) => ({
+                    key: this.options.createCacheKeyFunction(e.id),
+                    value: e,
+                }),
+            );
+            await this.cacheProducer.enqueueCacheData(dataToSave);
         }
         const fullResults = results as T[];
         const edges = fullResults.map((record, index) => ({
