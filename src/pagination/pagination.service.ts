@@ -14,7 +14,6 @@ import { encodeCursor } from './functions/encode-cursor';
 import { decodeCursor } from './functions/decode-cursor';
 import { ModuleRef } from '@nestjs/core';
 import { PaginationCacheProducer } from './queues/pagination.cache.producer';
-import { CacheJobData } from './types/cache-job.data.type';
 
 @Injectable()
 export class PaginationService<T extends BaseEntity> implements OnModuleInit {
@@ -124,14 +123,13 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
                     results[i] = entity;
                 }
             }
-            // enqueue cache job
-            const dataToSave: CacheJobData<T> = Array.from(fetchedRecordsMap.values()).map(
-                (e: T) => ({
-                    key: this.options.createCacheKeyFunction(e.id),
-                    value: e,
-                }),
-            );
-            await this.cacheProducer.enqueueCacheData(dataToSave);
+            // enqueue cache jobs
+            for (const record of Array.from(fetchedRecordsMap.values())) {
+                await this.cacheProducer.enqueueCacheData({
+                    key: this.options.createCacheKeyFunction(record.id),
+                    value: record,
+                });
+            }
         }
         const fullResults = results as T[];
         const edges = fullResults.map((record, index) => ({

@@ -1,12 +1,12 @@
 import { PAGINATION_CACHE_QUEUE } from '../constants/pagination.constants';
+import { ICacheJobData } from '../interfaces/cache-job.data.interface';
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { CacheJobData } from '../types/cache-job.data.type';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
 
-@Processor(PAGINATION_CACHE_QUEUE, { concurrency: 5 })
+@Processor(PAGINATION_CACHE_QUEUE, { concurrency: 7 })
 export class PaginationCacheConsumer extends WorkerHost {
     private readonly context = PaginationCacheConsumer.name;
 
@@ -17,19 +17,12 @@ export class PaginationCacheConsumer extends WorkerHost {
         super();
     }
 
-    async process<T>(job: Job<CacheJobData<T>>) {
-        await this.cacheManager.mset(job.data);
-    }
-
-    @OnWorkerEvent('active')
-    onActive(job: Job<CacheJobData<CacheJobData<unknown>>>) {
-        const total = job.data.length;
-        SystemLogger.getInstance().debug(`Saving ${total} records in cache`, this.context);
+    async process<T>(job: Job<ICacheJobData<T>>) {
+        await this.cacheManager.set(job.data.key, job.data.value);
     }
 
     @OnWorkerEvent('completed')
-    onCompleted(job: Job<CacheJobData<CacheJobData<unknown>>>) {
-        const total = job.data.length;
-        SystemLogger.getInstance().debug(`${total} records saved in cache`, this.context);
+    onCompleted(job: Job<ICacheJobData<unknown>>) {
+        SystemLogger.getInstance().debug(`${job.data.key} record saved in cache`, this.context);
     }
 }
