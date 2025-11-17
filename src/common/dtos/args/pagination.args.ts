@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ArgsType, Field, Int } from '@nestjs/graphql';
 
 @ArgsType()
@@ -9,6 +9,10 @@ export class PaginationArgs {
     cursor!: string;
 
     @IsInt()
-    @Field(() => Int)
+    @MinLength(1)
+    @MaxLength(100)
+    @Field(() => Int, {
+        description: `Max length: **100**`,
+    })
     limit!: number;
 }
