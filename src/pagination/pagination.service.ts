@@ -9,7 +9,7 @@ import { PaginatedRecord } from './interfaces/base-record.data.interface';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { IEdgeType } from './interfaces/edge-type.interface';
 import { BaseEntity } from 'src/common/entites/base.entity';
-import { FindOptionsWhere, In, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { encodeCursor } from './functions/encode-cursor';
 import { decodeCursor } from './functions/decode-cursor';
 import { ModuleRef } from '@nestjs/core';
@@ -37,12 +37,16 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     /**
      * Fetch totalCount + sorted ids concurrently.
      */
-    private async getPageAndTotalCount(limit: number, decodedCursor?: IDecodedCursor) {
+    private async getPageAndTotalCount(
+        limit: number,
+        decodedCursor?: IDecodedCursor,
+        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+    ): Promise<{ totalCount: number; page: PaginatedRecord[] }> {
         const [totalCount, sortedIdsAndCursors] = await runSettledOrThrow<
             [number, PaginatedRecord[]]
         >([
             this.repository.createQueryBuilder().getCount(),
-            this.getPageIdsAndEncodedCursors(limit, decodedCursor),
+            this.getPageIdsAndEncodedCursors(limit, decodedCursor, qbModifier),
         ]);
         return { totalCount, page: sortedIdsAndCursors };
     }
@@ -53,20 +57,25 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     private async getPageIdsAndEncodedCursors(
         limit: number,
         decodedCursor?: IDecodedCursor,
+        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
     ): Promise<PaginatedRecord[]> {
-        const idsAndCursors = await this.repository
-            .createQueryBuilder()
-            .select('id')
-            .addSelect('created_at::text', 'cursor')
-            .where(decodedCursor ? '(created_at, id) > (:date, :id)' : 'TRUE', {
+        let qb = this.repository.createQueryBuilder('e');
+        if (qbModifier) qb = qbModifier(qb); // modify the query builder if a modifier is provided
+        qb = qb
+            .select('e.id', 'id')
+            .addSelect('e.created_at::text', 'cursor')
+            .where(decodedCursor ? '(e.created_at, e.id) > (:date, :id)' : 'TRUE', {
                 date: decodedCursor?.createdAt,
                 id: decodedCursor?.id,
             })
-            .orderBy('created_at', 'ASC')
-            .addOrderBy('id', 'ASC')
-            .limit(limit + 1) // whether exists a next page or not
-            .getRawMany<{ id: string; cursor: string }>();
-        return idsAndCursors.map(({ id, cursor }) => ({ id, cursor: encodeCursor(cursor, id) }));
+            .orderBy('e.created_at', 'ASC')
+            .addOrderBy('e.id', 'ASC')
+            .limit(limit + 1);
+        const idsAndCursors = await qb.getRawMany<{ id: string; cursor: string }>();
+        return idsAndCursors.map(({ id, cursor }) => ({
+            id,
+            cursor: encodeCursor(cursor, id),
+        }));
     }
 
     /**
@@ -104,9 +113,17 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         return { results, idsNotInCache };
     }
 
-    async createPaginationCached(limit: number, cursor: string): Promise<IPaginatedType<T>> {
+    async createPaginationCached(
+        limit: number,
+        cursor: string,
+        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+    ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
-        const { totalCount, page } = await this.getPageAndTotalCount(limit, decodedCursor);
+        const { totalCount, page } = await this.getPageAndTotalCount(
+            limit,
+            decodedCursor,
+            qbModifier,
+        );
         // determine if there is a next page
         const hasNextPage = page.length > limit;
         if (hasNextPage) page.pop();
@@ -145,9 +162,17 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     }
 
     // No cache version
-    private async createPagination(limit: number, cursor: string): Promise<IPaginatedType<T>> {
+    private async createPagination(
+        limit: number,
+        cursor: string,
+        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+    ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
-        const { totalCount, page } = await this.getPageAndTotalCount(limit, decodedCursor);
+        const { totalCount, page } = await this.getPageAndTotalCount(
+            limit,
+            decodedCursor,
+            qbModifier,
+        );
         // determine if there is a next page
         const hasNextPage = page.length > limit;
         if (hasNextPage) page.pop();
@@ -170,9 +195,9 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         };
     }
 
-    async create(options: PaginationOptionsType): Promise<IPaginatedType<T>> {
+    async create(options: PaginationOptionsType<T>): Promise<IPaginatedType<T>> {
         return options.cache
-            ? await this.createPaginationCached(options.limit, options.cursor)
-            : await this.createPagination(options.limit, options.cursor);
+            ? await this.createPaginationCached(options.limit, options.cursor, options.qbModifier)
+            : await this.createPagination(options.limit, options.cursor, options.qbModifier);
     }
 }
