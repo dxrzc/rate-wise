@@ -8,5 +8,5 @@ export type QueryBuilder<T extends ObjectLiteral> = {
 
 export type PaginationOptionsType<T extends ObjectLiteral> = PaginationArgs & {
     cache: boolean;
-    queryBuilder: QueryBuilder<T>;
+    queryBuilder?: QueryBuilder<T>;
 };

@@ -82,7 +82,10 @@ export class UsersService {
     }
 
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
-        return await this.paginationService.create({ ...paginationArgs, cache: true });
+        return await this.paginationService.create({
+            ...paginationArgs,
+            cache: true,
+        });
     }
 
     async saveOne(user: User) {
