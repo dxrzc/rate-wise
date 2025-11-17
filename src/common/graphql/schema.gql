@@ -74,7 +74,7 @@ type Query {
   users(
     cursor: String
 
-    """Max length: **100**"""
+    "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
     limit: Int!
   ): UserPaginationModel!
   findItemById(item_id: ID!): ItemModel!

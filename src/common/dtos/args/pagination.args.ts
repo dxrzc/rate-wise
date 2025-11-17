@@ -1,5 +1,6 @@
-import { IsInt, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ArgsType, Field, Int } from '@nestjs/graphql';
+import { PAG_LIMITS } from 'src/common/constants/pagination.constants';
 
 @ArgsType()
 export class PaginationArgs {
@@ -9,10 +10,12 @@ export class PaginationArgs {
     cursor!: string;
 
     @IsInt()
-    @MinLength(1)
-    @MaxLength(100)
+    @Min(PAG_LIMITS.MIN)
+    @Max(PAG_LIMITS.MAX)
     @Field(() => Int, {
-        description: `Max length: **100**`,
+        description: `
+        **Constraints:** Minimum value is 1, maximum value is 100.
+        `,
     })
     limit!: number;
 }
