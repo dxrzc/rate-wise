@@ -1,7 +1,8 @@
 import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { PAGINATION_MODULE_OPTIONS_TOKEN } from './module/config.module-definition';
-import { PaginationOptionsType } from './types/pagination.options.type';
+import { PaginationOptionsType, QueryBuilder } from './types/pagination.options.type';
+import { PaginationCacheProducer } from './queues/pagination.cache.producer';
 import { IDecodedCursor } from './interfaces/decoded-cursor.interface';
 import { IPaginatedType } from './interfaces/paginated-type.interface';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
@@ -9,11 +10,10 @@ import { PaginatedRecord } from './interfaces/base-record.data.interface';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { IEdgeType } from './interfaces/edge-type.interface';
 import { BaseEntity } from 'src/common/entites/base.entity';
-import { FindOptionsWhere, In, Repository, SelectQueryBuilder } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { encodeCursor } from './functions/encode-cursor';
 import { decodeCursor } from './functions/decode-cursor';
 import { ModuleRef } from '@nestjs/core';
-import { PaginationCacheProducer } from './queues/pagination.cache.producer';
 
 @Injectable()
 export class PaginationService<T extends BaseEntity> implements OnModuleInit {
@@ -40,13 +40,13 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     private async getPageAndTotalCount(
         limit: number,
         decodedCursor?: IDecodedCursor,
-        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+        queryBuilder?: QueryBuilder<T>,
     ): Promise<{ totalCount: number; page: PaginatedRecord[] }> {
         const [totalCount, sortedIdsAndCursors] = await runSettledOrThrow<
             [number, PaginatedRecord[]]
         >([
             this.repository.createQueryBuilder().getCount(),
-            this.getPageIdsAndEncodedCursors(limit, decodedCursor, qbModifier),
+            this.getPageIdsAndEncodedCursors(limit, decodedCursor, queryBuilder),
         ]);
         return { totalCount, page: sortedIdsAndCursors };
     }
@@ -57,25 +57,28 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     private async getPageIdsAndEncodedCursors(
         limit: number,
         decodedCursor?: IDecodedCursor,
-        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+        queryBuilder?: QueryBuilder<T>,
     ): Promise<PaginatedRecord[]> {
-        let qb = this.repository.createQueryBuilder('e');
-        if (qbModifier) qb = qbModifier(qb); // modify the query builder if a modifier is provided
+        const qbAlias = queryBuilder?.sqbAlias || 'e';
+
+        let qb = this.repository.createQueryBuilder(qbAlias);
+        qb = qb.select(`${qbAlias}.id`, 'id').addSelect(`${qbAlias}.created_at::text`, 'cursor');
+        if (queryBuilder) {
+            // apply caller's modifier (joins, filters, etc...)
+            qb = queryBuilder.sqbModifier(qb);
+        }
+        if (decodedCursor) {
+            qb = qb.andWhere(`(${qbAlias}.created_at, ${qbAlias}.id) > (:date, :id)`, {
+                date: decodedCursor.createdAt,
+                id: decodedCursor.id,
+            });
+        }
         qb = qb
-            .select('e.id', 'id')
-            .addSelect('e.created_at::text', 'cursor')
-            .where(decodedCursor ? '(e.created_at, e.id) > (:date, :id)' : 'TRUE', {
-                date: decodedCursor?.createdAt,
-                id: decodedCursor?.id,
-            })
-            .orderBy('e.created_at', 'ASC')
-            .addOrderBy('e.id', 'ASC')
+            .orderBy(`${qbAlias}.created_at`, 'ASC')
+            .addOrderBy(`${qbAlias}.id`, 'ASC')
             .limit(limit + 1);
         const idsAndCursors = await qb.getRawMany<{ id: string; cursor: string }>();
-        return idsAndCursors.map(({ id, cursor }) => ({
-            id,
-            cursor: encodeCursor(cursor, id),
-        }));
+        return idsAndCursors.map(({ id, cursor }) => ({ id, cursor: encodeCursor(cursor, id) }));
     }
 
     /**
@@ -116,13 +119,13 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     async createPaginationCached(
         limit: number,
         cursor: string,
-        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+        queryBuilder?: QueryBuilder<T>,
     ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
         const { totalCount, page } = await this.getPageAndTotalCount(
             limit,
             decodedCursor,
-            qbModifier,
+            queryBuilder,
         );
         // determine if there is a next page
         const hasNextPage = page.length > limit;
@@ -165,13 +168,13 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     private async createPagination(
         limit: number,
         cursor: string,
-        qbModifier?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
+        queryBuilder?: QueryBuilder<T>,
     ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
         const { totalCount, page } = await this.getPageAndTotalCount(
             limit,
             decodedCursor,
-            qbModifier,
+            queryBuilder,
         );
         // determine if there is a next page
         const hasNextPage = page.length > limit;
@@ -197,7 +200,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
 
     async create(options: PaginationOptionsType<T>): Promise<IPaginatedType<T>> {
         return options.cache
-            ? await this.createPaginationCached(options.limit, options.cursor, options.qbModifier)
-            : await this.createPagination(options.limit, options.cursor, options.qbModifier);
+            ? await this.createPaginationCached(options.limit, options.cursor, options.queryBuilder)
+            : await this.createPagination(options.limit, options.cursor, options.queryBuilder);
     }
 }
