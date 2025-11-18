@@ -21,6 +21,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { readPostgresUrl } from '@components/utils/read-postgres-uri';
 import { createCacheImport } from '@components/imports/create-cache.import';
+import { createBullMQImport } from '@components/imports/create-bullmq.import';
+import RedisMemoryServer from 'redis-memory-server';
 
 // Test AuthGuard isolated and how it behaves with REST and GQL contexts.
 
@@ -55,14 +57,18 @@ query MyQuery {
 describe('AuthGuard', () => {
     let testingModule: TestingModule;
     let app: NestExpressApplication;
+    let redisServer: RedisMemoryServer;
     const sessCookieName = 'sess';
 
     beforeAll(async () => {
         const postgresUrl = await readPostgresUrl();
+        const { import: bullMQImport, server } = await createBullMQImport();
+        redisServer = server;
         testingModule = await Test.createTestingModule({
             imports: [
                 ...createTypeormImport(postgresUrl),
                 ...createDisabledLoggerImport(),
+                ...bullMQImport,
                 ...createCacheImport(),
                 ...createGqlImport(),
                 SeedModule,
@@ -94,6 +100,7 @@ describe('AuthGuard', () => {
 
     afterAll(async () => {
         await testingModule.close();
+        await redisServer.stop();
     });
 
     async function getSessionCookie(id: string) {
