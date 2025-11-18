@@ -9,7 +9,7 @@ import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
-import { createUserCacheKey } from 'src/users/cache/create-key';
+import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 

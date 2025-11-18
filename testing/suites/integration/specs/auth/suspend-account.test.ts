@@ -10,8 +10,8 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { faker } from '@faker-js/faker';
-import { createUserCacheKey } from 'src/users/cache/create-key';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
+import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 
 describe('GraphQL - suspendAccount', () => {
     describe('Session cookie not provided', () => {
