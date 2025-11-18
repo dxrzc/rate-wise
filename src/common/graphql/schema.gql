@@ -71,7 +71,12 @@ type ItemModel {
 
 type Query {
   findUserById(user_id: ID!): UserModel!
-  users(cursor: String, limit: Int!): UserPaginationModel!
+  users(
+    cursor: String
+
+    "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
+    limit: Int!
+  ): UserPaginationModel!
   findItemById(item_id: ID!): ItemModel!
 }
 

@@ -13,7 +13,7 @@ import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants'
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
-import { createUserCacheKey } from 'src/users/cache/create-key';
+import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
