@@ -14,12 +14,9 @@ import { ItemModel } from './models/item.model';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createItemCacheKey } from './cache/create-cache-key';
 import { deserializeItem } from './functions/deserialize-item.entity';
-// import { IItemDbRecord } from './interfaces/item-db-record.interface';
-// import { rawRecordToItemEntity } from './functions/raw-record-to-item-entity';
-// import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
-// import { decodeCursor } from 'src/common/functions/pagination/decode-cursor';
-// import { createPaginationEdges } from 'src/common/functions/pagination/create-pagination-edges';
-// import { IPaginatedType } from 'src/common/interfaces/pagination/paginated-type.interface';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 
 @Injectable()
 export class ItemsService {
@@ -28,7 +25,8 @@ export class ItemsService {
         private readonly itemRepository: Repository<Item>,
         private readonly logger: HttpLoggerService,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private readonly cacheManager: Cache,
+        private readonly paginationService: PaginationService<Item>,
     ) {}
 
     private validUuidOrThrow(id: string) {
@@ -36,6 +34,18 @@ export class ItemsService {
             this.logger.error('Invalid UUID');
             throw GqlHttpError.NotFound(ITEMS_MESSAGES.NOT_FOUND);
         }
+    }
+
+    async findAllByUser(userId: string, pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
+        const sqbAlias = 'item';
+        return await this.paginationService.create({
+            ...pagArgs,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) => qb.where(`${sqbAlias}.account_id = :userId`, { userId }),
+                sqbAlias,
+            },
+        });
     }
 
     // async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
