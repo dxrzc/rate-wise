@@ -118,7 +118,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
 
     async createPaginationCached(
         limit: number,
-        cursor: string,
+        cursor?: string,
         queryBuilder?: QueryBuilder<T>,
     ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
@@ -167,7 +167,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     // No cache version
     private async createPagination(
         limit: number,
-        cursor: string,
+        cursor?: string,
         queryBuilder?: QueryBuilder<T>,
     ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
