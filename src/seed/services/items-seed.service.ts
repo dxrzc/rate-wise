@@ -6,23 +6,14 @@ import { ITEMS_LIMITS } from 'src/items/constants/items.constants';
 export class ItemsSeedService {
     get title(): string {
         const options = [
-            () => faker.company.name(),
-            () => faker.commerce.productName(),
-            () => faker.book.title(),
-            () => faker.book.series(),
-            () => faker.food.dish(),
-            () => faker.music.songName(),
-            () => faker.music.artist(),
-            () => faker.music.album(),
+            () => faker.string.alpha({ length: { max: 10, min: 3 } }),
+            () => faker.word.adjective() + ' ' + faker.word.noun(),
+            () => faker.lorem.words(2),
+            () => faker.git.commitMessage(),
         ];
         const randomFn = options[Math.floor(Math.random() * options.length)];
-        let randomTitle = '';
-        while (
-            randomTitle.length < ITEMS_LIMITS.TITLE.MIN ||
-            randomTitle.length > ITEMS_LIMITS.TITLE.MAX
-        )
-            randomTitle = randomFn();
-        return randomTitle;
+        const randomTitle = randomFn() + ' ' + Math.floor(Math.random() * 1000) + ' ' + randomFn();
+        return randomTitle.slice(0, ITEMS_LIMITS.TITLE.MAX);
     }
 
     get description(): string {
