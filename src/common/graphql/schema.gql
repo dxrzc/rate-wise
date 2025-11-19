@@ -2,8 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-"""User model"""
-type UserModel {
+type AccountModel {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -43,18 +42,6 @@ enum AccountStatus {
   SUSPENDED
 }
 
-type UserModelEdge {
-  cursor: String!
-  node: UserModel!
-}
-
-type UserPaginationModel {
-  edges: [UserModelEdge!]
-  nodes: [UserModel!]
-  totalCount: Int!
-  hasNextPage: Boolean!
-}
-
 """Item model"""
 type ItemModel {
   id: ID!
@@ -67,6 +54,43 @@ type ItemModel {
   averageRating: Float!
   reviewCount: Int!
   createdBy: ID!
+}
+
+type ItemModelEdge {
+  cursor: String!
+  node: ItemModel!
+}
+
+type ItemPaginationModel {
+  edges: [ItemModelEdge!]
+  nodes: [ItemModel!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+"""User model"""
+type UserModel {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  username: String!
+  email: String!
+  roles: [UserRole!]!
+  status: AccountStatus!
+  reputationScore: Float!
+  items: ItemPaginationModel!
+}
+
+type UserModelEdge {
+  cursor: String!
+  node: UserModel!
+}
+
+type UserPaginationModel {
+  edges: [UserModelEdge!]
+  nodes: [UserModel!]
+  totalCount: Int!
+  hasNextPage: Boolean!
 }
 
 type Query {
@@ -82,17 +106,18 @@ type Query {
 
 type Mutation {
   seedUsers(quantity: Int!): Boolean!
+  seedItems(items_per_user: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
 
   """
   Register a new user account with email and password. Creates a new user session upon successful registration.
   """
-  signUp(user_data: SignUpInput!): UserModel!
+  signUp(user_data: SignUpInput!): AccountModel!
 
   """
   Authenticate a user with email and password credentials. Creates a new user session upon successful authentication.
   """
-  signIn(credentials: SignInInput!): UserModel!
+  signIn(credentials: SignInInput!): AccountModel!
 
   """
   Send an account verification email to the authenticated user. Only available for users with PENDING_VERIFICATION status.
