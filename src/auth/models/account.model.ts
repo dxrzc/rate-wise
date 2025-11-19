@@ -4,7 +4,7 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 
 @ObjectType()
-export class UserAccountModel extends BaseModel {
+export class AccountModel extends BaseModel {
     @Field(() => String)
     username!: string;
 
