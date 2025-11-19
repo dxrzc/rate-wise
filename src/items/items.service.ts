@@ -26,7 +26,7 @@ export class ItemsService {
         private readonly logger: HttpLoggerService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        private readonly paginationService: PaginationService<Item>,
+        private readonly paginationService: PaginationService<ItemModel>,
     ) {}
 
     private validUuidOrThrow(id: string) {
@@ -36,7 +36,10 @@ export class ItemsService {
         }
     }
 
-    async findAllByUser(userId: string, pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
+    async findAllByUser(
+        userId: string,
+        pagArgs: PaginationArgs,
+    ): Promise<IPaginatedType<ItemModel>> {
         const sqbAlias = 'item';
         return await this.paginationService.create({
             ...pagArgs,
