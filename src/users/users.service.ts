@@ -42,16 +42,6 @@ export class UsersService {
         }
     }
 
-    // id must be a valid uuid
-    private async findByIdOrThrowPrivate(uuid: string): Promise<User> {
-        const userFound = await this.userRepository.findOneBy({ id: uuid });
-        if (!userFound) {
-            this.logger.error(`Item with id ${uuid} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
-        return userFound;
-    }
-
     async findOneById(id: string): Promise<User | null> {
         this.validUuidOrThrow(id);
         const userFound = await this.userRepository.findOneBy({ id });
@@ -60,7 +50,12 @@ export class UsersService {
 
     async findOneByIdOrThrow(id: string): Promise<User> {
         this.validUuidOrThrow(id);
-        return await this.findByIdOrThrowPrivate(id);
+        const userFound = await this.userRepository.findOneBy({ id });
+        if (!userFound) {
+            this.logger.error(`Item with id ${id} not found`);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+        }
+        return userFound;
     }
 
     async findOneByIdOrThrowCached(id: string): Promise<User> {
