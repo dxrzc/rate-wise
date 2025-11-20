@@ -14,7 +14,6 @@ import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
-import { ItemsService } from 'src/items/items.service';
 
 @Injectable()
 export class UsersService {
@@ -25,7 +24,6 @@ export class UsersService {
         private cacheManager: Cache,
         private readonly paginationService: PaginationService<User>,
         private readonly logger: HttpLoggerService,
-        private readonly itemsService: ItemsService,
     ) {}
 
     /**
