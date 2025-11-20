@@ -73,7 +73,12 @@ type UserModel {
   roles: [UserRole!]!
   status: AccountStatus!
   reputationScore: Float!
-  items: ItemPaginationModel!
+  items(
+    cursor: String
+
+    "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
+    limit: Int!
+  ): ItemPaginationModel!
 }
 
 type UserModelEdge {

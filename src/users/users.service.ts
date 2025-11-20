@@ -10,13 +10,11 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { deserializeUser } from './functions/user-deserializer';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 import { ItemsService } from 'src/items/items.service';
-import { UserModel } from './models/user.model';
 
 @Injectable()
 export class UsersService {
@@ -50,7 +48,8 @@ export class UsersService {
     }
 
     /**
-     * Validates id and returns user found, can be null.
+     * - Validates id
+     * - Returned user is null if not found
      */
     async findOneById(id: string): Promise<User | null> {
         this.validUuidOrThrow(id);
@@ -59,7 +58,8 @@ export class UsersService {
     }
 
     /**
-     * Validates id and returns user, throws if not found
+     * - Validates id
+     * - Throws if user not found
      */
     async findOneByIdOrThrow(id: string) {
         const userFound = await this.findOneById(id);
@@ -71,7 +71,8 @@ export class UsersService {
     }
 
     /**
-     * Returns user found, can be null
+     * - Does not validate email
+     * - Returned user is null if not found
      */
     async findOneByEmail(email: string): Promise<User | null> {
         const userFound = await this.userRepository.findOneBy({ email });
@@ -79,29 +80,27 @@ export class UsersService {
     }
 
     /**
-     * Returns user and items, attemps to fetch from cache first.
-     * Throws if user not found in database
+     * - Validates id.
+     * - Throws if not found.
+     * - Attempts to fetch from cache first.
      */
-    async findUserAndItemsOrThrowCached(id: string): Promise<UserModel> {
+    async findOneByIdOrThrowCached(id: string): Promise<User> {
         this.validUuidOrThrow(id);
         const cacheKey = createUserCacheKey(id);
         const userInCache = await this.cacheManager.get<User>(cacheKey);
-        let userFound: User;
         if (!userInCache) {
-            userFound = await this.findOneByIdOrThrow(id);
+            const userFound = await this.findOneByIdOrThrow(id);
             await this.cacheManager.set(cacheKey, userFound);
             this.logger.info(`User with id ${id} cached`);
-        } else {
-            userFound = deserializeUser(userInCache);
-            this.logger.info(`User with id ${id} retrieved from cache`);
+            return userFound;
         }
-        const items = await this.itemsService.findAllByUser(id, { limit: 10 });
-        return {
-            ...userFound,
-            items,
-        };
+        return userInCache;
     }
 
+    /**
+     * - Find all users using provided limit and cursor
+     * - Attempts to fetch from cache first.
+     */
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         return await this.paginationService.create({
             ...paginationArgs,
