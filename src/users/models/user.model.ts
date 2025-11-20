@@ -1,22 +1,11 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
-import { BaseModel } from 'src/common/models/base.model';
-import { AccountStatus } from '../enums/account-status.enum';
-import { UserRole } from '../enums/user-role.enum';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { AccountModel } from 'src/auth/models/account.model';
+import { ItemModel } from 'src/items/models/item.model';
+import { ItemPaginationModel } from 'src/items/models/pagination.model';
+import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 
 @ObjectType({ description: 'User model' })
-export class UserModel extends BaseModel {
-    @Field(() => String)
-    username!: string;
-
-    @Field(() => String)
-    email!: string;
-
-    @Field(() => [UserRole])
-    roles!: UserRole[];
-
-    @Field(() => AccountStatus)
-    status!: AccountStatus;
-
-    @Field(() => Float)
-    reputationScore!: number;
+export class UserModel extends AccountModel {
+    @Field(() => ItemPaginationModel)
+    items!: IPaginatedType<ItemModel>;
 }

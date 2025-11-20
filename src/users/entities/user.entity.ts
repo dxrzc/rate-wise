@@ -7,7 +7,6 @@ import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 
 @Entity('account')
 export class User extends BaseEntity {
-    // Used here for consistency. However, max length is still 30.
     @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.USERNAME.MAX })
     username!: string;
 
@@ -38,5 +37,5 @@ export class User extends BaseEntity {
     reputationScore!: number;
 
     @OneToMany(() => Item, (item) => item.user)
-    items?: Item[];
+    items!: Item[];
 }

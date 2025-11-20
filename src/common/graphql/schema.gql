@@ -2,22 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-"""User model"""
-type UserModel {
+type AccountModel {
   id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: Date!
+  updatedAt: Date!
   username: String!
   email: String!
   roles: [UserRole!]!
   status: AccountStatus!
   reputationScore: Float!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 """Available roles for a user."""
 enum UserRole {
@@ -43,6 +37,50 @@ enum AccountStatus {
   SUSPENDED
 }
 
+"""Item model"""
+type ItemModel {
+  id: ID!
+  createdAt: Date!
+  updatedAt: Date!
+  title: String!
+  description: String!
+  category: String!
+  tags: [String!]!
+  averageRating: Float!
+  reviewCount: Int!
+  createdBy: ID!
+}
+
+type ItemModelEdge {
+  cursor: String!
+  node: ItemModel!
+}
+
+type ItemPaginationModel {
+  edges: [ItemModelEdge!]
+  nodes: [ItemModel!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+"""User model"""
+type UserModel {
+  id: ID!
+  createdAt: Date!
+  updatedAt: Date!
+  username: String!
+  email: String!
+  roles: [UserRole!]!
+  status: AccountStatus!
+  reputationScore: Float!
+  items(
+    cursor: String
+
+    "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
+    limit: Int!
+  ): ItemPaginationModel!
+}
+
 type UserModelEdge {
   cursor: String!
   node: UserModel!
@@ -55,23 +93,12 @@ type UserPaginationModel {
   hasNextPage: Boolean!
 }
 
-"""Item model"""
-type ItemModel {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  title: String!
-  description: String!
-  category: String!
-  tags: [String!]!
-  averageRating: Float!
-  reviewCount: Int!
-  createdBy: ID!
-}
+"""Date custom scalar type"""
+scalar Date
 
 type Query {
   findUserById(user_id: ID!): UserModel!
-  users(
+  findAllUsers(
     cursor: String
 
     "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
@@ -82,17 +109,18 @@ type Query {
 
 type Mutation {
   seedUsers(quantity: Int!): Boolean!
+  seedItems(items_per_user: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
 
   """
   Register a new user account with email and password. Creates a new user session upon successful registration.
   """
-  signUp(user_data: SignUpInput!): UserModel!
+  signUp(user_data: SignUpInput!): AccountModel!
 
   """
   Authenticate a user with email and password credentials. Creates a new user session upon successful authentication.
   """
-  signIn(credentials: SignInInput!): UserModel!
+  signIn(credentials: SignInInput!): AccountModel!
 
   """
   Send an account verification email to the authenticated user. Only available for users with PENDING_VERIFICATION status.

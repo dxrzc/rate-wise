@@ -42,14 +42,18 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         decodedCursor?: IDecodedCursor,
         queryBuilder?: QueryBuilder<T>,
     ): Promise<{ totalCount: number; page: PaginatedRecord[] }> {
+        let countQuery = this.repository.createQueryBuilder().getCount();
+        if (queryBuilder) {
+            let cqb = this.repository.createQueryBuilder(queryBuilder.sqbAlias);
+            cqb = queryBuilder.sqbModifier(cqb);
+            countQuery = cqb.getCount();
+        }
         const [totalCount, sortedIdsAndCursors] = await runSettledOrThrow<
             [number, PaginatedRecord[]]
-        >([
-            this.repository.createQueryBuilder().getCount(),
-            this.getPageIdsAndEncodedCursors(limit, decodedCursor, queryBuilder),
-        ]);
+        >([countQuery, this.getPageIdsAndEncodedCursors(limit, decodedCursor, queryBuilder)]);
         return { totalCount, page: sortedIdsAndCursors };
     }
+
     /**
      * Retrieves sorted IDs + encoded cursor.
      * LIMIT+1 is required to detect hasNextPage.
@@ -118,7 +122,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
 
     async createPaginationCached(
         limit: number,
-        cursor: string,
+        cursor?: string,
         queryBuilder?: QueryBuilder<T>,
     ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
@@ -167,7 +171,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
     // No cache version
     private async createPagination(
         limit: number,
-        cursor: string,
+        cursor?: string,
         queryBuilder?: QueryBuilder<T>,
     ): Promise<IPaginatedType<T>> {
         const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
@@ -198,6 +202,12 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         };
     }
 
+    /**
+     * By default performs a "SELECT *" in the repository table and counts all the records.
+     * - Provide a custom query builder to modify the query (joins, filters, etc...).
+     * @param options Pagination options.
+     * @returns edges, nodes, totalCount and hasNextPage.
+     */
     async create(options: PaginationOptionsType<T>): Promise<IPaginatedType<T>> {
         return options.cache
             ? await this.createPaginationCached(options.limit, options.cursor, options.queryBuilder)

@@ -44,7 +44,7 @@ services:
 
   migrate:    
     restart: "no"
-    image: ratewise:dev
+    image: ratewise:migrate
     pull_policy: never
     build:
       context: ..
@@ -60,7 +60,7 @@ services:
 
   revert-migrate:    
     restart: "no"
-    image: ratewise:dev
+    image: ratewise:migrate
     pull_policy: never
     build:
       context: ..

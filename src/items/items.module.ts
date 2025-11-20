@@ -17,5 +17,6 @@ import { createItemCacheKey } from './cache/create-cache-key';
         TypeOrmModule.forFeature([Item]),
     ],
     providers: [ItemsService, ItemsResolver],
+    exports: [ItemsService],
 })
 export class ItemsModule {}

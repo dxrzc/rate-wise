@@ -6,15 +6,18 @@ import { Module } from '@nestjs/common';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { PaginationModule } from 'src/pagination/pagination.module';
 import { createUserCacheKey } from './cache/create-cache-key';
+import { ItemsModule } from 'src/items/items.module';
+import { Item } from 'src/items/entities/item.entity';
 
 @Module({
     imports: [
+        ItemsModule,
         PaginationModule.register({
             createCacheKeyFunction: createUserCacheKey,
             repositoryToken: getRepositoryToken(User),
         }),
         HttpLoggerModule.forFeature({ context: UsersService.name }),
-        TypeOrmModule.forFeature([User]),
+        TypeOrmModule.forFeature([User, Item]),
     ],
     providers: [UsersResolver, UsersService],
     exports: [UsersService],

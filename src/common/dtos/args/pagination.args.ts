@@ -7,7 +7,7 @@ export class PaginationArgs {
     @IsString()
     @IsOptional()
     @Field(() => String, { nullable: true })
-    cursor!: string;
+    cursor?: string;
 
     @IsInt()
     @Min(PAG_LIMITS.MIN)

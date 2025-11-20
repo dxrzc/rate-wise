@@ -9,7 +9,6 @@ import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorat
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
-import { UserModel } from 'src/users/models/user.model';
 import { AuthService } from './auth.service';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
@@ -24,6 +23,7 @@ import { signOutAllDocs } from './docs/sign-out-all.docs';
 import { signOutDocs } from './docs/sign-out.docs';
 import { signUpDocs } from './docs/sign-up.docs';
 import { suspendAccountDocs } from './docs/suspend-account.docs';
+import { AccountModel } from './models/account.model';
 
 @Resolver()
 export class AuthResolver {
@@ -35,21 +35,21 @@ export class AuthResolver {
 
     @Public()
     @CriticalThrottle()
-    @Mutation(() => UserModel, signUpDocs)
+    @Mutation(() => AccountModel, signUpDocs)
     async signUp(
         @Args('user_data') user: SignUpInput,
         @Context('req') req: RequestContext,
-    ): Promise<UserModel> {
+    ): Promise<AccountModel> {
         return await this.authService.signUp(user, req);
     }
 
     @Public()
     @CriticalThrottle()
-    @Mutation(() => UserModel, signInDocs)
+    @Mutation(() => AccountModel, signInDocs)
     async signIn(
         @Args('credentials') credentials: SignInInput,
         @Context('req') req: RequestContext,
-    ): Promise<UserModel> {
+    ): Promise<AccountModel> {
         return await this.authService.signIn(credentials, req);
     }
 

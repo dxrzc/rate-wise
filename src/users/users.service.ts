@@ -10,7 +10,6 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { deserializeUser } from './functions/user-deserializer';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
@@ -27,12 +26,18 @@ export class UsersService {
         private readonly logger: HttpLoggerService,
     ) {}
 
+    /**
+     * Deletes user in redis cache
+     */
     private async deleteUserFromCache(id: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
     }
 
+    /**
+     * Validates uuid or throws.
+     */
     private validUuidOrThrow(id: string) {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
@@ -40,47 +45,63 @@ export class UsersService {
         }
     }
 
-    // id must be a valid uuid
-    private async findByIdOrThrowPrivate(uuid: string): Promise<User> {
-        const userFound = await this.userRepository.findOneBy({ id: uuid });
-        if (!userFound) {
-            this.logger.error(`Item with id ${uuid} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
-        return userFound;
-    }
-
+    /**
+     * - Validates id
+     * - Returned user is null if not found
+     */
     async findOneById(id: string): Promise<User | null> {
         this.validUuidOrThrow(id);
         const userFound = await this.userRepository.findOneBy({ id });
         return userFound;
     }
 
-    async findOneByIdOrThrow(id: string): Promise<User> {
-        this.validUuidOrThrow(id);
-        return await this.findByIdOrThrowPrivate(id);
+    /**
+     * - Validates id
+     * - Throws if user not found
+     */
+    async findOneByIdOrThrow(id: string) {
+        const userFound = await this.findOneById(id);
+        if (!userFound) {
+            this.logger.error(`Item with id ${id} not found`);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+        }
+        return userFound;
     }
 
+    /**
+     * - Does not validate email
+     * - Returned user is null if not found
+     */
+    async findOneByEmail(email: string): Promise<User | null> {
+        const userFound = await this.userRepository.findOneBy({ email });
+        return userFound;
+    }
+
+    /**
+     * - Validates id.
+     * - Throws if not found.
+     * - Attempts to fetch from cache first.
+     */
     async findOneByIdOrThrowCached(id: string): Promise<User> {
         this.validUuidOrThrow(id);
         const cacheKey = createUserCacheKey(id);
         const userInCache = await this.cacheManager.get<User>(cacheKey);
         if (!userInCache) {
             const userFound = await this.findOneByIdOrThrow(id);
-            await this.cacheManager.set(cacheKey, userFound);
+            await this.cacheManager.set(cacheKey, {
+                ...userFound,
+                password: undefined,
+            });
             this.logger.info(`User with id ${id} cached`);
             return userFound;
         }
-        const userInCacheDeserialized = deserializeUser(userInCache);
-        this.logger.info(`User with id ${id} retrieved from cache`);
-        return userInCacheDeserialized;
+        return userInCache;
     }
 
-    async findOneByEmail(email: string): Promise<User | null> {
-        const userFound = await this.userRepository.findOneBy({ email });
-        return userFound;
-    }
-
+    /**
+     * - Find all users using provided limit and cursor
+     * - Attempts to fetch from cache first.
+     */
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         return await this.paginationService.create({
             ...paginationArgs,

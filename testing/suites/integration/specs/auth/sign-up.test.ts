@@ -238,7 +238,7 @@ describe('GraphQL - signUp', () => {
             );
             expect(res).toFailWith(
                 Code.GRAPHQL_VALIDATION_FAILED,
-                'Cannot query field "password" on type "UserModel".',
+                'Cannot query field "password" on type "AccountModel".',
             );
         });
     });

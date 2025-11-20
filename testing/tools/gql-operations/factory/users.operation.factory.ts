@@ -1,7 +1,6 @@
 import { IOperationInfo } from '../interfaces/operation-info.interface';
 import { IOperation } from '../interfaces/operation.interface';
 
-// TODO: This is not gonna work for items operations.
 export function operationFactory(
     { operationName, inputType, argumentName, operationType = 'mutation' }: IOperationInfo,
     { args, fields }: IOperation,

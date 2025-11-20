@@ -1,25 +1,25 @@
 import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { ITEMS_LIMITS } from '../constants/items.constants';
 
-// TODO: use constants
 @Entity()
 export class Item extends BaseEntity {
     @Column('varchar', {
         unique: true,
-        length: 40,
+        length: ITEMS_LIMITS.TITLE.MAX,
     })
     title!: string;
 
     @Column('text')
     description!: string;
 
-    @Column('varchar', { length: 40 })
+    @Column('varchar', { length: ITEMS_LIMITS.CATEGORY.MAX })
     category!: string;
 
     @Column('varchar', {
         array: true,
-        length: 20,
+        length: ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH,
     })
     tags!: string[];
 
@@ -46,4 +46,7 @@ export class Item extends BaseEntity {
         foreignKeyConstraintName: 'FK_item_account_id',
     })
     user!: User;
+
+    @Column({ name: 'account_id' })
+    createdBy!: string;
 }
