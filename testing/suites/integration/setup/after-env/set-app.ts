@@ -2,12 +2,16 @@ import { EmailsQueueMock } from '@integration/mocks/queues/emails.queue.mock';
 import { testKit } from '@integration/utils/test-kit.util';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
+import { SystemLogger } from 'src/common/logging/system.logger';
 import { EMAILS_QUEUE } from 'src/emails/constants/emails.constants';
 
 let nestApp: NestExpressApplication;
 
 beforeAll(async () => {
     try {
+        // Disable debug logs
+        jest.spyOn(SystemLogger.getInstance(), 'debug').mockImplementation();
+
         // Application
         const testingModule: TestingModule = await Test.createTestingModule({
             imports: [await import('src/app/app.module').then((m) => m.AppModule)],
