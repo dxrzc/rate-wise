@@ -88,7 +88,10 @@ export class UsersService {
         const userInCache = await this.cacheManager.get<User>(cacheKey);
         if (!userInCache) {
             const userFound = await this.findOneByIdOrThrow(id);
-            await this.cacheManager.set(cacheKey, userFound);
+            await this.cacheManager.set(cacheKey, {
+                ...userFound,
+                password: undefined,
+            });
             this.logger.info(`User with id ${id} cached`);
             return userFound;
         }
