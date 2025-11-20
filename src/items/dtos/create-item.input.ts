@@ -12,7 +12,6 @@ import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.
 import { trimAndLowerCaseArray } from 'src/common/functions/utils/trim-and-lowercase-array.util';
 import { ITEMS_LIMITS } from '../constants/items.constants';
 
-// TODO: use constants
 @InputType()
 export class CreateItemInput {
     @IsString()
