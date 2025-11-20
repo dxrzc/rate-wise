@@ -198,6 +198,12 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         };
     }
 
+    /**
+     * By default performs a "SELECT *" in the repository table and counts all the records.
+     * - Provide a custom query builder to modify the query (joins, filters, etc...).
+     * @param options Pagination options.
+     * @returns edges, nodes, totalCount and hasNextPage.
+     */
     async create(options: PaginationOptionsType<T>): Promise<IPaginatedType<T>> {
         return options.cache
             ? await this.createPaginationCached(options.limit, options.cursor, options.queryBuilder)
