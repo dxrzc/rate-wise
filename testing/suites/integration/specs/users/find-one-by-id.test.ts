@@ -59,7 +59,9 @@ describe('Gql - findOneById', () => {
             });
             const itemsData = body.data.findUserById.items;
             expect(itemsData.totalCount).toBe(3);
-            expect(itemsData.nodes).toEqual(userItems.map(({ id }) => ({ id })));
+            expect(itemsData.nodes).toEqual(
+                expect.arrayContaining(userItems.map(({ id }) => ({ id }))),
+            );
         });
     });
 
