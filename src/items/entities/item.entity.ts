@@ -46,4 +46,7 @@ export class Item extends BaseEntity {
         foreignKeyConstraintName: 'FK_item_account_id',
     })
     user!: User;
+
+    @Column({ name: 'account_id' })
+    createdBy!: string;
 }
