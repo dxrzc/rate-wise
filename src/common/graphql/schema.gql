@@ -98,7 +98,7 @@ scalar Date
 
 type Query {
   findUserById(user_id: ID!): UserModel!
-  users(
+  findAllUsers(
     cursor: String
 
     "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
