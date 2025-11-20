@@ -16,13 +16,6 @@ import { SignUpInput } from './dtos/sign-up.input';
 import { RequestContext } from './types/request-context.type';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { requestAccountDeletionDocs } from './docs/request-account-deletion.docs';
-import { requestAccountVerificationDocs } from './docs/request-account-verification.docs';
-import { signInDocs } from './docs/sign-in.docs';
-import { signOutAllDocs } from './docs/sign-out-all.docs';
-import { signOutDocs } from './docs/sign-out.docs';
-import { signUpDocs } from './docs/sign-up.docs';
-import { suspendAccountDocs } from './docs/suspend-account.docs';
 import { AccountModel } from './models/account.model';
 
 @Resolver()
@@ -35,7 +28,13 @@ export class AuthResolver {
 
     @Public()
     @CriticalThrottle()
-    @Mutation(() => AccountModel, signUpDocs)
+    @Mutation(() => AccountModel, {
+        name: 'signUp',
+        description: `
+            Register a new user account with email and password. 
+            Creates a new user session upon successful registration.
+        `,
+    })
     async signUp(
         @Args('user_data') user: SignUpInput,
         @Context('req') req: RequestContext,
@@ -45,7 +44,13 @@ export class AuthResolver {
 
     @Public()
     @CriticalThrottle()
-    @Mutation(() => AccountModel, signInDocs)
+    @Mutation(() => AccountModel, {
+        name: 'signIn',
+        description: `
+            Authenticate a user with email and password credentials. 
+            Creates a new user session upon successful authentication.
+        `,
+    })
     async signIn(
         @Args('credentials') credentials: SignInInput,
         @Context('req') req: RequestContext,
@@ -56,7 +61,14 @@ export class AuthResolver {
     @AllRolesAllowed()
     @UltraCriticalThrottle()
     @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
-    @Mutation(() => Boolean, requestAccountVerificationDocs)
+    @Mutation(() => Boolean, {
+        name: 'requestAccountVerification',
+        description: `
+            Send an account verification email to the authenticated user. 
+            Only available for users with PENDING_VERIFICATION status.
+            Updates account status to ACTIVE upon successful registration.
+        `,
+    })
     async requestAccountVerification(@Context('req') req: RequestContext) {
         await this.authService.requestAccountVerification(req.user);
         return true;
@@ -65,7 +77,13 @@ export class AuthResolver {
     @AllRolesAllowed()
     @CriticalThrottle()
     @AllAccountStatusesAllowed()
-    @Mutation(() => Boolean, requestAccountDeletionDocs)
+    @Mutation(() => Boolean, {
+        name: 'requestAccountDeletion',
+        description: `
+            Send an account deletion confirmation email to the authenticated user. 
+            The user must confirm deletion via the email link.
+        `,
+    })
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
         await this.authService.requestAccountDeletion(req.user);
         return true;
@@ -74,7 +92,13 @@ export class AuthResolver {
     @AllRolesAllowed()
     @CriticalThrottle()
     @AllAccountStatusesAllowed()
-    @Mutation(() => Boolean, signOutDocs)
+    @Mutation(() => Boolean, {
+        name: 'signOut',
+        description: `
+            Sign out the authenticated user from the current session. 
+            Destroys the current session and clears authentication cookies.
+        `,
+    })
     async signOut(
         @Context('req') req: RequestContext,
         @Context('res') res: Response,
@@ -87,7 +111,14 @@ export class AuthResolver {
     @AllRolesAllowed()
     @UltraCriticalThrottle()
     @AllAccountStatusesAllowed()
-    @Mutation(() => Boolean, signOutAllDocs)
+    @Mutation(() => Boolean, {
+        name: 'signOutAll',
+        description: `
+            Sign out the authenticated user from all active sessions. 
+            Requires password re-authentication for security. 
+            Destroys all user sessions and clears authentication cookies.
+        `,
+    })
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,
         @Context('req') req: RequestContext,
@@ -101,7 +132,14 @@ export class AuthResolver {
     @CriticalThrottle()
     @Roles([UserRole.ADMIN, UserRole.MODERATOR])
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Mutation(() => Boolean, suspendAccountDocs)
+    @Mutation(() => Boolean, {
+        name: 'suspendAccount',
+        description: `
+            Suspend a user account, preventing them from accessing the system. 
+            Only available to administrators and moderators. 
+            Admin accounts cannot be suspended.
+        `,
+    })
     async suspendAccount(@Args('user_id', { type: () => ID }) userId: string): Promise<boolean> {
         await this.authService.suspendAccount(userId);
         return true;

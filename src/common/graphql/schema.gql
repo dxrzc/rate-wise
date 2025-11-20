@@ -97,7 +97,10 @@ type UserPaginationModel {
 scalar Date
 
 type Query {
+  """Find a user by their unique ID."""
   findUserById(user_id: ID!): UserModel!
+
+  """Find all users with cursored pagination."""
   findAllUsers(
     cursor: String
 
@@ -112,39 +115,25 @@ type Mutation {
   seedItems(items_per_user: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
 
-  """
-  Register a new user account with email and password. Creates a new user session upon successful registration.
-  """
+  "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
   signUp(user_data: SignUpInput!): AccountModel!
 
-  """
-  Authenticate a user with email and password credentials. Creates a new user session upon successful authentication.
-  """
+  "\n            Authenticate a user with email and password credentials. \n            Creates a new user session upon successful authentication.\n        "
   signIn(credentials: SignInInput!): AccountModel!
 
-  """
-  Send an account verification email to the authenticated user. Only available for users with PENDING_VERIFICATION status.
-  """
+  "\n            Send an account verification email to the authenticated user. \n            Only available for users with PENDING_VERIFICATION status.\n            Updates account status to ACTIVE upon successful registration.\n        "
   requestAccountVerification: Boolean!
 
-  """
-  Send an account deletion confirmation email to the authenticated user. The user must confirm deletion via the email link.
-  """
+  "\n            Send an account deletion confirmation email to the authenticated user. \n            The user must confirm deletion via the email link.\n        "
   requestAccountDeletion: Boolean!
 
-  """
-  Sign out the authenticated user from the current session. Destroys the current session and clears authentication cookies.
-  """
+  "\n            Sign out the authenticated user from the current session. \n            Destroys the current session and clears authentication cookies.\n        "
   signOut: Boolean!
 
-  """
-  Sign out the authenticated user from all active sessions. Requires password re-authentication for security. Destroys all user sessions and clears authentication cookies.
-  """
+  "\n            Sign out the authenticated user from all active sessions. \n            Requires password re-authentication for security. \n            Destroys all user sessions and clears authentication cookies.\n        "
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
 
-  """
-  Suspend a user account, preventing them from accessing the system. Only available to administrators and moderators. Admin accounts cannot be suspended.
-  """
+  "\n            Suspend a user account, preventing them from accessing the system. \n            Only available to administrators and moderators. \n            Admin accounts cannot be suspended.\n        "
   suspendAccount(user_id: ID!): Boolean!
 }
 
