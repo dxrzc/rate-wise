@@ -42,14 +42,18 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         decodedCursor?: IDecodedCursor,
         queryBuilder?: QueryBuilder<T>,
     ): Promise<{ totalCount: number; page: PaginatedRecord[] }> {
+        let countQuery = this.repository.createQueryBuilder().getCount();
+        if (queryBuilder) {
+            let cqb = this.repository.createQueryBuilder(queryBuilder.sqbAlias);
+            cqb = queryBuilder.sqbModifier(cqb);
+            countQuery = cqb.getCount();
+        }
         const [totalCount, sortedIdsAndCursors] = await runSettledOrThrow<
             [number, PaginatedRecord[]]
-        >([
-            this.repository.createQueryBuilder().getCount(),
-            this.getPageIdsAndEncodedCursors(limit, decodedCursor, queryBuilder),
-        ]);
+        >([countQuery, this.getPageIdsAndEncodedCursors(limit, decodedCursor, queryBuilder)]);
         return { totalCount, page: sortedIdsAndCursors };
     }
+
     /**
      * Retrieves sorted IDs + encoded cursor.
      * LIMIT+1 is required to detect hasNextPage.
