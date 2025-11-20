@@ -30,7 +30,7 @@ export class UsersResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => UserPaginationModel, { name: 'users' })
+    @Query(() => UserPaginationModel, { name: 'findAllUsers' })
     async findAll(@Args() paginationArgs: PaginationArgs) {
         return await this.userService.findAll(paginationArgs);
     }
