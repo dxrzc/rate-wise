@@ -16,6 +16,7 @@ import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 import { ItemsService } from 'src/items/items.service';
+import { UserModel } from './models/user.model';
 
 @Injectable()
 export class UsersService {
@@ -29,12 +30,18 @@ export class UsersService {
         private readonly itemsService: ItemsService,
     ) {}
 
+    /**
+     * Deletes user in redis cache
+     */
     private async deleteUserFromCache(id: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
     }
 
+    /**
+     * Validates uuid or throws.
+     */
     private validUuidOrThrow(id: string) {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
@@ -42,15 +49,20 @@ export class UsersService {
         }
     }
 
+    /**
+     * Validates id and returns user found, can be null.
+     */
     async findOneById(id: string): Promise<User | null> {
         this.validUuidOrThrow(id);
         const userFound = await this.userRepository.findOneBy({ id });
         return userFound;
     }
 
-    async findOneByIdOrThrow(id: string): Promise<User> {
-        this.validUuidOrThrow(id);
-        const userFound = await this.userRepository.findOneBy({ id });
+    /**
+     * Validates id and returns user, throws if not found
+     */
+    async findOneByIdOrThrow(id: string) {
+        const userFound = await this.findOneById(id);
         if (!userFound) {
             this.logger.error(`Item with id ${id} not found`);
             throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
@@ -58,24 +70,36 @@ export class UsersService {
         return userFound;
     }
 
-    async findOneByIdOrThrowCached(id: string): Promise<User> {
-        this.validUuidOrThrow(id);
-        const cacheKey = createUserCacheKey(id);
-        const userInCache = await this.cacheManager.get<User>(cacheKey);
-        if (!userInCache) {
-            const userFound = await this.findOneByIdOrThrow(id);
-            await this.cacheManager.set(cacheKey, userFound);
-            this.logger.info(`User with id ${id} cached`);
-            return userFound;
-        }
-        const userInCacheDeserialized = deserializeUser(userInCache);
-        this.logger.info(`User with id ${id} retrieved from cache`);
-        return userInCacheDeserialized;
-    }
-
+    /**
+     * Returns user found, can be null
+     */
     async findOneByEmail(email: string): Promise<User | null> {
         const userFound = await this.userRepository.findOneBy({ email });
         return userFound;
+    }
+
+    /**
+     * Returns user and items, attemps to fetch from cache first.
+     * Throws if user not found in database
+     */
+    async findUserAndItemsOrThrowCached(id: string): Promise<UserModel> {
+        this.validUuidOrThrow(id);
+        const cacheKey = createUserCacheKey(id);
+        const userInCache = await this.cacheManager.get<User>(cacheKey);
+        let userFound: User;
+        if (!userInCache) {
+            userFound = await this.findOneByIdOrThrow(id);
+            await this.cacheManager.set(cacheKey, userFound);
+            this.logger.info(`User with id ${id} cached`);
+        } else {
+            userFound = deserializeUser(userInCache);
+            this.logger.info(`User with id ${id} retrieved from cache`);
+        }
+        const items = await this.itemsService.findAllByUser(id, { limit: 10 });
+        return {
+            ...userFound,
+            items,
+        };
     }
 
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
