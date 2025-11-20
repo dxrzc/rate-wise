@@ -12,11 +12,15 @@ import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.const
 import { TOKENS_REDIS_CONNECTION } from 'src/tokens/constants/tokens.constants';
 import { User } from 'src/users/entities/user.entity';
 import { DataSource } from 'typeorm';
+import { Item } from 'src/items/entities/item.entity';
+import { ItemsSeedService } from 'src/seed/services/items-seed.service';
 
 beforeAll(() => {
     testKit.userSeed = testKit.app.get(UserSeedService);
+    testKit.itemSeed = testKit.app.get(ItemsSeedService);
     testKit.authConfig = testKit.app.get(AuthConfigService);
     testKit.userRepos = testKit.app.get(DataSource).getRepository(User);
+    testKit.itemRepos = testKit.app.get(DataSource).getRepository(Item);
     testKit.tokensRedisClient = testKit.app.get<RedisClientAdapter>(TOKENS_REDIS_CONNECTION);
     testKit.sessionsRedisClient = testKit.app.get<RedisClientAdapter>(SESSIONS_REDIS_CONNECTION);
     testKit.accDeletionToken = testKit.app.get<AuthTokenService>(ACCOUNT_DELETION_TOKEN);
