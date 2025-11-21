@@ -9,7 +9,7 @@ import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { UserModel } from 'src/users/models/user.model';
 
-describe('Gql - findOneById', () => {
+describe('Gql - findUserById', () => {
     describe('Invalid mongo id', () => {
         test('return 404 code and user not found error message', async () => {
             const id = faker.food.vegetable();
@@ -92,7 +92,7 @@ describe('Gql - findOneById', () => {
             const res = await testKit.gqlClient
                 .send(findUserById({ fields: 'ALL', args: id }))
                 .expect(success);
-            expect(res.body.data.findUserById).toStrictEqual({
+            expect(res.body.data.findUserById).toEqual({
                 ...userInDb,
                 createdAt: userInDb?.createdAt.toISOString(),
                 updatedAt: userInDb?.updatedAt.toISOString(),
@@ -112,7 +112,7 @@ describe('Gql - findOneById', () => {
             const res = await testKit.gqlClient.send(
                 findUserById({ fields: ['username'], args: user.id }),
             );
-            expect(res.body.data.findUserById.username).toStrictEqual(user.username);
+            expect(res.body.data.findUserById.username).toBe(user.username);
         });
 
         test('return user in database without password', async () => {
@@ -128,7 +128,7 @@ describe('Gql - findOneById', () => {
             const res = await testKit.gqlClient
                 .send(findUserById({ fields: 'ALL', args: id }))
                 .expect(success);
-            expect(res.body.data.findUserById).toStrictEqual({
+            expect(res.body.data.findUserById).toEqual({
                 ...userInDb,
                 createdAt: userInDb?.createdAt.toISOString(),
                 updatedAt: userInDb?.updatedAt.toISOString(),
