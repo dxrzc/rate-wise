@@ -9,18 +9,38 @@ import { UserRole } from 'src/users/enums/user-role.enum';
     `,
 })
 export class AccountModel extends BaseModel {
-    @Field(() => String)
+    @Field(() => String, {
+        description: `
+            Unique username chosen by the user
+        `,
+    })
     username!: string;
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: `
+            Email address of the user
+        `,
+    })
     email!: string;
 
-    @Field(() => [UserRole])
+    @Field(() => [UserRole], {
+        description: `
+            Roles assigned to the user
+        `,
+    })
     roles!: UserRole[];
 
-    @Field(() => AccountStatus)
+    @Field(() => AccountStatus, {
+        description: `
+            Current status of the user account
+        `,
+    })
     status!: AccountStatus;
 
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: `
+            Reputation score of the user
+        `,
+    })
     reputationScore!: number;
 }
