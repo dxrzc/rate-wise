@@ -3,7 +3,11 @@ import { BaseModel } from 'src/common/models/base.model';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 
-@ObjectType()
+@ObjectType({
+    description: `
+        Account model representing authenticated user details
+    `,
+})
 export class AccountModel extends BaseModel {
     @Field(() => String)
     username!: string;
