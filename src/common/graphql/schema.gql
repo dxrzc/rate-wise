@@ -2,14 +2,30 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"\n        Account model representing authenticated user details\n    "
 type AccountModel {
+  "\n            Unique identifier for the model instance\n        "
   id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
   createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
+
+  "\n            Unique username chosen by the user\n        "
   username: String!
+
+  "\n            Email address of the user\n        "
   email: String!
+
+  "\n            Roles assigned to the user\n        "
   roles: [UserRole!]!
+
+  "\n            Current status of the user account\n        "
   status: AccountStatus!
+
+  "\n            Reputation score of the user\n        "
   reputationScore: Float!
 }
 
@@ -37,10 +53,15 @@ enum AccountStatus {
   SUSPENDED
 }
 
-"""Item model"""
+"\n        Item model representing an item to rate and review.\n    "
 type ItemModel {
+  "\n            Unique identifier for the model instance\n        "
   id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
   createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
   title: String!
   description: String!
@@ -51,45 +72,85 @@ type ItemModel {
   createdBy: ID!
 }
 
+"""Edge type for ItemModel in a paginated list."""
 type ItemModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
   cursor: String!
+
+  "\n                The node of type ItemModel contained in this edge.\n            "
   node: ItemModel!
 }
 
+"\n        Paginated model for ItemModel representing a paginated list of items.\n    "
 type ItemPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type ItemModel.\n            "
   edges: [ItemModelEdge!]
+
+  "\n                List of ItemModel nodes in the current page.\n            "
   nodes: [ItemModel!]
+
+  "\n                The total number of items available across all pages.\n            "
   totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
   hasNextPage: Boolean!
 }
 
-"""User model"""
+"\n        User model extending AccountModel to include user-specific details\n        such as associated items.\n    "
 type UserModel {
+  "\n            Unique identifier for the model instance\n        "
   id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
   createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
+
+  "\n            Unique username chosen by the user\n        "
   username: String!
+
+  "\n            Email address of the user\n        "
   email: String!
+
+  "\n            Roles assigned to the user\n        "
   roles: [UserRole!]!
+
+  "\n            Current status of the user account\n        "
   status: AccountStatus!
+
+  "\n            Reputation score of the user\n        "
   reputationScore: Float!
   items(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
-    "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
   ): ItemPaginationModel!
 }
 
+"""Edge type for UserModel in a paginated list."""
 type UserModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
   cursor: String!
+
+  "\n                The node of type UserModel contained in this edge.\n            "
   node: UserModel!
 }
 
+"\n        Paginated model for UserModel representing a paginated list of users.\n    "
 type UserPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type UserModel.\n            "
   edges: [UserModelEdge!]
+
+  "\n                List of UserModel nodes in the current page.\n            "
   nodes: [UserModel!]
+
+  "\n                The total number of items available across all pages.\n            "
   totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
   hasNextPage: Boolean!
 }
 
@@ -97,11 +158,15 @@ type UserPaginationModel {
 scalar Date
 
 type Query {
+  """Find a user by their unique ID."""
   findUserById(user_id: ID!): UserModel!
+
+  """Find all users with cursored pagination."""
   findAllUsers(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
-    "\n        **Constraints:** Minimum value is 1, maximum value is 100.\n        "
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
   ): UserPaginationModel!
   findItemById(item_id: ID!): ItemModel!
@@ -112,42 +177,29 @@ type Mutation {
   seedItems(items_per_user: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
 
-  """
-  Register a new user account with email and password. Creates a new user session upon successful registration.
-  """
+  "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
   signUp(user_data: SignUpInput!): AccountModel!
 
-  """
-  Authenticate a user with email and password credentials. Creates a new user session upon successful authentication.
-  """
+  "\n            Authenticate a user with email and password credentials. \n            Creates a new user session upon successful authentication.\n        "
   signIn(credentials: SignInInput!): AccountModel!
 
-  """
-  Send an account verification email to the authenticated user. Only available for users with PENDING_VERIFICATION status.
-  """
+  "\n            Send an account verification email to the authenticated user. \n            Only available for users with PENDING_VERIFICATION status.\n            Updates account status to ACTIVE upon successful registration.\n        "
   requestAccountVerification: Boolean!
 
-  """
-  Send an account deletion confirmation email to the authenticated user. The user must confirm deletion via the email link.
-  """
+  "\n            Send an account deletion confirmation email to the authenticated user. \n            The user must confirm deletion via the email link.\n        "
   requestAccountDeletion: Boolean!
 
-  """
-  Sign out the authenticated user from the current session. Destroys the current session and clears authentication cookies.
-  """
+  "\n            Sign out the authenticated user from the current session. \n            Destroys the current session and clears authentication cookies.\n        "
   signOut: Boolean!
 
-  """
-  Sign out the authenticated user from all active sessions. Requires password re-authentication for security. Destroys all user sessions and clears authentication cookies.
-  """
+  "\n            Sign out the authenticated user from all active sessions. \n            Requires password re-authentication for security. \n            Destroys all user sessions and clears authentication cookies.\n        "
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
 
-  """
-  Suspend a user account, preventing them from accessing the system. Only available to administrators and moderators. Admin accounts cannot be suspended.
-  """
+  "\n            Suspend a user account, preventing them from accessing the system. \n            Only available to administrators and moderators. \n            Admin accounts cannot be suspended.\n        "
   suspendAccount(user_id: ID!): Boolean!
 }
 
+"""Input type for creating a new item"""
 input CreateItemInput {
   title: String!
   description: String!
@@ -155,22 +207,29 @@ input CreateItemInput {
   tags: [String!]!
 }
 
+"""Input data required for user sign-up."""
 input SignUpInput {
-  "        \n        **Constraints:**\n        - Length between 3 and 30 characters.\n        "
+  "              \n        - **Maximum length:** 30 characters.\n        - **Minimum length:** 3 characters.        \n        "
   username: String!
 
-  "\n        **Constraints:**\n        - Valid email format.\n        - Maximum length of 45 characters.\n        "
+  "        \n        - **Valid email format.**\n        - **Maximum length:** 45 characters.\n        "
   email: String!
 
-  "        \n        **Constraints:**\n        - Length between 8 and 60 characters.\n        "
+  "        \n        - **Minimum length:** 8 characters.\n        - **Maximum length:** 60 characters.        \n        "
   password: String!
 }
 
+"""Input data required for user sign-in."""
 input SignInInput {
+  """The email address of the user."""
   email: String!
+
+  """The password of the user."""
   password: String!
 }
 
+"""Input type for re-authentication using password"""
 input ReAuthenticationInput {
+  """The password of the user."""
   password: String!
 }

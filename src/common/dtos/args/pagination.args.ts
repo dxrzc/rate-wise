@@ -6,7 +6,12 @@ import { PAG_LIMITS } from 'src/common/constants/pagination.constants';
 export class PaginationArgs {
     @IsString()
     @IsOptional()
-    @Field(() => String, { nullable: true })
+    @Field(() => String, {
+        nullable: true,
+        description: `
+            Cursor for pagination to fetch results after this cursor.
+        `,
+    })
     cursor?: string;
 
     @IsInt()
@@ -14,7 +19,9 @@ export class PaginationArgs {
     @Max(PAG_LIMITS.MAX)
     @Field(() => Int, {
         description: `
-        **Constraints:** Minimum value is 1, maximum value is 100.
+        Number of items to retrieve per page.                
+        - **Minimum value:** 1.
+        - **Maximum value:** 100.
         `,
     })
     limit!: number;
