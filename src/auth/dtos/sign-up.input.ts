@@ -3,7 +3,9 @@ import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 import { AUTH_LIMITS } from '../constants/auth.constants';
 import { Transform } from 'class-transformer';
 
-@InputType()
+@InputType({
+    description: 'Input data required for user sign-up.',
+})
 export class SignUpInput {
     @IsString()
     @MinLength(AUTH_LIMITS.USERNAME.MIN)

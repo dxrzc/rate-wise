@@ -12,7 +12,7 @@ import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.
 import { trimAndLowerCaseArray } from 'src/common/functions/utils/trim-and-lowercase-array.util';
 import { ITEMS_LIMITS } from '../constants/items.constants';
 
-@InputType()
+@InputType({ description: 'Input type for creating a new item' })
 export class CreateItemInput {
     @IsString()
     @MinLength(ITEMS_LIMITS.TITLE.MIN)
