@@ -1,7 +1,8 @@
 import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { ITEMS_LIMITS } from '../constants/items.constants';
+import { Review } from 'src/reviews/entities/review.entity';
 
 @Entity()
 export class Item extends BaseEntity {
@@ -31,20 +32,14 @@ export class Item extends BaseEntity {
     })
     averageRating!: number;
 
-    @Column('integer', {
-        name: 'review_count',
-        default: 0,
-    })
-    reviewCount!: number;
+    @OneToMany(() => Review, (review) => review.item)
+    reviews!: Review[];
 
     @ManyToOne(() => User, (user) => user.items, {
         nullable: false,
         onDelete: 'CASCADE',
     })
-    @JoinColumn({
-        name: 'account_id',
-        foreignKeyConstraintName: 'FK_item_account_id',
-    })
+    @JoinColumn({ name: 'account_id' })
     user!: User;
 
     @Column({ name: 'account_id' })
