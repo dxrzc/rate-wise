@@ -51,4 +51,13 @@ export class ItemsSeedService {
             reviewCount: this.reviewCount,
         };
     }
+
+    get itemInput() {
+        return {
+            title: this.title,
+            description: this.description,
+            category: this.category,
+            tags: this.tags,
+        };
+    }
 }
