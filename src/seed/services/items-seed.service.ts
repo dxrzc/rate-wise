@@ -28,10 +28,6 @@ export class ItemsSeedService {
         return parseFloat((Math.random() * 5).toFixed(2));
     }
 
-    get reviewCount(): number {
-        return Math.floor(Math.random() * 1000);
-    }
-
     get tags(): string[] {
         const tagsCount = Math.floor(Math.random() * 5) + 1;
         const tagsSet = new Set<string>();
@@ -48,7 +44,6 @@ export class ItemsSeedService {
             category: this.category,
             tags: this.tags,
             averageRating: this.averageRating,
-            reviewCount: this.reviewCount,
         };
     }
 
