@@ -68,7 +68,6 @@ type ItemModel {
   category: String!
   tags: [String!]!
   averageRating: Float!
-  reviewCount: Int!
   createdBy: ID!
 }
 
