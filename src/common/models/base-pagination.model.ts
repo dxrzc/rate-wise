@@ -3,7 +3,9 @@ import { Field, ObjectType, Int } from '@nestjs/graphql';
 import { IPaginatedType } from '../../pagination/interfaces/paginated-type.interface';
 
 export function Paginated<T>(classRef: Type<T>): Type<IPaginatedType<T>> {
-    @ObjectType(`${classRef.name}Edge`)
+    @ObjectType(`${classRef.name}Edge`, {
+        description: `Edge type for ${classRef.name} in a paginated list.`,
+    })
     abstract class EdgeType {
         @Field(() => String)
         cursor!: string;
