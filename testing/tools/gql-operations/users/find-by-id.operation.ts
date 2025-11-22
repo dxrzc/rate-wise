@@ -1,5 +1,5 @@
 import { UserModel } from 'src/users/models/user.model';
-import { operationFactory } from '../factory/users.operation.factory';
+import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 
 export function findUserById({ args, fields }: IOperation<string, UserModel>) {

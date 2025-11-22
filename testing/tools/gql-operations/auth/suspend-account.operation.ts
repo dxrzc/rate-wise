@@ -1,4 +1,4 @@
-import { operationFactory } from '../factory/users.operation.factory';
+import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 
 export function suspendAccount({ args, fields }: IOperation<string, void>) {
