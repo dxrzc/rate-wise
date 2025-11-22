@@ -27,7 +27,7 @@ export class Item extends BaseEntity {
     @Column('numeric', {
         name: 'average_rating',
         precision: 3,
-        scale: 2,
+        scale: 1,
         default: 0,
     })
     averageRating!: number;

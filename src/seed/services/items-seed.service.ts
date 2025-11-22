@@ -25,7 +25,7 @@ export class ItemsSeedService {
     }
 
     get averageRating(): number {
-        return Math.floor(Math.random() * 11) * 0.5;
+        return Math.round(Math.random() * 100) / 10;
     }
 
     get tags(): string[] {
