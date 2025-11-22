@@ -153,6 +153,23 @@ type UserPaginationModel {
   hasNextPage: Boolean!
 }
 
+"\n        Review model representing a user's review of an item.\n    "
+type ReviewModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+  content: String!
+  rating: Float!
+  votes: Float!
+  createdBy: String!
+  relatedItem: String!
+}
+
 """Date custom scalar type"""
 scalar Date
 
@@ -175,6 +192,7 @@ type Mutation {
   seedUsers(quantity: Int!): Boolean!
   seedItems(items_per_user: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
+  createReview(item_data: CreateReviewInput!): ReviewModel!
 
   "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
   signUp(user_data: SignUpInput!): AccountModel!
@@ -204,6 +222,13 @@ input CreateItemInput {
   description: String!
   category: String!
   tags: [String!] = []
+}
+
+"""Input data required to create a new review for an item."""
+input CreateReviewInput {
+  content: String!
+  rating: Float!
+  itemId: String!
 }
 
 """Input data required for user sign-up."""
