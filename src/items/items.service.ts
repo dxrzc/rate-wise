@@ -103,7 +103,7 @@ export class ItemsService {
 
     async createOne(item: CreateItemInput, user: AuthenticatedUser): Promise<ItemModel> {
         try {
-            const created = await this.itemRepository.save({ ...item, user: { id: user.id } });
+            const created = await this.itemRepository.save({ ...item, createdBy: user.id });
             this.logger.info(`Item with id ${created.id} by user ${user.id} created`);
             return { ...created, createdBy: created.user.id };
         } catch (error) {
