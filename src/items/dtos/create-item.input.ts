@@ -1,11 +1,4 @@
-import {
-    ArrayMaxSize,
-    ArrayMinSize,
-    IsArray,
-    IsString,
-    MaxLength,
-    MinLength,
-} from 'class-validator';
+import { ArrayMaxSize, IsArray, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Field, InputType } from '@nestjs/graphql';
 import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.util';
@@ -35,7 +28,6 @@ export class CreateItemInput {
 
     @IsArray()
     @ArrayMaxSize(ITEMS_LIMITS.TAGS.MAX_ARRAY_SIZE)
-    @ArrayMinSize(ITEMS_LIMITS.TAGS.MIN_ARRAY_SIZE)
     @IsString({ each: true })
     @MinLength(ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH, { each: true })
     @MaxLength(ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH, { each: true })
