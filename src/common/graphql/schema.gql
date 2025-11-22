@@ -203,7 +203,7 @@ input CreateItemInput {
   title: String!
   description: String!
   category: String!
-  tags: [String!]!
+  tags: [String!] = []
 }
 
 """Input data required for user sign-up."""
