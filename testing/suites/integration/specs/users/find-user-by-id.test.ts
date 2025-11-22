@@ -10,7 +10,7 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { UserModel } from 'src/users/models/user.model';
 
 describe('Gql - findUserById', () => {
-    describe('Invalid mongo id', () => {
+    describe('Invalid postgres id', () => {
         test('return 404 code and user not found error message', async () => {
             const id = faker.food.vegetable();
             const response = await testKit.gqlClient.send(
