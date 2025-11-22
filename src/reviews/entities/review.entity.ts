@@ -27,4 +27,10 @@ export class Review extends BaseEntity {
     })
     @JoinColumn({ name: 'item_id' })
     item!: Item;
+
+    @Column({ name: 'account_id' })
+    createdBy!: string;
+
+    @Column({ name: 'item_id' })
+    relatedItem!: string;
 }
