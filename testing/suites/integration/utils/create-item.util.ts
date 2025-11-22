@@ -1,8 +1,8 @@
-import { ItemModel } from 'src/items/models/item.model';
 import { testKit } from './test-kit.util';
+import { Item } from 'src/items/entities/item.entity';
 
-export async function createItem(userId: string): Promise<ItemModel> {
+export async function createItem(userId: string): Promise<Item> {
     const itemData = testKit.itemSeed.item;
-    const created = await testKit.itemRepos.save({ ...itemData, user: { id: userId } });
+    const created = await testKit.itemRepos.save({ ...itemData, createdBy: userId });
     return created;
 }
