@@ -49,7 +49,7 @@ describe('Gql - createItem', () => {
     });
 
     describe('Item created successfully', () => {
-        test('default average_rating is 0.0', async () => {
+        test('default average_rating is 0', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const itemData = testKit.itemSeed.itemInput;
             await testKit.gqlClient
@@ -57,7 +57,7 @@ describe('Gql - createItem', () => {
                 .set('Cookie', sessionCookie)
                 .expect(success);
             const itemInDb = await testKit.itemRepos.findOneBy({ title: itemData.title });
-            expect(itemInDb?.averageRating).toBe('0.0');
+            expect(itemInDb?.averageRating).toBe(0);
         });
 
         describe('Provided category with uppercase letter and leading and trailing spaces', () => {
