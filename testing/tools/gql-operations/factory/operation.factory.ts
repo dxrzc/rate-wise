@@ -1,6 +1,6 @@
 import { IOperationInfo } from '../interfaces/operation-info.interface';
 import { IOperation } from '../interfaces/operation.interface';
-import { accountData, itemData } from './models.data';
+import { accountData, itemData, reviewData } from './models.data';
 
 export function operationFactory(
     {
@@ -23,7 +23,8 @@ export function operationFactory(
                 dataFetched = itemData.join();
                 break;
             case 'review':
-                throw new Error('Not implemented');
+                dataFetched = reviewData.join();
+                break;
             default:
                 throw new Error('Invalid model');
         }
