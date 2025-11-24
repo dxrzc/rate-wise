@@ -11,14 +11,18 @@ import { Cache } from '@nestjs/cache-manager';
 import { AuthTokenService } from 'src/auth/types/auth-tokens-service.type';
 import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from 'src/seed/services/items-seed.service';
+import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
+import { Review } from 'src/reviews/entities/review.entity';
 
 export interface ITestKit {
     app: INestApplication<App>;
     userSeed: UserSeedService;
     itemSeed: ItemsSeedService;
+    reviewSeed: ReviewSeedService;
     authConfig: AuthConfigService;
     userRepos: Repository<User>;
     itemRepos: Repository<Item>;
+    reviewRepos: Repository<Review>;
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
     cacheManager: Cache;
