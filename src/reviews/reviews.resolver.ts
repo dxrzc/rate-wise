@@ -6,6 +6,7 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { ReviewModel } from './models/review.model';
+import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
 
 @Resolver()
 export class ReviewResolver {
@@ -13,9 +14,10 @@ export class ReviewResolver {
 
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @AllRolesAllowed()
     @Mutation(() => ReviewModel, { name: 'createReview' })
     async createOne(
-        @Args('item_data') review: CreateReviewInput,
+        @Args('review_data') review: CreateReviewInput,
         @Context('req') req: RequestContext,
     ) {
         return await this.reviewService.createOne(review, req.user);
