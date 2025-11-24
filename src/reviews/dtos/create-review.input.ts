@@ -1,5 +1,14 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsDefined, IsNumber, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import {
+    IsDefined,
+    IsNumber,
+    IsString,
+    IsUUID,
+    Max,
+    MaxLength,
+    Min,
+    MinLength,
+} from 'class-validator';
 import { REVIEWS_LIMITS } from '../constants/reviews.constant';
 
 @InputType({
@@ -21,6 +30,7 @@ export class CreateReviewInput {
     rating!: number;
 
     @IsDefined()
+    @IsUUID()
     @IsString()
     @Field(() => String)
     itemId!: string;
