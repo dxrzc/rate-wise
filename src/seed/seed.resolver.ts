@@ -20,4 +20,11 @@ export class SeedResolver {
         await this.seedService.createItems(n);
         return true;
     }
+
+    @Public()
+    @Mutation(() => Boolean)
+    async seedReviews(@Args('reviews_per_item', { type: () => Int }) n: number) {
+        await this.seedService.createReviews(n);
+        return true;
+    }
 }
