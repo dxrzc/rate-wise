@@ -9,6 +9,10 @@ export class ReviewSeedService {
         return faker.number.int({ min: 0, max: 10 });
     }
 
+    get itemId(): string {
+        return faker.string.uuid();
+    }
+
     get votes(): number {
         return faker.number.int({ min: 0, max: 10000 });
     }
@@ -25,6 +29,7 @@ export class ReviewSeedService {
         return {
             content: this.content,
             rating: this.rating,
+            itemId: this.itemId,
         };
     }
 }
