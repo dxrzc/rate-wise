@@ -20,3 +20,14 @@ export const itemData = [
     'averageRating',
     'createdBy',
 ];
+
+export const reviewData = [
+    'id',
+    'createdAt',
+    'updatedAt',
+    'content',
+    'rating',
+    'votes',
+    'createdBy',
+    'relatedItem',
+];
