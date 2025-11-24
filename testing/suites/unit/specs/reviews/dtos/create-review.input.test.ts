@@ -51,6 +51,18 @@ describe('CreateReviewInput', () => {
         });
     });
 
+    describe('Rating is not an integer', () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
+            const data = {
+                ...reviewsSeed.reviewInput,
+                rating: 4.5,
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
+            );
+        });
+    });
+
     describe('Rating is not provided', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
@@ -111,6 +123,17 @@ describe('CreateReviewInput', () => {
         });
     });
 
+    describe('Content contains leading and trailing spaces', () => {
+        test('trim leading and trailing spaces from content', async () => {
+            const data = {
+                ...reviewsSeed.reviewInput,
+                content: '  some content  ',
+            };
+            const result = await pipe.transform(data, metadata);
+            expect(result.content).toBe('some content');
+        });
+    });
+
     describe('Item id is not a string', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
@@ -156,6 +179,16 @@ describe('CreateReviewInput', () => {
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
             );
+        });
+    });
+
+    describe('Validation success', () => {
+        test('return the same data provided by the user', async () => {
+            const data = {
+                ...reviewsSeed.reviewInput,
+            };
+            const result = await pipe.transform(data, metadata);
+            expect(result).toStrictEqual(data);
         });
     });
 });
