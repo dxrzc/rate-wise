@@ -170,6 +170,30 @@ type ReviewModel {
   relatedItem: String!
 }
 
+"""Edge type for ReviewModel in a paginated list."""
+type ReviewModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type ReviewModel contained in this edge.\n            "
+  node: ReviewModel!
+}
+
+"\n        Paginated model for ReviewModel representing a paginated list of reviews.\n    "
+type ReviewPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type ReviewModel.\n            "
+  edges: [ReviewModelEdge!]
+
+  "\n                List of ReviewModel nodes in the current page.\n            "
+  nodes: [ReviewModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
 """Date custom scalar type"""
 scalar Date
 
@@ -194,6 +218,15 @@ type Mutation {
   seedReviews(reviews_per_item: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
   createReview(review_data: CreateReviewInput!): ReviewModel!
+  userReviews(
+    item_id: ID!
+
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ReviewPaginationModel!
 
   "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
   signUp(user_data: SignUpInput!): AccountModel!
