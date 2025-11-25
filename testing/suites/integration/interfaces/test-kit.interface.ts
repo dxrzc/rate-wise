@@ -13,9 +13,11 @@ import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from 'src/seed/services/items-seed.service';
 import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
+import { SeedService } from 'src/seed/seed.service';
 
 export interface ITestKit {
     app: INestApplication<App>;
+    seedService: SeedService;
     userSeed: UserSeedService;
     itemSeed: ItemsSeedService;
     reviewSeed: ReviewSeedService;
