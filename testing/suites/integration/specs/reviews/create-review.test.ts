@@ -247,4 +247,26 @@ describe('Gql - createReview', () => {
             });
         });
     });
+
+    test('users can post reviews in other users items', async () => {
+        // create item for user A
+        const { id: creatorId } = await createAccount({ status: AccountStatus.ACTIVE });
+        const { id: itemId } = await createItem(creatorId);
+        // user B post review for the item
+        const { sessionCookie: reviewerSessCookie } = await createAccount({
+            status: AccountStatus.ACTIVE,
+        });
+        await testKit.gqlClient
+            .send(
+                createReview({
+                    fields: ['id'],
+                    args: {
+                        ...testKit.reviewSeed.reviewInput,
+                        itemId,
+                    },
+                }),
+            )
+            .set('Cookie', reviewerSessCookie)
+            .expect(success);
+    });
 });
