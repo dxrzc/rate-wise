@@ -46,7 +46,7 @@ export class SeedService {
     }
 
     // item per user
-    async createItems(n: number): Promise<void> {
+    async createItems(itemsPerUser: number): Promise<void> {
         // delete existing items first
         await this.itemRepository.deleteAll();
         const results = await this.userRepository.find({ select: { id: true } });
@@ -54,14 +54,15 @@ export class SeedService {
         const usersIds = results.map((e) => e.id);
         const promises = new Array<Promise<unknown>>();
         for (const id of usersIds) {
-            for (let i = 0; i < n; i++)
+            for (let i = 0; i < itemsPerUser; i++)
                 promises.push(this.itemRepository.save({ ...this.itemsSeed.item, user: { id } }));
         }
         await Promise.all(promises);
+        this.logger.debug(`${itemsPerUser} items per user seeded`);
     }
 
     // reviews per item, user id chosen randomly
-    async createReviews(n: number): Promise<void> {
+    async createReviews(reviewsPerItem: number): Promise<void> {
         // delete existing reviews first
         await this.reviewRepository.deleteAll();
         // fetch users
@@ -75,7 +76,7 @@ export class SeedService {
         // seed
         const promises = new Array<Promise<unknown>>();
         for (const itemId of itemsIds) {
-            for (let i = 0; i < n; i++) {
+            for (let i = 0; i < reviewsPerItem; i++) {
                 const randomUserId = usersIds[Math.floor(Math.random() * usersIds.length)];
                 promises.push(
                     this.reviewRepository.save({
@@ -87,5 +88,6 @@ export class SeedService {
             }
         }
         await Promise.all(promises);
+        this.logger.debug(`${reviewsPerItem} reviews per item seeded`);
     }
 }
