@@ -54,25 +54,16 @@ export class ItemsService {
         });
     }
 
-    // async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
-    //     const limit = pagArgs.limit;
-    //     const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
-    //     const edges = await createPaginationEdges<Item, IItemDbRecord>({
-    //         repository: this.itemRepository,
-    //         transformFunction: rawRecordToItemEntity,
-    //         decodedCursor,
-    //         limit,
-    //     });
-    //     const hasNextPage = edges.length > limit;
-    //     if (hasNextPage) edges.pop();
-    //     const totalCount = await this.itemRepository.createQueryBuilder().getCount();
-    //     return {
-    //         edges,
-    //         nodes: edges.map((edge) => edge.node),
-    //         totalCount,
-    //         hasNextPage,
-    //     };
-    // }
+    /**
+     * - Find all users using provided limit and cursor
+     * - Attempts to fetch from cache first.
+     */
+    async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
+        return await this.paginationService.create({
+            ...paginationArgs,
+            cache: true,
+        });
+    }
 
     // id must be validated previously
     private async findByIdOrThrowPrivate(uuid: string) {

@@ -58,6 +58,16 @@ export class ItemsResolver {
         });
     }
 
+    @Public()
+    @BalancedThrottle()
+    @Query(() => ItemPaginationModel, {
+        name: 'findAllItems',
+        description: `Find all items with cursored pagination.`,
+    })
+    async findAll(@Args() paginationArgs: PaginationArgs) {
+        return await this.itemsService.findAll(paginationArgs);
+    }
+
     @ResolveField(() => ReviewPaginationModel)
     async reviews(@Args() paginationArgs: PaginationArgs, @Parent() item: ItemModel) {
         return await this.reviewsService.findAllItemReviews({
