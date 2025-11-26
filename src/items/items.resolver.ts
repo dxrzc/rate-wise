@@ -75,23 +75,4 @@ export class ItemsResolver {
             itemId: item.id,
         });
     }
-
-    // public
-    // @Query(() => ItemPaginationModel, { name: 'users' })
-    // async findAll(@Args() paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
-    //     return await this.itemsService.findAll(paginationArgs);
-    // }
-
-    // @Mutation(() => ItemModel, { name: 'updateItem' })
-    // updateItem(
-    //     @Args('item_id', { type: () => Int }) id: number,
-    //     @Args('input_data') data: UpdateItemInput,
-    // ) {
-    //     return this.itemsService.updateOne(id, data);
-    // }
-
-    // @Mutation(() => Boolean)
-    // deleteOne(@Args('item_id', { type: () => Int }) id: number) {
-    //     return this.itemsService.deleteOne(id);
-    // }
 }
