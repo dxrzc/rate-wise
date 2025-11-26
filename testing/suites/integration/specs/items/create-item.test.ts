@@ -52,11 +52,13 @@ describe('Gql - createItem', () => {
         test('default average_rating is 0', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const itemData = testKit.itemSeed.itemInput;
-            await testKit.gqlClient
+            const res = await testKit.gqlClient
                 .send(createItem({ args: itemData, fields: ['id'] }))
                 .set('Cookie', sessionCookie)
                 .expect(success);
-            const itemInDb = await testKit.itemRepos.findOneBy({ title: itemData.title });
+            const itemId = res.body.data.createItem.id;
+            expect(itemId).toBeDefined();
+            const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
             expect(itemInDb?.averageRating).toBe(0);
         });
 
