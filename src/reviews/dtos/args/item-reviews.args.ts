@@ -1,10 +1,9 @@
 import { ArgsType, Field, ID } from '@nestjs/graphql';
-import { IsDefined, IsUUID } from 'class-validator';
+import { IsDefined } from 'class-validator';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 
 @ArgsType()
 export class ItemReviewsArgs extends PaginationArgs {
-    @IsUUID()
     @IsDefined()
     @Field(() => ID)
     itemId!: string;
