@@ -22,9 +22,8 @@ export class EmailsQueueMock {
 
     async add(queueName: string, data: IEmailInfo) {
         if (!this.emailsConsumer) {
-            throw new Error('EmailsConsumer not set');
+            throw new Error('EmailsConsumer not provided');
         }
-        console.error('Email mock');
         await this.emailsConsumer.process({ data } as Job<IEmailInfo>);
     }
 }
