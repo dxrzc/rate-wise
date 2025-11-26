@@ -7,13 +7,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsService } from 'src/items/items.service';
 import { Item } from 'src/items/entities/item.entity';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ReviewService {
     constructor(
         @InjectRepository(Review)
         private readonly reviewRepository: Repository<Review>,
+        private readonly paginationService: PaginationService<Review>,
         private readonly itemsService: ItemsService,
+        private readonly usersService: UsersService,
         private readonly logger: HttpLoggerService,
     ) {}
 
@@ -38,5 +43,20 @@ export class ReviewService {
         this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
         await this.refreshItemAvgRating(item);
         return review;
+    }
+
+    async findAllByUser(args: ReviewsByUserArgs) {
+        await this.usersService.findOneByIdOrThrow(args.userId);
+        const sqbAlias = 'review';
+        return await this.paginationService.create({
+            limit: args.limit,
+            cursor: args.cursor,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) =>
+                    qb.where(`${sqbAlias}.account_id = :userId`, { userId: args.userId }),
+                sqbAlias,
+            },
+        });
     }
 }

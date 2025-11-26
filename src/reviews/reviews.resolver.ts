@@ -1,4 +1,4 @@
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
 import { RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
@@ -7,6 +7,9 @@ import { RequestContext } from 'src/auth/types/request-context.type';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { ReviewModel } from './models/review.model';
 import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
+import { ReviewPaginationModel } from './models/pagination.model';
+import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
 
 @Resolver()
 export class ReviewResolver {
@@ -21,5 +24,11 @@ export class ReviewResolver {
         @Context('req') req: RequestContext,
     ) {
         return await this.reviewService.createOne(review, req.user);
+    }
+
+    @Public()
+    @Query(() => ReviewPaginationModel, { name: 'findAllReviewsByUser' })
+    async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
+        return this.reviewService.findAllByUser(args);
     }
 }
