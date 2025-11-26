@@ -1,4 +1,4 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
 import { RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
@@ -37,5 +37,17 @@ export class ReviewResolver {
     @Query(() => ReviewPaginationModel, { name: 'findAllItemReviews' })
     async findAllItemReviews(@Args() args: ItemReviewsArgs) {
         return await this.reviewService.findAllItemReviews(args);
+    }
+
+    @RelaxedThrottle()
+    @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @AllRolesAllowed()
+    @Mutation(() => Boolean, { name: 'voteReview' })
+    async voteReview(
+        @Args('review_id', { type: () => ID }) reviewId: string,
+        @Context('req') req: RequestContext,
+    ) {
+        await this.reviewService.voteReview(reviewId, req.user);
+        return true;
     }
 }

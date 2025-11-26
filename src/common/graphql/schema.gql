@@ -234,6 +234,7 @@ type Mutation {
   seedReviews(reviews_per_item: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
   createReview(review_data: CreateReviewInput!): ReviewModel!
+  voteReview(review_id: ID!): Boolean!
 
   "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
   signUp(user_data: SignUpInput!): AccountModel!
