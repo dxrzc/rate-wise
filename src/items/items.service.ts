@@ -118,26 +118,10 @@ export class ItemsService {
         }
     }
 
-    // async updateOne(itemId: string, data: UpdateItemInput): Promise<Item> {
-    //     const item = await this.findOneByIdOrThrow(itemId);
-    //     Object.assign(item, data);
-    //     await this.itemRepository.save(item);
-    //     this.logger.info(`Item with id ${item.id} updated`);
-    //     return item;
-    // }
-
     async updateItemAvgRating(item: Item, newAvg: number): Promise<Item> {
         item.averageRating = newAvg;
         await this.itemRepository.save(item);
         this.logger.info(`Item with id ${item.id} avg rating updated to ${newAvg}`);
         return item;
     }
-
-    // deleteOne(id: number) {
-    //     const itemIndex = itemsSeed.findIndex((item) => item.id === id);
-    //     if (itemIndex === -1)
-    //         throw new NotFoundException(`Item with id ${id} not found`);
-    //     itemsSeed.splice(itemIndex, 1);
-    //     return true;
-    // }
 }
