@@ -1,6 +1,6 @@
 import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
-import { RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
+import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RequestContext } from 'src/auth/types/request-context.type';
@@ -28,12 +28,14 @@ export class ReviewResolver {
     }
 
     @Public()
+    @BalancedThrottle()
     @Query(() => ReviewPaginationModel, { name: 'findAllReviewsByUser' })
     async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
         return this.reviewService.findAllByUser(args);
     }
 
     @Public()
+    @BalancedThrottle()
     @Query(() => ReviewPaginationModel, { name: 'findAllItemReviews' })
     async findAllItemReviews(@Args() args: ItemReviewsArgs) {
         return await this.reviewService.findAllItemReviews(args);
