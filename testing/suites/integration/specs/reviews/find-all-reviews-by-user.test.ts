@@ -7,7 +7,6 @@ import { Review } from 'src/reviews/entities/review.entity';
 import { success } from '@integration/utils/no-errors.util';
 import { Code } from 'src/common/enum/code.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
-import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createReviewCacheKey } from 'src/reviews/cache/create-cache-key';
 
 describe('Gql - findAllReviewsByUser', () => {
@@ -108,7 +107,7 @@ describe('Gql - findAllReviewsByUser', () => {
     });
 
     describe('Invalid uuid', () => {
-        test('return bad request code and invalid input error message', async () => {
+        test('return not found code and user not found error message', async () => {
             const response = await testKit.gqlClient.send({
                 query: `query FindAllReviewsByUser($limit: Int!, $userId: ID!) {
                       findAllReviewsByUser(limit: $limit, userId: $userId) {
@@ -117,7 +116,7 @@ describe('Gql - findAllReviewsByUser', () => {
                     }`,
                 variables: { limit: 1, userId: '123' },
             });
-            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+            expect(response).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
         });
     });
 });
