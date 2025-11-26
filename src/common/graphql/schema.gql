@@ -218,6 +218,14 @@ type Query {
     limit: Int!
     userId: ID!
   ): ReviewPaginationModel!
+  findAllItemReviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+    itemId: ID!
+  ): ReviewPaginationModel!
 }
 
 type Mutation {

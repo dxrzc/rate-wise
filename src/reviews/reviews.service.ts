@@ -10,6 +10,7 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
 import { UsersService } from 'src/users/users.service';
+import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
 
 @Injectable()
 export class ReviewService {
@@ -55,6 +56,21 @@ export class ReviewService {
             queryBuilder: {
                 sqbModifier: (qb) =>
                     qb.where(`${sqbAlias}.account_id = :userId`, { userId: args.userId }),
+                sqbAlias,
+            },
+        });
+    }
+
+    async findAllItemReviews(args: ItemReviewsArgs) {
+        await this.itemsService.findOneByIdOrThrow(args.itemId);
+        const sqbAlias = 'review';
+        return await this.paginationService.create({
+            limit: args.limit,
+            cursor: args.cursor,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) =>
+                    qb.where(`${sqbAlias}.item_id = :itemId`, { itemId: args.itemId }),
                 sqbAlias,
             },
         });

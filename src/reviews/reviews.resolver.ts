@@ -10,6 +10,7 @@ import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorat
 import { Public } from 'src/common/decorators/public.decorator';
 import { ReviewPaginationModel } from './models/pagination.model';
 import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
+import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
 
 @Resolver()
 export class ReviewResolver {
@@ -30,5 +31,11 @@ export class ReviewResolver {
     @Query(() => ReviewPaginationModel, { name: 'findAllReviewsByUser' })
     async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
         return this.reviewService.findAllByUser(args);
+    }
+
+    @Public()
+    @Query(() => ReviewPaginationModel, { name: 'findAllItemReviews' })
+    async findAllItemReviews(@Args() args: ItemReviewsArgs) {
+        return await this.reviewService.findAllItemReviews(args);
     }
 }
