@@ -8,6 +8,7 @@ import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { Item } from 'src/items/entities/item.entity';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
+import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 describe('Gql - createReview', () => {
@@ -88,6 +89,23 @@ describe('Gql - createReview', () => {
                 .send(createReview({ args: reviewData, fields: ['id'] }))
                 .set('Cookie', sessionCookie);
             expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe('User attemps to review their own items', () => {
+        test('return forbidden code and cannot review own item error message', async () => {
+            const { id: userId, sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+            });
+            const { id: ownItemId } = await createItem(userId);
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: ownItemId,
+            };
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.FORBIDDEN, REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
         });
     });
 

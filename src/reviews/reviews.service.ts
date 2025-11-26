@@ -11,6 +11,8 @@ import { PaginationService } from 'src/pagination/pagination.service';
 import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
 import { UsersService } from 'src/users/users.service';
 import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
+import { GqlHttpError } from 'src/common/errors/graphql-http.error';
+import { REVIEW_MESSAGES } from './messages/reviews.messages';
 
 @Injectable()
 export class ReviewService {
@@ -36,6 +38,10 @@ export class ReviewService {
 
     async createOne(reviewData: CreateReviewInput, user: AuthenticatedUser) {
         const item = await this.itemsService.findOneByIdOrThrow(reviewData.itemId);
+        if (item.createdBy === user.id) {
+            this.logger.error(`User ${user.id} attempted to review their own item ${item.id}`);
+            throw GqlHttpError.Forbidden(REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
+        }
         const review = await this.reviewRepository.save({
             ...reviewData,
             relatedItem: item.id,
@@ -75,4 +81,6 @@ export class ReviewService {
             },
         });
     }
+
+    // TODO: votes
 }
