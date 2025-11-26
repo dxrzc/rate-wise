@@ -3,7 +3,6 @@ import { createReview } from '@integration/utils/create-review.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
-import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { createReviewCacheKey } from 'src/reviews/cache/create-cache-key';
 import { Review } from 'src/reviews/entities/review.entity';
@@ -111,7 +110,7 @@ describe('Gql - findAllItemReviews', () => {
     });
 
     describe('Invalid uuid', () => {
-        test('return bad request code and invalid input error message', async () => {
+        test('return not found code and item not found error message', async () => {
             const response = await testKit.gqlClient.send({
                 query: `query FindAllItemReviews($limit: Int!, $itemId: ID!) {
                         findAllItemReviews(limit: $limit, itemId: $itemId) {
@@ -120,7 +119,7 @@ describe('Gql - findAllItemReviews', () => {
                     }`,
                 variables: { limit: 2, itemId: 'badId123' },
             });
-            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+            expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
         });
     });
 });
