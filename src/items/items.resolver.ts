@@ -24,8 +24,8 @@ export class ItemsResolver {
         return await this.itemsService.createOne(item, req.user);
     }
 
-    @RelaxedThrottle()
     @Public()
+    @RelaxedThrottle()
     @Query(() => ItemModel, { name: 'findItemById' })
     async findOneById(@Args('item_id', { type: () => ID }) id: string) {
         return await this.itemsService.findOneByIdOrThrowCached(id);
