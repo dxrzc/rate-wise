@@ -17,6 +17,7 @@ import { deserializeItem } from './functions/deserialize-item.entity';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ItemsService {
@@ -27,6 +28,7 @@ export class ItemsService {
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
         private readonly paginationService: PaginationService<ItemModel>,
+        private readonly usersService: UsersService,
     ) {}
 
     private validUuidOrThrow(id: string) {
@@ -40,6 +42,7 @@ export class ItemsService {
         userId: string,
         pagArgs: PaginationArgs,
     ): Promise<IPaginatedType<ItemModel>> {
+        await this.usersService.findOneByIdOrThrow(userId);
         const sqbAlias = 'item';
         return await this.paginationService.create({
             ...pagArgs,

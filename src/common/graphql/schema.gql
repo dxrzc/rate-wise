@@ -69,6 +69,13 @@ type ItemModel {
   tags: [String!]!
   averageRating: Float!
   createdBy: ID!
+  reviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ReviewPaginationModel!
 }
 
 """Edge type for ItemModel in a paginated list."""
@@ -210,6 +217,14 @@ type Query {
     limit: Int!
   ): UserPaginationModel!
   findItemById(item_id: ID!): ItemModel!
+  findAllItemsByUser(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+    userId: ID!
+  ): ItemPaginationModel!
   findAllReviewsByUser(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
