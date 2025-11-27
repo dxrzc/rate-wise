@@ -1,4 +1,4 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, Int } from '@nestjs/graphql';
 import {
     IsDefined,
     IsInt,
@@ -29,7 +29,7 @@ export class CreateReviewInput {
     @IsInt()
     @Max(REVIEWS_LIMITS.RATING.MAX)
     @Min(REVIEWS_LIMITS.RATING.MIN)
-    @Field(() => Number)
+    @Field(() => Int)
     rating!: number;
 
     @IsDefined()

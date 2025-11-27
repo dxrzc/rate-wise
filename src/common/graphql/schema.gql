@@ -171,8 +171,8 @@ type ReviewModel {
   "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
   content: String!
-  rating: Float!
-  votes: Float!
+  rating: Int!
+  votes: Int!
   createdBy: String!
   relatedItem: String!
 }
@@ -293,7 +293,7 @@ input CreateItemInput {
 """Input data required to create a new review for an item."""
 input CreateReviewInput {
   content: String!
-  rating: Float!
+  rating: Int!
   itemId: String!
 }
 

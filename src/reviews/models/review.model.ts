@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BaseModel } from 'src/common/models/base.model';
 
 @ObjectType({
@@ -10,10 +10,10 @@ export class ReviewModel extends BaseModel {
     @Field(() => String)
     content!: string;
 
-    @Field(() => Float)
+    @Field(() => Int)
     rating!: number;
 
-    @Field(() => Number)
+    @Field(() => Int)
     votes!: number;
 
     @Field(() => String)
