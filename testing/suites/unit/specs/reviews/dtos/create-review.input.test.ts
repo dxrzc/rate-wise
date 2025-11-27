@@ -19,7 +19,7 @@ describe('CreateReviewInput', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 ...reviewsSeed.reviewInput,
-                rating: 'a'.repeat(REVIEWS_LIMITS.RATING.MAX + 1),
+                rating: REVIEWS_LIMITS.RATING.MAX + 1,
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
