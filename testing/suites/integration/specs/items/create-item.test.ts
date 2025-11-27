@@ -94,7 +94,7 @@ describe('Gql - createItem', () => {
         });
 
         describe('Provided tags contain uppercase letters and leading and trailing spaces', () => {
-            test('all the tags should be transformed to lowercase and leading and trailng spaces removed', async () => {
+            test('all the tags should be transformed to lowercase and leading and trailing spaces removed', async () => {
                 const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
                 const tags = ['  TagOne ', 'TAGTwo', ' tagThree  '];
                 const itemData = {
