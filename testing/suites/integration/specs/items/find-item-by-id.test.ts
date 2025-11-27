@@ -40,8 +40,8 @@ describe('Gql - findItemById', () => {
             await testKit.gqlClient
                 .send(findItemById({ fields: ['id'], args: itemId }))
                 .expect(success);
-            const userInCache = await testKit.cacheManager.get(cacheKey);
-            expect(userInCache).toBeDefined();
+            const itemInCache = await testKit.cacheManager.get(cacheKey);
+            expect(itemInCache).toBeDefined();
         });
 
         test('return item in database', async () => {
