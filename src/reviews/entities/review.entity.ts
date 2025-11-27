@@ -9,7 +9,7 @@ export class Review extends BaseEntity {
     content!: string;
 
     @Column('integer', { default: 0 })
-    rating!: number; // 0–5 enforced by DB
+    rating!: number; // 0–10 enforced by DB
 
     @Column('integer', { default: 0 })
     votes!: number;
