@@ -16,7 +16,7 @@ export class AddReviewTable1763697287276 implements MigrationInterface {
             );
         `);
 
-        // rating 0-5 constraint
+        // rating 0-10 constraint
         await queryRunner.query(`
             ALTER TABLE "review"
             ADD CONSTRAINT review_rating_check
