@@ -38,7 +38,7 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Active account with roles [user] attemps to create an item', () => {
+    describe('Active account with roles [user] attempts to create an item', () => {
         test('user can create item successfully', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             await testKit.gqlClient
