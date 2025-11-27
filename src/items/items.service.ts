@@ -55,7 +55,7 @@ export class ItemsService {
     }
 
     /**
-     * - Find all users using provided limit and cursor
+     * - Find all items using provided limit and cursor
      * - Attempts to fetch from cache first.
      */
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
