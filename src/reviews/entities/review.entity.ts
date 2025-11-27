@@ -14,7 +14,7 @@ export class Review extends BaseEntity {
     @Column('integer', { default: 0 })
     votes!: number;
 
-    @ManyToOne(() => User, (user) => user.items, {
+    @ManyToOne(() => User, (user) => user.reviews, {
         nullable: false,
         onDelete: 'CASCADE',
     })
