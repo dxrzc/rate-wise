@@ -45,8 +45,6 @@ beforeAll(async () => {
             getQueueToken(PAGINATION_CACHE_QUEUE),
         );
         pagCacheQueueMock.createConsumer(testingModule);
-
-        //
     } catch (error) {
         console.error(error);
         if (nestApp) await nestApp.close();
