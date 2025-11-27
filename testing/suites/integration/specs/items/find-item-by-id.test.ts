@@ -10,7 +10,7 @@ import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 
 describe('Gql - findItemById', () => {
     describe('Invalid postgres id', () => {
-        test('return 404 code and user not found error message', async () => {
+        test('return not found code and item not found error message', async () => {
             const id = faker.food.vegetable();
             const response = await testKit.gqlClient.send(
                 findItemById({ fields: ['id'], args: id }),
@@ -20,7 +20,7 @@ describe('Gql - findItemById', () => {
     });
 
     describe('Item not found', () => {
-        test('return 404 code and user not found error message', async () => {
+        test('return not found code and item not found error message', async () => {
             const { id } = await createAccount();
             const { id: itemId } = await createItem(id);
             // delete item
