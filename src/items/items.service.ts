@@ -17,6 +17,7 @@ import { deserializeItem } from './functions/deserialize-item.entity';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ItemsService {
@@ -27,6 +28,7 @@ export class ItemsService {
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
         private readonly paginationService: PaginationService<ItemModel>,
+        private readonly usersService: UsersService,
     ) {}
 
     private validUuidOrThrow(id: string) {
@@ -40,6 +42,7 @@ export class ItemsService {
         userId: string,
         pagArgs: PaginationArgs,
     ): Promise<IPaginatedType<ItemModel>> {
+        await this.usersService.findOneByIdOrThrow(userId);
         const sqbAlias = 'item';
         return await this.paginationService.create({
             ...pagArgs,
@@ -51,25 +54,16 @@ export class ItemsService {
         });
     }
 
-    // async findAll(pagArgs: PaginationArgs): Promise<IPaginatedType<Item>> {
-    //     const limit = pagArgs.limit;
-    //     const decodedCursor = pagArgs.cursor ? decodeCursor(pagArgs.cursor) : undefined;
-    //     const edges = await createPaginationEdges<Item, IItemDbRecord>({
-    //         repository: this.itemRepository,
-    //         transformFunction: rawRecordToItemEntity,
-    //         decodedCursor,
-    //         limit,
-    //     });
-    //     const hasNextPage = edges.length > limit;
-    //     if (hasNextPage) edges.pop();
-    //     const totalCount = await this.itemRepository.createQueryBuilder().getCount();
-    //     return {
-    //         edges,
-    //         nodes: edges.map((edge) => edge.node),
-    //         totalCount,
-    //         hasNextPage,
-    //     };
-    // }
+    /**
+     * - Find all items using provided limit and cursor
+     * - Attempts to fetch from cache first.
+     */
+    async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
+        return await this.paginationService.create({
+            ...paginationArgs,
+            cache: true,
+        });
+    }
 
     // id must be validated previously
     private async findByIdOrThrowPrivate(uuid: string) {
@@ -103,9 +97,9 @@ export class ItemsService {
 
     async createOne(item: CreateItemInput, user: AuthenticatedUser): Promise<ItemModel> {
         try {
-            const created = await this.itemRepository.save({ ...item, user: { id: user.id } });
+            const created = await this.itemRepository.save({ ...item, createdBy: user.id });
             this.logger.info(`Item with id ${created.id} by user ${user.id} created`);
-            return { ...created, createdBy: created.user.id };
+            return created;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
@@ -115,18 +109,10 @@ export class ItemsService {
         }
     }
 
-    // updateOne(id: number, data: UpdateItemInput): Item {
-    //     const item = itemsSeed.find((item) => item.id === id);
-    //     if (!item) throw new NotFoundException(`Item with id ${id} not found`);
-    //     Object.assign(item, data);
-    //     return item;
-    // }
-
-    // deleteOne(id: number) {
-    //     const itemIndex = itemsSeed.findIndex((item) => item.id === id);
-    //     if (itemIndex === -1)
-    //         throw new NotFoundException(`Item with id ${id} not found`);
-    //     itemsSeed.splice(itemIndex, 1);
-    //     return true;
-    // }
+    async updateItemAvgRating(item: Item, newAvg: number): Promise<Item> {
+        item.averageRating = newAvg;
+        await this.itemRepository.save(item);
+        this.logger.info(`Item with id ${item.id} avg rating updated to ${newAvg}`);
+        return item;
+    }
 }

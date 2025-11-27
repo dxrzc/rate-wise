@@ -7,12 +7,14 @@ import { UserSeedService } from './services/user-seed.service';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from './services/items-seed.service';
+import { ReviewSeedService } from './services/reviews-seed.service';
+import { Review } from 'src/reviews/entities/review.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Item]),
+        TypeOrmModule.forFeature([User, Item, Review]),
         HttpLoggerModule.forFeature({ context: SeedService.name }),
     ],
-    providers: [SeedResolver, SeedService, UserSeedService, ItemsSeedService],
+    providers: [SeedResolver, SeedService, UserSeedService, ItemsSeedService, ReviewSeedService],
 })
 export class SeedModule {}

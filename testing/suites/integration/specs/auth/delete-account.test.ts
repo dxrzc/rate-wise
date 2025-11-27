@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
+import { createItem } from '@integration/utils/create-item.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
@@ -14,6 +15,7 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
@@ -72,6 +74,21 @@ describe('GET delete account endpoint with token', () => {
             await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
             const userInCache = await testKit.cacheManager.get(cacheKey);
             expect(userInCache).toBeUndefined();
+        });
+
+        test('all the user items are also deleted from database', async () => {
+            const { id } = await createAccount({ status: AccountStatus.ACTIVE });
+            const items = await Promise.all([createItem(id), createItem(id), createItem(id)]);
+            const itemsIds = items.map((item) => item.id);
+            // verify items exist in db
+            for (const itemId of itemsIds)
+                await expect(testKit.itemRepos.findOneBy({ id: itemId })).resolves.not.toBeNull();
+            // delete account
+            const token = await testKit.accDeletionToken.generate({ id });
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
+            // verify items deleted from db
+            for (const itemId of itemsIds)
+                await expect(testKit.itemRepos.findOneBy({ id: itemId })).resolves.toBeNull();
         });
     });
 

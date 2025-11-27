@@ -10,14 +10,21 @@ export class SeedResolver {
     @Public()
     @Mutation(() => Boolean)
     async seedUsers(@Args('quantity', { type: () => Int }) n: number) {
-        await this.seedService.createUsers(n);
+        await this.seedService.createUsers(n, { deleteExisting: true });
         return true;
     }
 
     @Public()
     @Mutation(() => Boolean)
     async seedItems(@Args('items_per_user', { type: () => Int }) n: number) {
-        await this.seedService.createItems(n);
+        await this.seedService.createItems(n, { deleteExisting: true });
+        return true;
+    }
+
+    @Public()
+    @Mutation(() => Boolean)
+    async seedReviews(@Args('reviews_per_item', { type: () => Int }) n: number) {
+        await this.seedService.createReviews(n, { deleteExisting: true });
         return true;
     }
 }

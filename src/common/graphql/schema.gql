@@ -68,8 +68,14 @@ type ItemModel {
   category: String!
   tags: [String!]!
   averageRating: Float!
-  reviewCount: Int!
   createdBy: ID!
+  reviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ReviewPaginationModel!
 }
 
 """Edge type for ItemModel in a paginated list."""
@@ -154,6 +160,47 @@ type UserPaginationModel {
   hasNextPage: Boolean!
 }
 
+"\n        Review model representing a user's review of an item.\n    "
+type ReviewModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+  content: String!
+  rating: Int!
+  votes: Int!
+  createdBy: String!
+  relatedItem: String!
+}
+
+"""Edge type for ReviewModel in a paginated list."""
+type ReviewModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type ReviewModel contained in this edge.\n            "
+  node: ReviewModel!
+}
+
+"\n        Paginated model for ReviewModel representing a paginated list of reviews.\n    "
+type ReviewPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type ReviewModel.\n            "
+  edges: [ReviewModelEdge!]
+
+  "\n                List of ReviewModel nodes in the current page.\n            "
+  nodes: [ReviewModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
 """Date custom scalar type"""
 scalar Date
 
@@ -170,12 +217,48 @@ type Query {
     limit: Int!
   ): UserPaginationModel!
   findItemById(item_id: ID!): ItemModel!
+  findAllItemsByUser(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+    userId: ID!
+  ): ItemPaginationModel!
+
+  """Find all items with cursored pagination."""
+  findAllItems(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ItemPaginationModel!
+  findAllReviewsByUser(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+    userId: ID!
+  ): ReviewPaginationModel!
+  findAllItemReviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+    itemId: ID!
+  ): ReviewPaginationModel!
 }
 
 type Mutation {
   seedUsers(quantity: Int!): Boolean!
   seedItems(items_per_user: Int!): Boolean!
+  seedReviews(reviews_per_item: Int!): Boolean!
   createItem(item_data: CreateItemInput!): ItemModel!
+  createReview(review_data: CreateReviewInput!): ReviewModel!
+  voteReview(review_id: ID!): Boolean!
 
   "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
   signUp(user_data: SignUpInput!): AccountModel!
@@ -204,7 +287,14 @@ input CreateItemInput {
   title: String!
   description: String!
   category: String!
-  tags: [String!]!
+  tags: [String!] = []
+}
+
+"""Input data required to create a new review for an item."""
+input CreateReviewInput {
+  content: String!
+  rating: Int!
+  itemId: String!
 }
 
 """Input data required for user sign-up."""

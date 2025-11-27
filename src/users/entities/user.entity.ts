@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { AccountStatus } from '../enums/account-status.enum';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
+import { Review } from 'src/reviews/entities/review.entity';
 
 @Entity('account')
 export class User extends BaseEntity {
@@ -38,4 +39,7 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Item, (item) => item.user)
     items!: Item[];
+
+    @OneToMany(() => Review, (review) => review.user)
+    reviews!: Review[];
 }

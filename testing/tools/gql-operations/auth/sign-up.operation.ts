@@ -1,4 +1,4 @@
-import { operationFactory } from '../factory/users.operation.factory';
+import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { UserModel } from 'src/users/models/user.model';

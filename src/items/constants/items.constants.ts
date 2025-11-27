@@ -12,7 +12,6 @@ export const ITEMS_LIMITS = {
         MAX: 40,
     },
     TAGS: {
-        MIN_ARRAY_SIZE: 1,
         MAX_ARRAY_SIZE: 10,
         TAG_MIN_LENGTH: 2,
         TAG_MAX_LENGTH: 20,

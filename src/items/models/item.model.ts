@@ -1,4 +1,4 @@
-import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 import { BaseModel } from 'src/common/models/base.model';
 
 @ObjectType({
@@ -21,9 +21,6 @@ export class ItemModel extends BaseModel {
 
     @Field(() => Float)
     averageRating!: number;
-
-    @Field(() => Int)
-    reviewCount!: number;
 
     @Field(() => ID)
     createdBy!: string;

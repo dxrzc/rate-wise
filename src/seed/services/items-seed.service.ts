@@ -25,11 +25,7 @@ export class ItemsSeedService {
     }
 
     get averageRating(): number {
-        return parseFloat((Math.random() * 5).toFixed(2));
-    }
-
-    get reviewCount(): number {
-        return Math.floor(Math.random() * 1000);
+        return Math.round(Math.random() * 100) / 10;
     }
 
     get tags(): string[] {
@@ -48,7 +44,15 @@ export class ItemsSeedService {
             category: this.category,
             tags: this.tags,
             averageRating: this.averageRating,
-            reviewCount: this.reviewCount,
+        };
+    }
+
+    get itemInput() {
+        return {
+            title: this.title,
+            description: this.description,
+            category: this.category,
+            tags: this.tags,
         };
     }
 }
