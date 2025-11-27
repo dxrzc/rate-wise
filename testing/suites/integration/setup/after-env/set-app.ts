@@ -24,11 +24,11 @@ beforeAll(async () => {
             .overrideProvider(getQueueToken(EMAILS_QUEUE))
             .useClass(EmailsQueueMock)
             .overrideProvider(EmailsConsumer)
-            .useValue({}) // Consumers are created manually to prevent Worker initilization
+            .useValue({}) // Consumers are created manually to prevent Worker initialization
             .overrideProvider(getQueueToken(PAGINATION_CACHE_QUEUE))
             .useClass(PaginationCacheQueueMock)
             .overrideProvider(PaginationCacheConsumer)
-            .useValue({}) // Consumers are created manually to prevent Worker initilization
+            .useValue({}) // Consumers are created manually to prevent Worker initialization
             .compile();
 
         nestApp = testingModule.createNestApplication<NestExpressApplication>();
