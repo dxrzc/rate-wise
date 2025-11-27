@@ -16,7 +16,7 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Pending verification account attemps to create an item', () => {
+    describe('Pending verification account attempts to create an item', () => {
         test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
@@ -28,7 +28,7 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Suspended account attemps to create an item', () => {
+    describe('Suspended account attempts to create an item', () => {
         test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.SUSPENDED });
             const response = await testKit.gqlClient
