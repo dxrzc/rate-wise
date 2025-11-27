@@ -40,7 +40,7 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Pending verification attemps to create a review', () => {
+    describe('Pending verification attempts to create a review', () => {
         test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
@@ -57,7 +57,7 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Suspended account attemps to create a review', () => {
+    describe('Suspended account attempts to create a review', () => {
         test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.SUSPENDED,
@@ -92,7 +92,7 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('User attemps to review their own items', () => {
+    describe('User attempts to review their own items', () => {
         test('return forbidden code and cannot review own item error message', async () => {
             const { id: userId, sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
