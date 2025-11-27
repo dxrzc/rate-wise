@@ -18,7 +18,7 @@ import { CreateItemInput } from './dtos/create-item.input';
 import { ItemsService } from './items.service';
 import { ItemModel } from './models/item.model';
 import { ItemPaginationModel } from './models/pagination.model';
-import { UserReviewsArgs } from './dtos/args/user-reviews.args';
+import { ItemsByUserArgs } from './dtos/args/user-reviews.args';
 import { ReviewPaginationModel } from 'src/reviews/models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { ReviewService } from 'src/reviews/reviews.service';
@@ -51,7 +51,7 @@ export class ItemsResolver {
     @Public()
     @BalancedThrottle()
     @Query(() => ItemPaginationModel, { name: 'findAllItemsByUser' })
-    async findAllItemsByUser(@Args() args: UserReviewsArgs) {
+    async findAllItemsByUser(@Args() args: ItemsByUserArgs) {
         return this.itemsService.findAllByUser(args.userId, {
             limit: args.limit,
             cursor: args.cursor,

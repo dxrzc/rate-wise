@@ -3,7 +3,7 @@ import { IsDefined } from 'class-validator';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 
 @ArgsType()
-export class UserReviewsArgs extends PaginationArgs {
+export class ItemsByUserArgs extends PaginationArgs {
     @IsDefined()
     @Field(() => ID)
     userId!: string;
