@@ -267,6 +267,20 @@ type Query {
     limit: Int!
   ): ItemPaginationModel!
 
+  """Find all items in a specified category with cursored pagination."""
+  findAllItemsByCategory(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """
+    The category to filter items by. Minimum length: 3, Maximum length: 40.
+    """
+    category: String!
+  ): ItemPaginationModel!
+
   """Find all reviews created by a specific user with cursored pagination."""
   findAllReviewsByUser(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "

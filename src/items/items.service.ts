@@ -65,6 +65,25 @@ export class ItemsService {
         });
     }
 
+    /**
+     * - Find all items by category using provided limit and cursor
+     * - Attempts to fetch from cache first.
+     */
+    async findAllByCategory(
+        category: string,
+        pagArgs: PaginationArgs,
+    ): Promise<IPaginatedType<ItemModel>> {
+        const sqbAlias = 'item';
+        return await this.paginationService.create({
+            ...pagArgs,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) => qb.where(`${sqbAlias}.category = :category`, { category }),
+                sqbAlias,
+            },
+        });
+    }
+
     // id must be validated previously
     private async findByIdOrThrowPrivate(uuid: string) {
         const itemFound = await this.itemRepository.findOneBy({ id: uuid });

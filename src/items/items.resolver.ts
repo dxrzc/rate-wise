@@ -19,6 +19,7 @@ import { ItemsService } from './items.service';
 import { ItemModel } from './models/item.model';
 import { ItemPaginationModel } from './models/pagination.model';
 import { ItemsByUserArgs } from './dtos/args/user-reviews.args';
+import { ItemsByCategoryArgs } from './dtos/args/items-by-category.args';
 import { ReviewPaginationModel } from 'src/reviews/models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { ReviewService } from 'src/reviews/reviews.service';
@@ -75,6 +76,19 @@ export class ItemsResolver {
     })
     async findAll(@Args() paginationArgs: PaginationArgs) {
         return await this.itemsService.findAll(paginationArgs);
+    }
+
+    @Public()
+    @BalancedThrottle()
+    @Query(() => ItemPaginationModel, {
+        name: 'findAllItemsByCategory',
+        description: 'Find all items in a specified category with cursored pagination.',
+    })
+    async findAllItemsByCategory(@Args() args: ItemsByCategoryArgs) {
+        return this.itemsService.findAllByCategory(args.category, {
+            limit: args.limit,
+            cursor: args.cursor,
+        });
     }
 
     @ResolveField(() => ReviewPaginationModel, {
