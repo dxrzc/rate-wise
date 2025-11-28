@@ -11,6 +11,8 @@ import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interfa
     `,
 })
 export class UserModel extends AccountModel {
-    @Field(() => ItemPaginationModel)
+    @Field(() => ItemPaginationModel, {
+        description: 'Paginated list of items created by the user.',
+    })
     items!: IPaginatedType<ItemModel>;
 }

@@ -12,10 +12,14 @@ export class CreateItemInput {
     @MinLength(ITEMS_LIMITS.TITLE.MIN)
     @MaxLength(ITEMS_LIMITS.TITLE.MAX)
     @Transform(trim)
-    @Field(() => String)
+    @Field(() => String, {
+        description: `The title of the item. Minimum length: ${ITEMS_LIMITS.TITLE.MIN}, Maximum length: ${ITEMS_LIMITS.TITLE.MAX}.`,
+    })
     title!: string;
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: `A detailed description of the item. Minimum length: ${ITEMS_LIMITS.DESCRIPTION.MIN}, Maximum length: ${ITEMS_LIMITS.DESCRIPTION.MAX}.`,
+    })
     @IsString()
     @MinLength(ITEMS_LIMITS.DESCRIPTION.MIN)
     @MaxLength(ITEMS_LIMITS.DESCRIPTION.MAX)
@@ -25,7 +29,9 @@ export class CreateItemInput {
     @MinLength(ITEMS_LIMITS.CATEGORY.MIN)
     @MaxLength(ITEMS_LIMITS.CATEGORY.MAX)
     @Transform(trimAndLowercase)
-    @Field(() => String)
+    @Field(() => String, {
+        description: `The category of the item. Minimum length: ${ITEMS_LIMITS.CATEGORY.MIN}, Maximum length: ${ITEMS_LIMITS.CATEGORY.MAX}.`,
+    })
     category!: string;
 
     @IsArray()
@@ -35,6 +41,10 @@ export class CreateItemInput {
     @MinLength(ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH, { each: true })
     @MaxLength(ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH, { each: true })
     @Transform(trimAndLowerCaseArray)
-    @Field(() => [String], { nullable: true, defaultValue: [] })
+    @Field(() => [String], {
+        nullable: true,
+        defaultValue: [],
+        description: `Optional tags for the item. Maximum ${ITEMS_LIMITS.TAGS.MAX_ARRAY_SIZE} tags, each between ${ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH}-${ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH} characters.`,
+    })
     tags?: string[];
 }

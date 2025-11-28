@@ -19,7 +19,10 @@ export class ReviewResolver {
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
     @AllRolesAllowed()
-    @Mutation(() => ReviewModel, { name: 'createReview' })
+    @Mutation(() => ReviewModel, {
+        name: 'createReview',
+        description: 'Create a new review for an item.',
+    })
     async createOne(
         @Args('review_data') review: CreateReviewInput,
         @Context('req') req: RequestContext,
@@ -29,14 +32,20 @@ export class ReviewResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, { name: 'findAllReviewsByUser' })
+    @Query(() => ReviewPaginationModel, {
+        name: 'findAllReviewsByUser',
+        description: 'Find all reviews created by a specific user with cursored pagination.',
+    })
     async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
         return this.reviewService.findAllByUser(args);
     }
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, { name: 'findAllItemReviews' })
+    @Query(() => ReviewPaginationModel, {
+        name: 'findAllItemReviews',
+        description: 'Find all reviews for a specific item with cursored pagination.',
+    })
     async findAllItemReviews(@Args() args: ItemReviewsArgs) {
         return await this.reviewService.findAllItemReviews(args);
     }
@@ -44,7 +53,10 @@ export class ReviewResolver {
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
     @AllRolesAllowed()
-    @Mutation(() => Boolean, { name: 'voteReview' })
+    @Mutation(() => Boolean, {
+        name: 'voteReview',
+        description: 'Vote for a review, incrementing its vote count.',
+    })
     async voteReview(
         @Args('review_id', { type: () => ID }) reviewId: string,
         @Context('req') req: RequestContext,

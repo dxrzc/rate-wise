@@ -1,6 +1,9 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
-@ObjectType()
+@ObjectType({
+    isAbstract: true,
+    description: 'Base model containing common fields shared across all models.',
+})
 export abstract class BaseModel {
     @Field(() => ID, {
         description: `

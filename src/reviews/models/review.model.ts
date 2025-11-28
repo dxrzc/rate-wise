@@ -7,18 +7,28 @@ import { BaseModel } from 'src/common/models/base.model';
     `,
 })
 export class ReviewModel extends BaseModel {
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'The text content of the review.',
+    })
     content!: string;
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: 'The rating score given in the review.',
+    })
     rating!: number;
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: 'The number of votes this review has received.',
+    })
     votes!: number;
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'The ID of the user who created this review.',
+    })
     createdBy!: string;
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'The ID of the item this review is for.',
+    })
     relatedItem!: string;
 }
