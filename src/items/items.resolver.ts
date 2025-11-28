@@ -33,7 +33,10 @@ export class ItemsResolver {
     @BalancedThrottle()
     @AllRolesAllowed()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Mutation(() => ItemModel, { name: 'createItem' })
+    @Mutation(() => ItemModel, {
+        name: 'createItem',
+        description: 'Create a new item to be rated and reviewed.',
+    })
     async createOne(
         @Args('item_data') item: CreateItemInput,
         @Context('req') req: RequestContext,
@@ -43,14 +46,20 @@ export class ItemsResolver {
 
     @Public()
     @RelaxedThrottle()
-    @Query(() => ItemModel, { name: 'findItemById' })
+    @Query(() => ItemModel, {
+        name: 'findItemById',
+        description: 'Find an item by its unique ID.',
+    })
     async findOneById(@Args('item_id', { type: () => ID }) id: string) {
         return await this.itemsService.findOneByIdOrThrowCached(id);
     }
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ItemPaginationModel, { name: 'findAllItemsByUser' })
+    @Query(() => ItemPaginationModel, {
+        name: 'findAllItemsByUser',
+        description: 'Find all items created by a specific user with cursored pagination.',
+    })
     async findAllItemsByUser(@Args() args: ItemsByUserArgs) {
         return this.itemsService.findAllByUser(args.userId, {
             limit: args.limit,
@@ -68,7 +77,9 @@ export class ItemsResolver {
         return await this.itemsService.findAll(paginationArgs);
     }
 
-    @ResolveField(() => ReviewPaginationModel)
+    @ResolveField(() => ReviewPaginationModel, {
+        description: 'Paginated list of reviews for this item.',
+    })
     async reviews(@Args() paginationArgs: PaginationArgs, @Parent() item: ItemModel) {
         return await this.reviewsService.findAllItemReviews({
             ...paginationArgs,

@@ -5,6 +5,8 @@ import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 @ArgsType()
 export class ReviewsByUserArgs extends PaginationArgs {
     @IsDefined()
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: 'The unique ID of the user whose reviews to retrieve.',
+    })
     userId!: string;
 }

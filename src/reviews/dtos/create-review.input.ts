@@ -22,19 +22,25 @@ export class CreateReviewInput {
     @MinLength(REVIEWS_LIMITS.CONTENT.MIN)
     @MaxLength(REVIEWS_LIMITS.CONTENT.MAX)
     @Transform(trim)
-    @Field(() => String)
+    @Field(() => String, {
+        description: `The text content of the review. Minimum length: ${REVIEWS_LIMITS.CONTENT.MIN}, Maximum length: ${REVIEWS_LIMITS.CONTENT.MAX}.`,
+    })
     content!: string;
 
     @IsDefined()
     @IsInt()
     @Max(REVIEWS_LIMITS.RATING.MAX)
     @Min(REVIEWS_LIMITS.RATING.MIN)
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: `The rating score. Minimum: ${REVIEWS_LIMITS.RATING.MIN}, Maximum: ${REVIEWS_LIMITS.RATING.MAX}.`,
+    })
     rating!: number;
 
     @IsDefined()
     @IsUUID()
     @IsString()
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'The unique ID of the item being reviewed.',
+    })
     itemId!: string;
 }

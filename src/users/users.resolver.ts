@@ -25,7 +25,9 @@ export class UsersResolver {
         return await this.userService.findOneByIdOrThrowCached(id);
     }
 
-    @ResolveField(() => ItemPaginationModel)
+    @ResolveField(() => ItemPaginationModel, {
+        description: 'Paginated list of items created by this user.',
+    })
     async items(@Args() paginationArgs: PaginationArgs, @Parent() user: UserModel) {
         const items = await this.itemsService.findAllByUser(user.id, paginationArgs);
         return items;

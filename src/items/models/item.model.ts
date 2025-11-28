@@ -7,21 +7,33 @@ import { BaseModel } from 'src/common/models/base.model';
     `,
 })
 export class ItemModel extends BaseModel {
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'The title of the item.',
+    })
     title!: string;
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'A detailed description of the item.',
+    })
     description!: string;
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: 'The category the item belongs to.',
+    })
     category!: string;
 
-    @Field(() => [String])
+    @Field(() => [String], {
+        description: 'Tags associated with the item.',
+    })
     tags!: string[];
 
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: 'The average rating of the item based on all reviews.',
+    })
     averageRating!: number;
 
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: 'The ID of the user who created this item.',
+    })
     createdBy!: string;
 }

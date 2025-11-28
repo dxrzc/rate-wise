@@ -63,12 +63,26 @@ type ItemModel {
 
   "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
+
+  """The title of the item."""
   title: String!
+
+  """A detailed description of the item."""
   description: String!
+
+  """The category the item belongs to."""
   category: String!
+
+  """Tags associated with the item."""
   tags: [String!]!
+
+  """The average rating of the item based on all reviews."""
   averageRating: Float!
+
+  """The ID of the user who created this item."""
   createdBy: ID!
+
+  """Paginated list of reviews for this item."""
   reviews(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
@@ -127,6 +141,8 @@ type UserModel {
 
   "\n            Reputation score of the user\n        "
   reputationScore: Float!
+
+  """Paginated list of items created by the user."""
   items(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
@@ -170,10 +186,20 @@ type ReviewModel {
 
   "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
+
+  """The text content of the review."""
   content: String!
+
+  """The rating score given in the review."""
   rating: Int!
+
+  """The number of votes this review has received."""
   votes: Int!
+
+  """The ID of the user who created this review."""
   createdBy: String!
+
+  """The ID of the item this review is for."""
   relatedItem: String!
 }
 
@@ -216,13 +242,19 @@ type Query {
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
   ): UserPaginationModel!
+
+  """Find an item by its unique ID."""
   findItemById(item_id: ID!): ItemModel!
+
+  """Find all items created by a specific user with cursored pagination."""
   findAllItemsByUser(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
+
+    """The unique ID of the user whose items to retrieve."""
     userId: ID!
   ): ItemPaginationModel!
 
@@ -234,30 +266,55 @@ type Query {
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
   ): ItemPaginationModel!
+
+  """Find all reviews created by a specific user with cursored pagination."""
   findAllReviewsByUser(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
+
+    """The unique ID of the user whose reviews to retrieve."""
     userId: ID!
   ): ReviewPaginationModel!
+
+  """Find all reviews for a specific item with cursored pagination."""
   findAllItemReviews(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
+
+    """The unique ID of the item whose reviews to retrieve."""
     itemId: ID!
   ): ReviewPaginationModel!
 }
 
 type Mutation {
+  """
+  Seed the database with a specified number of test users. Deletes existing users first.
+  """
   seedUsers(quantity: Int!): Boolean!
+
+  """
+  Seed the database with a specified number of items per user. Deletes existing items first.
+  """
   seedItems(items_per_user: Int!): Boolean!
+
+  """
+  Seed the database with a specified number of reviews per item. Deletes existing reviews first.
+  """
   seedReviews(reviews_per_item: Int!): Boolean!
+
+  """Create a new item to be rated and reviewed."""
   createItem(item_data: CreateItemInput!): ItemModel!
+
+  """Create a new review for an item."""
   createReview(review_data: CreateReviewInput!): ReviewModel!
+
+  """Vote for a review, incrementing its vote count."""
   voteReview(review_id: ID!): Boolean!
 
   "\n            Register a new user account with email and password. \n            Creates a new user session upon successful registration.\n        "
@@ -284,16 +341,34 @@ type Mutation {
 
 """Input type for creating a new item"""
 input CreateItemInput {
+  """The title of the item. Minimum length: 5, Maximum length: 40."""
   title: String!
+
+  """
+  A detailed description of the item. Minimum length: 5, Maximum length: 500.
+  """
   description: String!
+
+  """The category of the item. Minimum length: 3, Maximum length: 40."""
   category: String!
+
+  """
+  Optional tags for the item. Maximum 10 tags, each between 2-20 characters.
+  """
   tags: [String!] = []
 }
 
 """Input data required to create a new review for an item."""
 input CreateReviewInput {
+  """
+  The text content of the review. Minimum length: 10, Maximum length: 2000.
+  """
   content: String!
+
+  """The rating score. Minimum: 0, Maximum: 10."""
   rating: Int!
+
+  """The unique ID of the item being reviewed."""
   itemId: String!
 }
 
