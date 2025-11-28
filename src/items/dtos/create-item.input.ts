@@ -17,12 +17,13 @@ export class CreateItemInput {
     })
     title!: string;
 
-    @Field(() => String, {
-        description: `A detailed description of the item. Minimum length: ${ITEMS_LIMITS.DESCRIPTION.MIN}, Maximum length: ${ITEMS_LIMITS.DESCRIPTION.MAX}.`,
-    })
     @IsString()
     @MinLength(ITEMS_LIMITS.DESCRIPTION.MIN)
     @MaxLength(ITEMS_LIMITS.DESCRIPTION.MAX)
+    @Transform(trim)
+    @Field(() => String, {
+        description: `A detailed description of the item. Minimum length: ${ITEMS_LIMITS.DESCRIPTION.MIN}, Maximum length: ${ITEMS_LIMITS.DESCRIPTION.MAX}.`,
+    })
     description!: string;
 
     @IsString()
