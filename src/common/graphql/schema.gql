@@ -281,6 +281,18 @@ type Query {
     category: String!
   ): ItemPaginationModel!
 
+  """Find all items that contain a specified tag with cursored pagination."""
+  findAllItemsByTag(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """The tag to filter items by. Minimum length: 2, Maximum length: 20."""
+    tag: String!
+  ): ItemPaginationModel!
+
   """Find all reviews created by a specific user with cursored pagination."""
   findAllReviewsByUser(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
