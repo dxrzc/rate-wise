@@ -24,6 +24,12 @@ import { ItemsByTagArgs } from './dtos/args/items-by-tag.args';
 import { ReviewPaginationModel } from 'src/reviews/models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { ReviewService } from 'src/reviews/reviews.service';
+import { createItemDocs } from './docs/createItem.docs';
+import { findItemByIdDocs } from './docs/findItemById.docs';
+import { findAllItemsByUserDocs } from './docs/findAllItemsByUser.docs';
+import { findAllItemsDocs } from './docs/findAllItems.docs';
+import { findAllItemsByCategoryDocs } from './docs/findAllItemsByCategory.docs';
+import { findAllItemsByTagDocs } from './docs/findAllItemsByTag.docs';
 
 @Resolver(() => ItemModel)
 export class ItemsResolver {
@@ -35,10 +41,7 @@ export class ItemsResolver {
     @BalancedThrottle()
     @AllRolesAllowed()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Mutation(() => ItemModel, {
-        name: 'createItem',
-        description: 'Create a new item to be rated and reviewed.',
-    })
+    @Mutation(() => ItemModel, createItemDocs)
     async createOne(
         @Args('item_data') item: CreateItemInput,
         @Context('req') req: RequestContext,
@@ -48,20 +51,14 @@ export class ItemsResolver {
 
     @Public()
     @RelaxedThrottle()
-    @Query(() => ItemModel, {
-        name: 'findItemById',
-        description: 'Find an item by its unique ID.',
-    })
+    @Query(() => ItemModel, findItemByIdDocs)
     async findOneById(@Args('item_id', { type: () => ID }) id: string) {
         return await this.itemsService.findOneByIdOrThrowCached(id);
     }
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ItemPaginationModel, {
-        name: 'findAllItemsByUser',
-        description: 'Find all items created by a specific user with cursored pagination.',
-    })
+    @Query(() => ItemPaginationModel, findAllItemsByUserDocs)
     async findAllItemsByUser(@Args() args: ItemsByUserArgs) {
         return this.itemsService.findAllByUser(args.userId, {
             limit: args.limit,
@@ -71,20 +68,14 @@ export class ItemsResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ItemPaginationModel, {
-        name: 'findAllItems',
-        description: `Find all items with cursored pagination.`,
-    })
+    @Query(() => ItemPaginationModel, findAllItemsDocs)
     async findAll(@Args() paginationArgs: PaginationArgs) {
         return await this.itemsService.findAll(paginationArgs);
     }
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ItemPaginationModel, {
-        name: 'findAllItemsByCategory',
-        description: 'Find all items in a specified category with cursored pagination.',
-    })
+    @Query(() => ItemPaginationModel, findAllItemsByCategoryDocs)
     async findAllItemsByCategory(@Args() args: ItemsByCategoryArgs) {
         return this.itemsService.findAllByCategory(args.category, {
             limit: args.limit,
@@ -94,10 +85,7 @@ export class ItemsResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ItemPaginationModel, {
-        name: 'findAllItemsByTag',
-        description: 'Find all items that contain a specified tag with cursored pagination.',
-    })
+    @Query(() => ItemPaginationModel, findAllItemsByTagDocs)
     async findAllItemsByTag(@Args() args: ItemsByTagArgs) {
         return this.itemsService.findAllByTag(args.tag, {
             limit: args.limit,

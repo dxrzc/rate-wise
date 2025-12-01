@@ -11,6 +11,10 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { ReviewPaginationModel } from './models/pagination.model';
 import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
 import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
+import { createReviewDocs } from './docs/createReview.docs';
+import { findAllReviewsByUserDocs } from './docs/findAllReviewsByUser.docs';
+import { findAllItemReviewsDocs } from './docs/findAllItemReviews.docs';
+import { voteReviewDocs } from './docs/voteReview.docs';
 
 @Resolver()
 export class ReviewResolver {
@@ -19,10 +23,7 @@ export class ReviewResolver {
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
     @AllRolesAllowed()
-    @Mutation(() => ReviewModel, {
-        name: 'createReview',
-        description: 'Create a new review for an item.',
-    })
+    @Mutation(() => ReviewModel, createReviewDocs)
     async createOne(
         @Args('review_data') review: CreateReviewInput,
         @Context('req') req: RequestContext,
@@ -32,20 +33,14 @@ export class ReviewResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, {
-        name: 'findAllReviewsByUser',
-        description: 'Find all reviews created by a specific user with cursored pagination.',
-    })
+    @Query(() => ReviewPaginationModel, findAllReviewsByUserDocs)
     async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
         return this.reviewService.findAllByUser(args);
     }
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, {
-        name: 'findAllItemReviews',
-        description: 'Find all reviews for a specific item with cursored pagination.',
-    })
+    @Query(() => ReviewPaginationModel, findAllItemReviewsDocs)
     async findAllItemReviews(@Args() args: ItemReviewsArgs) {
         return await this.reviewService.findAllItemReviews(args);
     }
@@ -53,10 +48,7 @@ export class ReviewResolver {
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
     @AllRolesAllowed()
-    @Mutation(() => Boolean, {
-        name: 'voteReview',
-        description: 'Vote for a review, incrementing its vote count.',
-    })
+    @Mutation(() => Boolean, voteReviewDocs)
     async voteReview(
         @Args('review_id', { type: () => ID }) reviewId: string,
         @Context('req') req: RequestContext,
