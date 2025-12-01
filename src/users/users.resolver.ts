@@ -7,6 +7,8 @@ import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { UserPaginationModel } from './models/pagination.model';
 import { ItemPaginationModel } from 'src/items/models/pagination.model';
 import { ItemsService } from 'src/items/items.service';
+import { findUserByIdDocs } from './docs/findUserById.docs';
+import { findAllUsersDocs } from './docs/findAllUsers.docs';
 
 @Resolver(() => UserModel)
 export class UsersResolver {
@@ -17,10 +19,7 @@ export class UsersResolver {
 
     @Public()
     @RelaxedThrottle()
-    @Query(() => UserModel, {
-        name: 'findUserById',
-        description: `Find a user by their unique ID.`,
-    })
+    @Query(() => UserModel, findUserByIdDocs)
     async findOneById(@Args('user_id', { type: () => ID }) id: string) {
         return await this.userService.findOneByIdOrThrowCached(id);
     }
@@ -35,10 +34,7 @@ export class UsersResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => UserPaginationModel, {
-        name: 'findAllUsers',
-        description: `Find all users with cursored pagination.`,
-    })
+    @Query(() => UserPaginationModel, findAllUsersDocs)
     async findAll(@Args() paginationArgs: PaginationArgs) {
         return await this.userService.findAll(paginationArgs);
     }
