@@ -13,7 +13,7 @@ export class ItemsSeedService {
         ];
         const randomFn = options[Math.floor(Math.random() * options.length)];
         const randomTitle = randomFn() + ' ' + Math.floor(Math.random() * 1000) + ' ' + randomFn();
-        return randomTitle.slice(0, ITEMS_LIMITS.TITLE.MAX);
+        return randomTitle.slice(0, ITEMS_LIMITS.TITLE.MAX).trim();
     }
 
     get description(): string {
