@@ -34,6 +34,8 @@ jobs:
   run-unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: run-linter
     steps:
       - name: Checkout repository
@@ -46,11 +48,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run unit tests
-        run: npm run test:unit -- --maxWorkers=100%
+        run: npm run test:unit -- --maxWorkers=100% --coverage=false
 
   run-integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: run-linter
     steps:
       - name: Checkout repository
@@ -63,11 +67,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run integration tests
-        run: npm run test:integration -- --maxWorkers=100%
+        run: npm run test:integration -- --maxWorkers=100% --coverage=false
 
   run-components-tests:
     name: Components Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: run-linter
     steps:
       - name: Checkout repository
@@ -80,5 +86,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run components tests
-        run: npm run test:components -- --maxWorkers=100%
+        run: npm run test:components -- --maxWorkers=100% --coverage=false
     
