@@ -34,6 +34,8 @@ jobs:
   run-unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: run-linter
     steps:
       - name: Checkout repository
@@ -51,6 +53,8 @@ jobs:
   run-integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: run-linter
     steps:
       - name: Checkout repository
@@ -68,6 +72,8 @@ jobs:
   run-components-tests:
     name: Components Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: run-linter
     steps:
       - name: Checkout repository
