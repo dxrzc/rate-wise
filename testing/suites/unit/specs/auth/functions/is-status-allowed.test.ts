@@ -2,7 +2,7 @@ import { isAccountStatusAllowed } from 'src/auth/functions/is-status-allowed';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 describe('isAccountStatusAllowed', () => {
-    test('should allow when user status is equal to minimum required', () => {
+    test('allow when user status is equal to minimum required', () => {
         expect(isAccountStatusAllowed(AccountStatus.ACTIVE, AccountStatus.ACTIVE)).toBe(true);
 
         expect(
@@ -15,7 +15,7 @@ describe('isAccountStatusAllowed', () => {
         expect(isAccountStatusAllowed(AccountStatus.SUSPENDED, AccountStatus.SUSPENDED)).toBe(true);
     });
 
-    test('should allow when user status is higher than minimum required', () => {
+    test('allow when user status is higher than minimum required', () => {
         // ACTIVE > PENDING_VERIFICATION
         expect(
             isAccountStatusAllowed(AccountStatus.PENDING_VERIFICATION, AccountStatus.ACTIVE),
@@ -30,7 +30,7 @@ describe('isAccountStatusAllowed', () => {
         ).toBe(true);
     });
 
-    test('should deny when user status is lower than minimum required', () => {
+    test('deny when user status is lower than minimum required', () => {
         // PENDING_VERIFICATION < ACTIVE
         expect(
             isAccountStatusAllowed(AccountStatus.ACTIVE, AccountStatus.PENDING_VERIFICATION),
@@ -45,7 +45,7 @@ describe('isAccountStatusAllowed', () => {
         ).toBe(false);
     });
 
-    test('should return false if either status is not found in sortedRoles', () => {
+    test('return false if either status is not found in sortedRoles', () => {
         expect(isAccountStatusAllowed('invalid' as any, AccountStatus.ACTIVE)).toBe(false);
         expect(isAccountStatusAllowed(AccountStatus.ACTIVE, 'invalid' as any)).toBe(false);
     });

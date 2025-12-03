@@ -57,6 +57,10 @@ async function bootstrap() {
         `Running in ${serverConfig.env} mode on port ${serverConfig.port}`,
         'NestApplication',
     );
+    SystemLogger.getInstance().verbose(
+        `Try it! http://localhost:${process.env.SERVER_PORT}/graphql`,
+        'NestApplication',
+    );
 }
 
 bootstrap().catch((error) => {

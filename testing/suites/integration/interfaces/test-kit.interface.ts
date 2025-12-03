@@ -7,17 +7,33 @@ import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { Test } from 'supertest';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { RestClient } from './rest-client.interface';
+import { Cache } from '@nestjs/cache-manager';
+import { AuthTokenService } from 'src/auth/types/auth-tokens-service.type';
+import { Item } from 'src/items/entities/item.entity';
+import { ItemsSeedService } from 'src/seed/services/items-seed.service';
+import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
+import { Review } from 'src/reviews/entities/review.entity';
+import { SeedService } from 'src/seed/seed.service';
 
 export interface ITestKit {
     app: INestApplication<App>;
+    seedService: SeedService;
     userSeed: UserSeedService;
+    itemSeed: ItemsSeedService;
+    reviewSeed: ReviewSeedService;
     authConfig: AuthConfigService;
     userRepos: Repository<User>;
+    itemRepos: Repository<Item>;
+    reviewRepos: Repository<Review>;
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
+    cacheManager: Cache;
     gqlClient: Test;
     restClient: RestClient;
+    accDeletionToken: AuthTokenService;
+    accVerifToken: AuthTokenService;
     endpointsREST: {
         verifyAccount: string;
+        deleteAccount: string;
     };
 }

@@ -15,6 +15,7 @@ export default async function () {
         postgresUrl: postgresUri,
         redisUrls: {
             auth: redisInstances.redisAuth,
+            cache: redisInstances.redisCache,
         },
         mailpit: {
             smtpPort: mailpit.smtpPort,

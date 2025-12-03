@@ -16,7 +16,7 @@ const metadata: ArgumentMetadata = {
 
 describe('SignUpInput', () => {
     describe('Password too long', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 ...userSeed.user,
                 password: 'a'.repeat(129),
@@ -28,7 +28,7 @@ describe('SignUpInput', () => {
     });
 
     describe('Valid email but too long', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 ...userSeed.user,
                 email: 'a'.repeat(AUTH_LIMITS.EMAIL.MAX) + '@example.com',
@@ -40,7 +40,7 @@ describe('SignUpInput', () => {
     });
 
     describe('Invalid email format', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 ...userSeed.user,
                 email: 'invalid-email',
@@ -52,7 +52,7 @@ describe('SignUpInput', () => {
     });
 
     describe('Username too long', () => {
-        test('throw BadRequestException and INVALID_INPUT message', async () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
                 ...userSeed.user,
                 username: 'a'.repeat(AUTH_LIMITS.USERNAME.MAX + 1),

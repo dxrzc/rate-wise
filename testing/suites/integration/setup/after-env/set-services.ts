@@ -16,6 +16,7 @@ beforeAll(async () => {
         // Queues are mocked so the redis uri is not important but needed
         process.env.REDIS_QUEUES_URI = redisUrls.auth;
         process.env.REDIS_AUTH_URI = redisUrls.auth;
+        process.env.REDIS_CACHE_URI = redisUrls.cache;
 
         // Mailpit settings
         process.env.SMTP_PORT = mailpit.smtpPort.toString();

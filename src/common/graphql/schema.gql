@@ -2,22 +2,32 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-"""User model"""
-type UserModel {
+"\n        Account model representing authenticated user details\n    "
+type AccountModel {
+  "\n            Unique identifier for the model instance\n        "
   id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  "\n            Unique username chosen by the user\n        "
   username: String!
+
+  "\n            Email address of the user\n        "
   email: String!
-  role: UserRole!
+
+  "\n            Roles assigned to the user\n        "
+  roles: [UserRole!]!
+
+  "\n            Current status of the user account\n        "
   status: AccountStatus!
+
+  "\n            Reputation score of the user\n        "
   reputationScore: Float!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 """Available roles for a user."""
 enum UserRole {
@@ -43,82 +53,374 @@ enum AccountStatus {
   SUSPENDED
 }
 
-type UserModelEdge {
-  cursor: String!
-  node: UserModel!
-}
-
-type UserPaginationModel {
-  edges: [UserModelEdge!]
-  nodes: [UserModel!]
-  totalCount: Int!
-  hasNextPage: Boolean!
-}
-
-"""Item model"""
+"\n        Item model representing an item to rate and review.\n    "
 type ItemModel {
+  "\n            Unique identifier for the model instance\n        "
   id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  """The title of the item."""
   title: String!
+
+  """A detailed description of the item."""
   description: String!
+
+  """The category the item belongs to."""
   category: String!
+
+  """Tags associated with the item."""
   tags: [String!]!
+
+  """The average rating of the item based on all reviews."""
   averageRating: Float!
-  reviewCount: Int!
+
+  """The ID of the user who created this item."""
+  createdBy: ID!
+
+  """Paginated list of reviews for this item."""
+  reviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ReviewPaginationModel!
 }
 
+"""Edge type for ItemModel in a paginated list."""
 type ItemModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
   cursor: String!
+
+  "\n                The node of type ItemModel contained in this edge.\n            "
   node: ItemModel!
 }
 
+"\n        Paginated model for ItemModel representing a paginated list of items.\n    "
 type ItemPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type ItemModel.\n            "
   edges: [ItemModelEdge!]
+
+  "\n                List of ItemModel nodes in the current page.\n            "
   nodes: [ItemModel!]
+
+  "\n                The total number of items available across all pages.\n            "
   totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
   hasNextPage: Boolean!
 }
 
+"\n        User model extending AccountModel to include user-specific details\n        such as associated items.\n    "
+type UserModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  "\n            Unique username chosen by the user\n        "
+  username: String!
+
+  "\n            Email address of the user\n        "
+  email: String!
+
+  "\n            Roles assigned to the user\n        "
+  roles: [UserRole!]!
+
+  "\n            Current status of the user account\n        "
+  status: AccountStatus!
+
+  "\n            Reputation score of the user\n        "
+  reputationScore: Float!
+
+  """Paginated list of items created by the user."""
+  items(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ItemPaginationModel!
+}
+
+"""Edge type for UserModel in a paginated list."""
+type UserModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type UserModel contained in this edge.\n            "
+  node: UserModel!
+}
+
+"\n        Paginated model for UserModel representing a paginated list of users.\n    "
+type UserPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type UserModel.\n            "
+  edges: [UserModelEdge!]
+
+  "\n                List of UserModel nodes in the current page.\n            "
+  nodes: [UserModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
+"\n        Review model representing a user's review of an item.\n    "
+type ReviewModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  """The text content of the review."""
+  content: String!
+
+  """The rating score given in the review."""
+  rating: Int!
+
+  """The number of votes this review has received."""
+  votes: Int!
+
+  """The ID of the user who created this review."""
+  createdBy: String!
+
+  """The ID of the item this review is for."""
+  relatedItem: String!
+}
+
+"""Edge type for ReviewModel in a paginated list."""
+type ReviewModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type ReviewModel contained in this edge.\n            "
+  node: ReviewModel!
+}
+
+"\n        Paginated model for ReviewModel representing a paginated list of reviews.\n    "
+type ReviewPaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type ReviewModel.\n            "
+  edges: [ReviewModelEdge!]
+
+  "\n                List of ReviewModel nodes in the current page.\n            "
+  nodes: [ReviewModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
+"""Date custom scalar type"""
+scalar Date
+
 type Query {
+  "\n        Find a user by their unique identifier.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Caching:** Results are cached for improved performance. Subsequent requests for the same user ID may return cached data.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** User details including ID, username, email, roles, account status, reputation score, and creation/update timestamps\n    "
   findUserById(user_id: ID!): UserModel!
-  users(cursor: String, limit: Int!): ItemPaginationModel!
+
+  "\n        Find all users with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of users with edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllUsers(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): UserPaginationModel!
+
+  "\n        Find an item by its unique identifier.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Caching:** Results are cached for improved performance. Subsequent requests for the same item ID may return cached data.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Item details including ID, timestamps, title, description, category, tags, average rating, and creator ID\n    "
   findItemById(item_id: ID!): ItemModel!
+
+  "\n        Find all items created by a specific user with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items created by the specified user, including edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllItemsByUser(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """The unique ID of the user whose items to retrieve."""
+    userId: ID!
+  ): ItemPaginationModel!
+
+  "\n        Find all items with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of all items with edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllItems(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): ItemPaginationModel!
+
+  "\n        Find all items in a specified category with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Filtering:** Returns only items that belong to the specified category\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items in the specified category, including edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllItemsByCategory(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """
+    The category to filter items by. Minimum length: 3, Maximum length: 40.
+    """
+    category: String!
+  ): ItemPaginationModel!
+
+  "\n        Find all items that contain a specified tag with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Filtering:** Returns only items that have the specified tag in their tags array\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items with the specified tag, including edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllItemsByTag(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """The tag to filter items by. Minimum length: 2, Maximum length: 20."""
+    tag: String!
+  ): ItemPaginationModel!
+
+  "\n        Find all reviews created by a specific user with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of reviews created by the specified user, including edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllReviewsByUser(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """The unique ID of the user whose reviews to retrieve."""
+    userId: ID!
+  ): ReviewPaginationModel!
+
+  "\n        Find all reviews for a specific item with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of reviews for the specified item, including edges, nodes, total count, and hasNextPage indicator\n    "
+  findAllItemReviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """The unique ID of the item whose reviews to retrieve."""
+    itemId: ID!
+  ): ReviewPaginationModel!
 }
 
 type Mutation {
+  """
+  Seed the database with a specified number of test users. Deletes existing users first.
+  """
   seedUsers(quantity: Int!): Boolean!
+
+  """
+  Seed the database with a specified number of items per user. Deletes existing items first.
+  """
+  seedItems(items_per_user: Int!): Boolean!
+
+  """
+  Seed the database with a specified number of reviews per item. Deletes existing reviews first.
+  """
+  seedReviews(reviews_per_item: Int!): Boolean!
+
+  "\n        Create a new item to be rated and reviewed by the community.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create items\n        \n        **Effect:** Creates a new item with the provided title, description, category, and optional tags. The item is associated with the authenticated user as the creator.\n        \n        **Rate Limiting:** Balanced throttle applied to prevent spam\n        \n        **Returns:** The created item with ID, timestamps, title, description, category, tags, initial average rating (0), and creator ID\n    "
   createItem(item_data: CreateItemInput!): ItemModel!
-  signUp(user_data: SignUpInput!): UserModel!
-  signIn(credentials: SignInInput!): UserModel!
+
+  "\n        Create a new review for an item with a rating and text content.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create reviews\n        \n        **Effect:** Creates a new review with content (10-2000 characters) and rating (0-10) for the specified item. The review is associated with the authenticated user. The item's average rating is recalculated upon review creation.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** The created review with ID, timestamps, content, rating, initial vote count (0), creator ID, and related item ID\n    "
+  createReview(review_data: CreateReviewInput!): ReviewModel!
+
+  "\n        Vote for a review to help highlight helpful reviews to other users.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can vote on reviews\n        \n        **Effect:** Increments the vote count for the specified review by 1. This helps surface the most helpful reviews to other users.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  voteReview(review_id: ID!): Boolean!
+
+  "\n        Register a new user account with email and password credentials.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Account Status:** Creates a new account with PENDING_VERIFICATION status\n        \n        **Session:** Upon successful registration, a new user session is created and a session cookie (connect.sid) is set in the response. This cookie is used for authentication in subsequent requests.\n        \n        **Rate Limiting:** Critical throttle applied to prevent abuse\n        \n        **Returns:** Account details including user ID, username, email, roles, account status, and reputation score\n    "
+  signUp(user_data: SignUpInput!): AccountModel!
+
+  "\n        Authenticate a user with email and password credentials.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Account Status:** Any account status can sign in, but access to other operations may be restricted based on status\n        \n        **Session:** Upon successful authentication, a new user session is created and a session cookie (connect.sid) is set in the response. This cookie is used for authentication in subsequent requests.\n        \n        **Session Limits:** Users are subject to a maximum number of concurrent sessions (hard limit). When this limit is reached, new sign-in attempts will be rejected with a \"Maximum sessions reached\" error. Sessions are NOT automatically evicted - users must explicitly sign out of existing sessions before creating new ones.\n        \n        **Rate Limiting:** Critical throttle applied to prevent brute force attacks\n        \n        **Returns:** Account details including user ID, username, email, roles, account status, and reputation score\n    "
+  signIn(credentials: SignInInput!): AccountModel!
+
+  "\n        Send an account verification email to the authenticated user's email address.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** PENDING_VERIFICATION - only users with pending verification status can request verification\n        \n        **Effect:** Sends a verification email with a confirmation link. Upon successful email verification, the account status is updated to ACTIVE, allowing full access to the platform.\n        \n        **Rate Limiting:** Ultra-critical throttle applied to prevent email spam\n        \n        **Returns:** Boolean indicating success (true)\n    "
   requestAccountVerification: Boolean!
+
+  "\n        Send an account deletion confirmation email to the authenticated user.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Effect:** Sends a confirmation email with a deletion link. The user must confirm the deletion via the email link for the account to be permanently deleted. This is a two-step process for security.\n        \n        **Rate Limiting:** Critical throttle applied to prevent abuse\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  requestAccountDeletion: Boolean!
+
+  "\n        Sign out the authenticated user from the current session.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Session:** Destroys the current user session on the server and clears the session cookie (connect.sid) from the client. The user will need to sign in again to access protected endpoints.\n        \n        **Effect:** Only signs out from the current session. Other active sessions on different devices/browsers remain active. Use signOutAll to terminate all sessions.\n        \n        **Rate Limiting:** Critical throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
   signOut: Boolean!
+
+  "\n        Sign out the authenticated user from all active sessions across all devices.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Re-authentication:** Requires the user's password to be provided for security verification before terminating all sessions\n        \n        **Session:** Destroys all active user sessions on the server and clears the session cookie (connect.sid) from the current client. The user will be signed out from all devices and browsers and will need to sign in again.\n        \n        **Effect:** This is a security feature to revoke access from all devices. Useful if the user suspects their account has been compromised or wants to sign out from all locations remotely.\n        \n        **Rate Limiting:** Ultra-critical throttle applied to prevent abuse\n        \n        **Returns:** Boolean indicating success (true)\n    "
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
+
+  "\n        Suspend a user account, preventing them from accessing protected endpoints.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** Restricted to ADMIN and MODERATOR roles only\n        \n        **Account Status Required:** ACTIVE - the calling user must have an active account\n        \n        **Effect:** Changes the target user's account status to SUSPENDED, preventing them from accessing most endpoints. Suspended users can still sign in but will have limited access.\n        \n        **Restrictions:** ADMIN accounts cannot be suspended. This prevents accidental or malicious suspension of administrator accounts.\n        \n        **Rate Limiting:** Critical throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  suspendAccount(user_id: ID!): Boolean!
 }
 
+"""Input type for creating a new item"""
 input CreateItemInput {
+  """The title of the item. Minimum length: 5, Maximum length: 40."""
   title: String!
+
+  """
+  A detailed description of the item. Minimum length: 5, Maximum length: 500.
+  """
   description: String!
+
+  """The category of the item. Minimum length: 3, Maximum length: 40."""
   category: String!
-  tags: [String!]!
+
+  """
+  Optional tags for the item. Maximum 10 tags, each between 2-20 characters.
+  """
+  tags: [String!] = []
 }
 
+"""Input data required to create a new review for an item."""
+input CreateReviewInput {
+  """
+  The text content of the review. Minimum length: 10, Maximum length: 2000.
+  """
+  content: String!
+
+  """The rating score. Minimum: 0, Maximum: 10."""
+  rating: Int!
+
+  """The unique ID of the item being reviewed."""
+  itemId: String!
+}
+
+"""Input data required for user sign-up."""
 input SignUpInput {
-  "        \n        **Constraints:**\n        - Length between 3 and 45 characters.\n        "
+  "              \n        - **Maximum length:** 30 characters.\n        - **Minimum length:** 3 characters.        \n        "
   username: String!
 
-  "\n        **Constraints:**\n        - Valid email format.\n        - Maximum length of 45 characters.\n        "
+  "        \n        - **Valid email format.**\n        - **Maximum length:** 45 characters.\n        "
   email: String!
 
-  "        \n        **Constraints:**\n        - Length between 8 and 56 characters.\n        "
+  "        \n        - **Minimum length:** 8 characters.\n        - **Maximum length:** 60 characters.        \n        "
   password: String!
 }
 
+"""Input data required for user sign-in."""
 input SignInInput {
+  """The email address of the user."""
   email: String!
+
+  """The password of the user."""
   password: String!
 }
 
+"""Input type for re-authentication using password"""
 input ReAuthenticationInput {
+  """The password of the user."""
   password: String!
 }

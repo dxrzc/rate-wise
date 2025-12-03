@@ -3,25 +3,28 @@ import { Item } from 'src/items/entities/item.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { AccountStatus } from '../enums/account-status.enum';
+import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
+import { Review } from 'src/reviews/entities/review.entity';
 
 @Entity('account')
 export class User extends BaseEntity {
-    @Column({ type: 'varchar', unique: true, length: 30 })
+    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.USERNAME.MAX })
     username!: string;
 
-    @Column({ type: 'varchar', unique: true, length: 45 })
+    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.EMAIL.MAX })
     email!: string;
 
-    @Column({ type: 'varchar', length: 60 })
+    @Column({ type: 'varchar', length: AUTH_LIMITS.PASSWORD.MAX })
     password!: string;
 
     @Column({
         type: 'enum',
         enum: UserRole,
         enumName: 'account_role_enum',
-        default: UserRole.USER,
+        default: [UserRole.USER],
+        array: true,
     })
-    role!: UserRole;
+    roles!: UserRole[];
 
     @Column({
         type: 'enum',
@@ -35,5 +38,8 @@ export class User extends BaseEntity {
     reputationScore!: number;
 
     @OneToMany(() => Item, (item) => item.user)
-    items?: Item[];
+    items!: Item[];
+
+    @OneToMany(() => Review, (review) => review.user)
+    reviews!: Review[];
 }

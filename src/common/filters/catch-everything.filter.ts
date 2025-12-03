@@ -1,8 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import { GqlContextType } from '@nestjs/graphql';
 import { Response } from 'express';
 import { GraphQLError } from 'graphql';
+import { convertGqlErrorToHttpError } from '../functions/error/transform-gql-error-into-http-error';
 import { SystemLogger } from '../logging/system.logger';
-import { GqlContextType } from '@nestjs/graphql';
+import { COMMON_MESSAGES } from '../messages/common.messages';
 
 function logException(exception: unknown) {
     if (exception instanceof Error)
@@ -22,10 +24,21 @@ export class CatchEverythingFilter implements ExceptionFilter {
                 // After configuring Apollo, http exceptions are no longer handled automatically
                 const ctx = host.switchToHttp();
                 const response = ctx.getResponse<Response>();
-                if (exception instanceof HttpException) {
-                    response.status(exception.getStatus()).json(exception.getResponse());
+                if (exception instanceof GraphQLError) {
+                    try {
+                        const { statusCode, message } = convertGqlErrorToHttpError(exception);
+                        response.status(statusCode).json({ error: message });
+                    } catch (error) {
+                        logException(error);
+                        response.status(500).json({ error: COMMON_MESSAGES.INTERNAL_SERVER_ERROR });
+                    }
                     return;
                 }
+                if (exception instanceof HttpException) {
+                    response.status(exception.getStatus()).json({ error: exception.message });
+                    return;
+                }
+                // Unknown error
                 const statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
                 response.status(statusCode).json({ error: 'Internal server error', statusCode });
                 logException(exception);

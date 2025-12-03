@@ -2,6 +2,7 @@ import { Injectable, ValidationPipe } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from '../errors/graphql-http.error';
 import { COMMON_MESSAGES } from '../messages/common.messages';
+import { SystemLogger } from '../logging/system.logger';
 
 @Injectable()
 export class AppValidationPipe extends ValidationPipe {
@@ -16,7 +17,9 @@ export class AppValidationPipe extends ValidationPipe {
                     this.logger.error(Object.values(constraints).at(0)!);
                 } else {
                     this.logger.error('Unexpeced validation error');
-                    // TODO: system logger (full error)
+                    SystemLogger.getInstance().error(
+                        `Unexpected validation error: ${JSON.stringify(error)}`,
+                    );
                 }
                 throw GqlHttpError.BadRequest(COMMON_MESSAGES.INVALID_INPUT);
             },

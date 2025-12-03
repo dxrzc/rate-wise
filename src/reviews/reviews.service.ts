@@ -1,0 +1,106 @@
+import { Injectable } from '@nestjs/common';
+import { CreateReviewInput } from './dtos/create-review.input';
+import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { Repository } from 'typeorm';
+import { Review } from './entities/review.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ItemsService } from 'src/items/items.service';
+import { Item } from 'src/items/entities/item.entity';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
+import { UsersService } from 'src/users/users.service';
+import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
+import { GqlHttpError } from 'src/common/errors/graphql-http.error';
+import { REVIEW_MESSAGES } from './messages/reviews.messages';
+import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
+
+@Injectable()
+export class ReviewService {
+    constructor(
+        @InjectRepository(Review)
+        private readonly reviewRepository: Repository<Review>,
+        private readonly paginationService: PaginationService<Review>,
+        private readonly itemsService: ItemsService,
+        private readonly usersService: UsersService,
+        private readonly logger: HttpLoggerService,
+    ) {}
+
+    private async refreshItemAvgRating(item: Item) {
+        const itemReviews = await this.reviewRepository.find({
+            select: { rating: true },
+            where: { relatedItem: item.id },
+        });
+        const itemReviewsRating = itemReviews.map((i) => i.rating);
+        const newAvg =
+            itemReviewsRating.reduce((prev, curr) => prev + curr, 0) / itemReviews.length;
+        await this.itemsService.updateItemAvgRating(item, newAvg);
+    }
+
+    async findOneByIdOrThrow(reviewId: string): Promise<Review> {
+        if (!validUUID(reviewId)) {
+            this.logger.error('Invalid UUID');
+            throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
+        }
+        const review = await this.reviewRepository.findOneBy({ id: reviewId });
+        if (!review) {
+            this.logger.error(`Review with id ${reviewId} not found`);
+            throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
+        }
+        return review;
+    }
+
+    async createOne(reviewData: CreateReviewInput, user: AuthenticatedUser) {
+        const item = await this.itemsService.findOneByIdOrThrow(reviewData.itemId);
+        if (item.createdBy === user.id) {
+            this.logger.error(`User ${user.id} attempted to review their own item ${item.id}`);
+            throw GqlHttpError.Forbidden(REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
+        }
+        const review = await this.reviewRepository.save({
+            ...reviewData,
+            relatedItem: item.id,
+            createdBy: user.id,
+        });
+        this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
+        await this.refreshItemAvgRating(item);
+        return review;
+    }
+
+    async findAllByUser(args: ReviewsByUserArgs) {
+        await this.usersService.findOneByIdOrThrow(args.userId);
+        const sqbAlias = 'review';
+        return await this.paginationService.create({
+            limit: args.limit,
+            cursor: args.cursor,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) =>
+                    qb.where(`${sqbAlias}.account_id = :userId`, { userId: args.userId }),
+                sqbAlias,
+            },
+        });
+    }
+
+    async findAllItemReviews(args: ItemReviewsArgs) {
+        await this.itemsService.findOneByIdOrThrow(args.itemId);
+        const sqbAlias = 'review';
+        return await this.paginationService.create({
+            limit: args.limit,
+            cursor: args.cursor,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) =>
+                    qb.where(`${sqbAlias}.item_id = :itemId`, { itemId: args.itemId }),
+                sqbAlias,
+            },
+        });
+    }
+
+    async voteReview(reviewId: string, user: AuthenticatedUser) {
+        const review = await this.findOneByIdOrThrow(reviewId);
+        review.votes += 1;
+        await this.reviewRepository.save(review);
+        this.logger.info(`User ${user.id} voted review ${review.id}`);
+        return review;
+    }
+}
