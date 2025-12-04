@@ -56,6 +56,9 @@ export class RedisClientAdapter {
         return await this.client.sMembers(key);
     }
 
+    /**
+     * Checks if a key exists in Redis.
+     */
     async exists(key: string): Promise<boolean> {
         return await this.client.exists(key);
     }
