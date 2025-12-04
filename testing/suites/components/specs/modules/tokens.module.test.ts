@@ -65,6 +65,23 @@ describe('Tokens Service ', () => {
             });
         });
 
+        describe('Token is expired', () => {
+            test('throw InvalidToken error', async () => {
+                const expiredToken = tokensService['jwtService'].sign(
+                    {
+                        email: '',
+                        purpose: JwtPurpose.ACCOUNT_VERIFICATION,
+                        jti: '123',
+                    },
+                    {
+                        expiresIn: '-1s',
+                        secret: '123EMAIL',
+                    },
+                );
+                await expect(tokensService.verify(expiredToken)).rejects.toThrow(InvalidToken);
+            });
+        });
+
         describe('Invalid token purpose', () => {
             test('throw InvalidTokenPurpose error', async () => {
                 const token = await tokensService.generate({
