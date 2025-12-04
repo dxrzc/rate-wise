@@ -64,14 +64,14 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test('default user roles are user', async () => {
+        test('default user roles are reviewer', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
                 .expect(success);
             const userId = res.body.data.signUp.id;
             const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.roles).toStrictEqual([UserRole.USER]);
+            expect(userDB.roles).toStrictEqual([UserRole.REVIEWER]);
         });
 
         test('default account status is pending verification', async () => {

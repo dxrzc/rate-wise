@@ -5,6 +5,7 @@ import { createItem } from '@testing/tools/gql-operations/items/create-item.oper
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('Gql - createItem', () => {
     describe('Session cookie not provided', () => {
@@ -38,9 +39,12 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Active account with roles [user] attempts to create an item', () => {
+    describe('Active account with roles [creator] attempts to create an item', () => {
         test('user can create item successfully', async () => {
-            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
             await testKit.gqlClient
                 .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
                 .set('Cookie', sessionCookie)
@@ -50,7 +54,10 @@ describe('Gql - createItem', () => {
 
     describe('Item created successfully', () => {
         test('default average_rating is 0', async () => {
-            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
             const itemData = testKit.itemSeed.itemInput;
             const res = await testKit.gqlClient
                 .send(createItem({ args: itemData, fields: ['id'] }))
@@ -64,7 +71,10 @@ describe('Gql - createItem', () => {
 
         describe('Provided category with uppercase letter and leading and trailing spaces', () => {
             test('category should be transformed to lowercase and leading/trailing spaces removed', async () => {
-                const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [UserRole.CREATOR],
+                });
                 const category = ` TeST `;
                 const itemData = {
                     ...testKit.itemSeed.itemInput,
@@ -81,7 +91,10 @@ describe('Gql - createItem', () => {
 
         describe('Provided title contains uppercase letters and leading and trailing spaces', () => {
             test('uppercase letters are kept but leading and trailing spaces removed', async () => {
-                const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [UserRole.CREATOR],
+                });
                 const itemTitle = `  myItemtestTitle  `;
                 const itemData = { ...testKit.itemSeed.itemInput, title: itemTitle };
                 await testKit.gqlClient
@@ -95,7 +108,10 @@ describe('Gql - createItem', () => {
 
         describe('Provided tags contain uppercase letters and leading and trailing spaces', () => {
             test('all the tags should be transformed to lowercase and leading and trailing spaces removed', async () => {
-                const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [UserRole.CREATOR],
+                });
                 const tags = ['  TagOne ', 'TAGTwo', ' tagThree  '];
                 const itemData = {
                     ...testKit.itemSeed.itemInput,
@@ -112,7 +128,10 @@ describe('Gql - createItem', () => {
 
         describe('Tags not provided', () => {
             test('array in database should be an empty array', async () => {
-                const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [UserRole.CREATOR],
+                });
                 const itemData = {
                     title: testKit.itemSeed.title,
                     description: testKit.itemSeed.description,
@@ -128,7 +147,10 @@ describe('Gql - createItem', () => {
         });
 
         test('user in cookie should be the creator of the item', async () => {
-            const { sessionCookie, id } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { sessionCookie, id } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
             const itemData = testKit.itemSeed.itemInput;
             await testKit.gqlClient
                 .send(createItem({ args: itemData, fields: ['id'] }))

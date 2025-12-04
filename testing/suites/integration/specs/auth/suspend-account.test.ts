@@ -25,11 +25,11 @@ describe('GraphQL - suspendAccount', () => {
         test('account status is updated to suspended', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.ADMIN],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
             });
             // suspend account
             await testKit.gqlClient
@@ -44,11 +44,11 @@ describe('GraphQL - suspendAccount', () => {
             // suspend an account
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.ADMIN],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
             });
             // trigger caching
             const cacheKey = createUserCacheKey(targetUserId);
@@ -71,7 +71,7 @@ describe('GraphQL - suspendAccount', () => {
         test('return forbidden code and forbidden error message', async () => {
             const { sessionCookie: userSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', userSess)
@@ -84,11 +84,11 @@ describe('GraphQL - suspendAccount', () => {
         test('return forbidden code and forbidden error message', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', adminSess)
@@ -101,11 +101,11 @@ describe('GraphQL - suspendAccount', () => {
         test('return forbidden code and forbidden error message', async () => {
             const { sessionCookie: moderatorSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.MODERATOR],
+                roles: [UserRole.REVIEWER, UserRole.MODERATOR],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', moderatorSess)
@@ -117,10 +117,10 @@ describe('GraphQL - suspendAccount', () => {
     test('ADMIN roles can suspend MODERATORs', async () => {
         const { sessionCookie: adminSess } = await createAccount({
             status: AccountStatus.ACTIVE,
-            roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
+            roles: [UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN],
         });
         const { id: moderatorId } = await createAccount({
-            roles: [UserRole.USER, UserRole.MODERATOR],
+            roles: [UserRole.REVIEWER, UserRole.MODERATOR],
             status: AccountStatus.ACTIVE,
         });
         await testKit.gqlClient
@@ -132,11 +132,11 @@ describe('GraphQL - suspendAccount', () => {
     test('MODERATOR roles can suspend USERs', async () => {
         const { sessionCookie: moderatorSess } = await createAccount({
             status: AccountStatus.ACTIVE,
-            roles: [UserRole.USER, UserRole.MODERATOR],
+            roles: [UserRole.REVIEWER, UserRole.MODERATOR],
         });
         const { id: userId } = await createAccount({
             status: AccountStatus.ACTIVE,
-            roles: [UserRole.USER],
+            roles: [UserRole.REVIEWER],
         });
         await testKit.gqlClient
             .set('Cookie', moderatorSess)
@@ -148,11 +148,11 @@ describe('GraphQL - suspendAccount', () => {
         test('return conflict code and account already suspended error message', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.SUSPENDED,
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', adminSess)
@@ -165,7 +165,7 @@ describe('GraphQL - suspendAccount', () => {
         test('return not found code and not found error message', async () => {
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', adminSess)
@@ -178,11 +178,11 @@ describe('GraphQL - suspendAccount', () => {
         test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
-                roles: [UserRole.USER, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.ADMIN],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
@@ -196,11 +196,11 @@ describe('GraphQL - suspendAccount', () => {
             const ip = faker.internet.ip();
             const { sessionCookie: adminSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER, UserRole.ADMIN],
+                roles: [UserRole.REVIEWER, UserRole.ADMIN],
             });
             const { id: targetUserId } = await createAccount({
                 status: AccountStatus.ACTIVE,
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
             });
             await Promise.all(
                 Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
