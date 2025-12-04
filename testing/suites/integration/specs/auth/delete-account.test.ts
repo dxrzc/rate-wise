@@ -25,29 +25,9 @@ import { USER_MESSAGES } from 'src/users/messages/user.messages';
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
 
 describe('GET delete account endpoint with token', () => {
-    describe('User account status is SUSPENDED', () => {
+    describe.each(Object.values(AccountStatus))('User account status is %s', (status) => {
         test('user can perform this action', async () => {
-            const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
-            const token = await testKit.accDeletionToken.generate({ id });
-            await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
-            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
-        });
-    });
-
-    describe('User account status is PENDING_VERIFICATION', () => {
-        test('user can perform this action', async () => {
-            const { id } = await createAccount({
-                status: AccountStatus.PENDING_VERIFICATION,
-            });
-            const token = await testKit.accDeletionToken.generate({ id });
-            await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
-            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
-        });
-    });
-
-    describe('User account is ACTIVE', () => {
-        test('user can perform this action', async () => {
-            const { id } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id } = await createAccount({ status });
             const token = await testKit.accDeletionToken.generate({ id });
             await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
             await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
