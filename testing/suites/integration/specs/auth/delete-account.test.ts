@@ -125,7 +125,7 @@ describe('GET delete account endpoint with token', () => {
             // delete user
             const token = await testKit.accDeletionToken.generate({ id });
             await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
-            // sessions does not exist anymore
+            // sessions do not exist anymore
             await expect(testKit.sessionsRedisClient.get(sid1RedisKey)).resolves.toBeNull();
             await expect(testKit.sessionsRedisClient.get(sid2RedisKey)).resolves.toBeNull();
         });
