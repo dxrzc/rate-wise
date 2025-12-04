@@ -56,6 +56,10 @@ export class RedisClientAdapter {
         return await this.client.sMembers(key);
     }
 
+    async exists(key: string): Promise<boolean> {
+        return await this.client.exists(key);
+    }
+
     /**
      * Returns the number of members in a Redis set.
      */
