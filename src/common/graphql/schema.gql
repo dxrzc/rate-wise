@@ -31,8 +31,11 @@ type AccountModel {
 
 """Available roles for a user."""
 enum UserRole {
-  """Regular user with basic permissions."""
-  USER
+  """Regular user who can write reviews and rate items."""
+  REVIEWER
+
+  """User who can create new items (businesses/products)."""
+  CREATOR
 
   """User with moderation capabilities."""
   MODERATOR

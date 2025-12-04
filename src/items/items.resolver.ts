@@ -9,7 +9,8 @@ import {
     Resolver,
 } from '@nestjs/graphql';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from 'src/users/enums/user-role.enum';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
@@ -39,7 +40,7 @@ export class ItemsResolver {
     ) {}
 
     @BalancedThrottle()
-    @AllRolesAllowed()
+    @Roles([UserRole.CREATOR])
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
     @Mutation(() => ItemModel, createItemDocs)
     async createOne(
