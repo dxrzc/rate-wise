@@ -19,13 +19,14 @@ import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-r
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
 
 describe('GET delete account endpoint with token', () => {
     describe('User account status is SUSPENDED', () => {
-        test('user can perform this operation', async () => {
+        test('user can perform this action', async () => {
             const { id } = await createAccount({ status: AccountStatus.SUSPENDED });
             const token = await testKit.accDeletionToken.generate({ id });
             await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
@@ -34,7 +35,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('User account status is PENDING_VERIFICATION', () => {
-        test('user can perform this operation', async () => {
+        test('user can perform this action', async () => {
             const { id } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
             });
@@ -45,7 +46,7 @@ describe('GET delete account endpoint with token', () => {
     });
 
     describe('User account is ACTIVE', () => {
-        test('user can perform this operation', async () => {
+        test('user can perform this action', async () => {
             const { id } = await createAccount({ status: AccountStatus.ACTIVE });
             const token = await testKit.accDeletionToken.generate({ id });
             await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
@@ -61,6 +62,17 @@ describe('GET delete account endpoint with token', () => {
             const res = await testKit.restClient.get(`${deleteAccUrl}?token=${token}`);
             expect(res.body).toStrictEqual({ error: USER_MESSAGES.NOT_FOUND });
             expect(res.statusCode).toBe(HttpStatus.NOT_FOUND);
+        });
+    });
+
+    describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
+        test('user can perform this action', async () => {
+            const { id } = await createAccount({
+                roles: [role],
+            });
+            const token = await testKit.accDeletionToken.generate({ id });
+            await expect(testKit.userRepos.findOneBy({ id })).resolves.not.toBeNull();
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
         });
     });
 
