@@ -71,8 +71,8 @@ describe('GraphQL - requestAccountVerification', () => {
                     status: AccountStatus.PENDING_VERIFICATION,
                 });
                 await testKit.gqlClient
-                    .send(requestAccountVerification())
-                    .set('Cookie', sessionCookie);
+                    .set('Cookie', sessionCookie)
+                    .send(requestAccountVerification());
             });
         },
     );
