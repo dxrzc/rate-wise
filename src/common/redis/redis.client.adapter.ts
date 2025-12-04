@@ -57,6 +57,13 @@ export class RedisClientAdapter {
     }
 
     /**
+     * Checks if a key exists in Redis.
+     */
+    async exists(key: string): Promise<boolean> {
+        return (await this.client.exists(key)) === 1;
+    }
+
+    /**
      * Returns the number of members in a Redis set.
      */
     async setSize(key: string): Promise<number> {

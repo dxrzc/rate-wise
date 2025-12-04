@@ -13,10 +13,7 @@ export class SessionsEvents implements OnModuleInit {
 
     async onModuleInit() {
         const listener = (key: string) => this.handleRemovedSession(key);
-        await Promise.all([
-            this.redisClient.connection.addSubscriber('__keyevent@0__:del', listener),
-            this.redisClient.connection.addSubscriber('__keyevent@0__:expired', listener),
-        ]);
+        await this.redisClient.connection.addSubscriber('__keyevent@0__:expired', listener);
     }
 
     async handleRemovedSession(key: string): Promise<void> {
