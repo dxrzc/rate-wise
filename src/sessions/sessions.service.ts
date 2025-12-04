@@ -21,7 +21,7 @@ export class SessionsService {
         );
     }
 
-    private async deleteAllSessionRelation(sessIDs: string[]) {
+    private async deleteAllSessionRelations(sessIDs: string[]) {
         await Promise.all(
             sessIDs.map((id) => this.redisClient.delete(userAndSessionRelationKey(id))),
         );
@@ -49,7 +49,7 @@ export class SessionsService {
         const sessIDs = await this.redisClient.setMembers(userSessionsSetKey(userId));
         await Promise.all([
             this.deleteAllUserSessions(sessIDs),
-            this.deleteAllSessionRelation(sessIDs),
+            this.deleteAllSessionRelations(sessIDs),
             this.deleteUserSessionsIndex(userId),
         ]);
         this.logger.debug(`All sessions for user ${userId} deleted`);
