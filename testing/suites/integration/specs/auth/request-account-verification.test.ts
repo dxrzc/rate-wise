@@ -87,7 +87,7 @@ describe('GraphQL - requestAccountVerification', () => {
                 .set('Cookie', sessionCookie)
                 .expect(success);
             const emailsent = await getEmailSent(email);
-            expect((emailsent.meta as any).Subject).toBe('Verify your Ratewise account');
+            expect(emailsent.meta.Subject).toBe('Verify your Ratewise account');
             const token = (emailsent.message as any).Text.match(/token=([a-zA-Z0-9._-]+)/)[1];
             const payload = await testKit.accVerifToken.verify(token);
             expect(payload.id).toBe(id);
