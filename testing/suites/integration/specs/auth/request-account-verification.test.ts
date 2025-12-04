@@ -1,6 +1,7 @@
 import { requestAccountVerification } from '@testing/tools/gql-operations/auth/request-account-verification.operation';
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
+import { getEmailSent } from '@integration/utils/get-email-sent.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
@@ -39,15 +40,14 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('Account status is pending verification', () => {
-        test('email is sent to user email address', async () => {
-            const { sessionCookie, email } = await createAccount({
+        test('user can perform this action', async () => {
+            const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
             });
             await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification())
                 .expect(success);
-            await expect(email).emailSentToThisAddress();
         });
     });
 
@@ -62,13 +62,35 @@ describe('GraphQL - requestAccountVerification', () => {
         });
     });
 
-    describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
-        test('email is sent to the user email address', async () => {
-            const { email, sessionCookie } = await createAccount({
-                roles: [role],
+    describe.each(Object.values(UserRole))(
+        'User roles are: [%s] and account status is pending verification',
+        (role: UserRole) => {
+            test('user can perform this action', async () => {
+                const { sessionCookie } = await createAccount({
+                    roles: [role],
+                    status: AccountStatus.PENDING_VERIFICATION,
+                });
+                await testKit.gqlClient
+                    .send(requestAccountVerification())
+                    .set('Cookie', sessionCookie);
             });
-            await testKit.gqlClient.send(requestAccountVerification()).set('Cookie', sessionCookie);
-            await expect(email).emailSentToThisAddress();
+        },
+    );
+
+    describe('Successful request account verification', () => {
+        test('email is sent to the user email address with correct subject and token', async () => {
+            const { sessionCookie, email, id } = await createAccount({
+                status: AccountStatus.PENDING_VERIFICATION,
+            });
+            await testKit.gqlClient
+                .send(requestAccountVerification())
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            const emailsent = await getEmailSent(email);
+            expect((emailsent.meta as any).Subject).toBe('Verify your Ratewise account');
+            const token = (emailsent.message as any).Text.match(/token=([a-zA-Z0-9._-]+)/)[1];
+            const payload = await testKit.accVerifToken.verify(token);
+            expect(payload.id).toBe(id);
         });
     });
 
