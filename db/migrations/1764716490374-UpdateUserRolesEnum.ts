@@ -14,11 +14,17 @@ export class UpdateUserRolesEnum1764716490374 implements MigrationInterface {
             ALTER TYPE "public"."account_role_enum" ADD VALUE 'creator';
         `);
 
-        // "reviewer" as default role, just in case
+        // "reviewer" and "creator" as default roles
         await queryRunner.query(`
             ALTER TABLE "account" 
             ALTER COLUMN "roles" 
-            SET DEFAULT ARRAY['reviewer']::"public"."account_role_enum"[];
+            SET DEFAULT ARRAY['reviewer', 'creator']::"public"."account_role_enum"[];
+        `);
+        // Update existing users who currently have only 'reviewer' role to also include 'creator'
+        await queryRunner.query(`
+            UPDATE "account"
+            SET "roles" = ARRAY['reviewer', 'creator']::"public"."account_role_enum"[]
+            WHERE "roles" = ARRAY['reviewer']::"public"."account_role_enum"[];
         `);
     }
 

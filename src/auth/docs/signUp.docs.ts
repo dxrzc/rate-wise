@@ -11,6 +11,8 @@ export const signUpDocs: MutationOptions = {
         
         **Account Status:** Creates a new account with PENDING_VERIFICATION status
         
+        **Roles:** Assigns REVIEWER and CREATOR roles by default
+        
         **Session:** Upon successful registration, a new user session is created and a session cookie (connect.sid) is set in the response. This cookie is used for authentication in subsequent requests.
         
         **Rate Limiting:** Critical throttle applied to prevent abuse

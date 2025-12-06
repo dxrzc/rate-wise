@@ -11,7 +11,7 @@ export const requestAccountVerificationDocs: MutationOptions = {
         
         **Account Status Required:** PENDING_VERIFICATION - only users with pending verification status can request verification
         
-        **Effect:** Sends a verification email with a confirmation link. Upon successful email verification, the account status is updated to ACTIVE, allowing full access to the platform.
+        **Effect:** Sends a verification email with a confirmation link. Upon successful email verification, the account status is updated to ACTIVE, allowing full access to the platform (creating items, reviews and voting on reviews).
         
         **Rate Limiting:** Ultra-critical throttle applied to prevent email spam
         
