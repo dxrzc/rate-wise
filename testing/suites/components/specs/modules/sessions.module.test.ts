@@ -130,6 +130,8 @@ describe('Sessions Service ', () => {
 
     describe('delete', () => {
         test('req.session.destroy is called', async () => {
+            const sess1Id = faker.string.uuid();
+            mockRequest.sessionID = sess1Id;
             await sessionsService.delete(<any>mockRequest);
             expect(mockRequest.session.destroy).toHaveBeenCalledTimes(1);
         });

@@ -61,8 +61,14 @@ export class SessionsService {
     }
 
     async delete(req: RequestContext) {
+        const userId = req.session.userId;
+        const sessionId = req.sessionID;
         await promisify<void>((cb) => req.session.destroy(cb));
-        this.logger.debug(`Session ${req.sessionID} deleted`);
+        if (userId) {
+            await this.redisClient.setRem(userSessionsSetKey(userId), sessionId);
+        }
+        await this.redisClient.delete(userAndSessionRelationKey(sessionId));
+        this.logger.debug(`Session ${sessionId} deleted`);
     }
 
     async create(req: RequestContext, userId: string) {
