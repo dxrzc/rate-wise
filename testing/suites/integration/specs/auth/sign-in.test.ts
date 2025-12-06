@@ -104,6 +104,30 @@ describe('GraphQL - signIn', () => {
         });
     });
 
+    describe('Email not provided', () => {
+        test('return bad user input code', async () => {
+            const res = await testKit.gqlClient.send(
+                signIn({
+                    args: { password: testKit.userSeed.password, email: undefined as any },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining('email'));
+        });
+    });
+
+    describe('Password not provided', () => {
+        test('return bad user input code', async () => {
+            const res = await testKit.gqlClient.send(
+                signIn({
+                    args: { email: testKit.userSeed.email, password: undefined as any },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining('password'));
+        });
+    });
+
     describe('User in email does not exist', () => {
         test('return unauthorized code and invalid credentials error message', async () => {
             const res = await testKit.gqlClient.send(
@@ -133,13 +157,16 @@ describe('GraphQL - signIn', () => {
         });
     });
 
-    describe('Attempt to provide password as a gql field ', () => {
+    describe('Attempt to fetch password', () => {
         test('return graphql validation failed code', async () => {
             const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({ args: { email, password }, fields: ['password' as any] }),
             );
-            expect(res).toFailWith(Code.GRAPHQL_VALIDATION_FAILED, <string>expect.any(String));
+            expect(res).toFailWith(
+                Code.GRAPHQL_VALIDATION_FAILED,
+                expect.stringContaining('password'),
+            );
         });
     });
 
