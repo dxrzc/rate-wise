@@ -21,7 +21,7 @@ export class User extends BaseEntity {
         type: 'enum',
         enum: UserRole,
         enumName: 'account_role_enum',
-        default: [UserRole.REVIEWER],
+        default: [UserRole.REVIEWER, UserRole.CREATOR],
         array: true,
     })
     roles!: UserRole[];
