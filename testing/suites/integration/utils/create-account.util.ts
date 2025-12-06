@@ -20,7 +20,10 @@ interface CreateAccountOptions {
 export async function createAccount(
     options: CreateAccountOptions = {},
 ): Promise<UserModel & ExtraData> {
-    const { status = AccountStatus.PENDING_VERIFICATION, roles = [UserRole.REVIEWER] } = options;
+    const {
+        status = AccountStatus.PENDING_VERIFICATION,
+        roles = [UserRole.REVIEWER, UserRole.CREATOR],
+    } = options;
     const user = testKit.userSeed.signUpInput;
     const res = await testKit.gqlClient.send(signUp({ fields: 'ALL', args: user })).expect(success);
     await testKit.userRepos.update({ id: res.body.data.signUp.id }, { status, roles });
