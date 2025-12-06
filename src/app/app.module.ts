@@ -37,6 +37,7 @@ import { appRolesGuard } from './providers/guards/app-roles.guard.provider';
 import { rateLimiterGuard } from './providers/guards/graphql-throttler.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { ReviewsModule } from 'src/reviews/reviews.module';
+import { ModerationModule } from 'src/moderation/moderation.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -142,6 +143,7 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
         UsersModule,
         ItemsModule,
         ReviewsModule,
+        ModerationModule,
         AuthModule,
     ],
 })
