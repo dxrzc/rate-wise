@@ -74,7 +74,7 @@ describe('AccountStatus Guard', () => {
                 status: AccountStatus.PENDING_VERIFICATION,
                 email: 'user@gmail.com',
                 username: 'TestUser',
-                roles: [UserRole.REVIEWER],
+                roles: [UserRole.REVIEWER, UserRole.CREATOR],
                 id: '12345',
             },
         };
