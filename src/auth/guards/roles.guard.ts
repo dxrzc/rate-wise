@@ -16,13 +16,19 @@ export class RolesGuard implements CanActivate {
     ) {}
 
     canActivate(context: ExecutionContext): boolean {
-        const isPublic = this.reflector.get(Public, context.getHandler());
+        const isPublic = this.reflector.getAllAndOverride(Public, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
         if (isPublic) return true;
 
         if (context.getType<GqlContextType>() !== 'graphql')
             throw new Error('Non-gql contexts in RolesGuard not implemented');
 
-        const requiredRoles = this.reflector.get(Roles, context.getHandler());
+        const requiredRoles = this.reflector.getAllAndOverride(Roles, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
         if (!requiredRoles) throw new Error('Roles not specified for RolesGuard');
 
         const graphQLContext = GqlExecutionContext.create(context);

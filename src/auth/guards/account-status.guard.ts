@@ -18,15 +18,18 @@ export class AccountStatusGuard implements CanActivate {
     ) {}
 
     canActivate(context: ExecutionContext): boolean {
-        const isPublic = this.reflector.get(Public, context.getHandler());
+        const isPublic = this.reflector.getAllAndOverride(Public, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
         if (isPublic) return true;
         if (context.getType<GqlContextType>() !== 'graphql') {
             throw new Error('Non-gql contexts in AccountStatusGuard not implemented');
         }
-        const minStatusRequired = this.reflector.get(
-            MinAccountStatusRequired,
+        const minStatusRequired = this.reflector.getAllAndOverride(MinAccountStatusRequired, [
             context.getHandler(),
-        );
+            context.getClass(),
+        ]);
 
         if (!minStatusRequired) throw new Error('Min account status not specified');
 
