@@ -20,6 +20,12 @@ export class UpdateUserRolesEnum1764716490374 implements MigrationInterface {
             ALTER COLUMN "roles" 
             SET DEFAULT ARRAY['reviewer', 'creator']::"public"."account_role_enum"[];
         `);
+        // Update existing users who currently have only 'reviewer' role to also include 'creator'
+        await queryRunner.query(`
+            UPDATE "account"
+            SET "roles" = ARRAY['reviewer', 'creator']::"public"."account_role_enum"[]
+            WHERE "roles" = ARRAY['reviewer']::"public"."account_role_enum"[];
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
