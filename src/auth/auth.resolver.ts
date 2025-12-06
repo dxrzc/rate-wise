@@ -2,7 +2,7 @@ import {
     CriticalThrottle,
     UltraCriticalThrottle,
 } from 'src/common/decorators/throttling.decorator';
-import { Args, Context, ID, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
 import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
 import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
@@ -14,8 +14,6 @@ import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { RequestContext } from './types/request-context.type';
-import { UserRole } from 'src/users/enums/user-role.enum';
-import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountModel } from './models/account.model';
 import { signUpDocs } from './docs/signUp.docs';
 import { signInDocs } from './docs/signIn.docs';
@@ -23,7 +21,6 @@ import { requestAccountVerificationDocs } from './docs/requestAccountVerificatio
 import { requestAccountDeletionDocs } from './docs/requestAccountDeletion.docs';
 import { signOutDocs } from './docs/signOut.docs';
 import { signOutAllDocs } from './docs/signOutAll.docs';
-import { suspendAccountDocs } from './docs/suspendAccount.docs';
 
 @Resolver()
 export class AuthResolver {
@@ -95,15 +92,6 @@ export class AuthResolver {
     ): Promise<boolean> {
         await this.authService.signOutAll(input, req.session.userId);
         this.clearCookie(res);
-        return true;
-    }
-
-    @CriticalThrottle()
-    @Roles([UserRole.ADMIN, UserRole.MODERATOR])
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Mutation(() => Boolean, suspendAccountDocs)
-    async suspendAccount(@Args('user_id', { type: () => ID }) userId: string): Promise<boolean> {
-        await this.authService.suspendAccount(userId);
         return true;
     }
 }
