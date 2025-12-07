@@ -1,7 +1,8 @@
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Item } from 'src/items/entities/item.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Vote } from 'src/votes/entities/vote.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity()
 export class Review extends BaseEntity {
@@ -10,9 +11,6 @@ export class Review extends BaseEntity {
 
     @Column('integer', { default: 0 })
     rating!: number; // 0–10 enforced by DB
-
-    @Column('integer', { default: 0 })
-    votes!: number;
 
     @ManyToOne(() => User, (user) => user.reviews, {
         nullable: false,
@@ -27,6 +25,9 @@ export class Review extends BaseEntity {
     })
     @JoinColumn({ name: 'item_id' })
     item!: Item;
+
+    @OneToMany(() => Vote, (vote) => vote.review)
+    votes!: Vote[];
 
     @Column({ name: 'account_id' })
     createdBy!: string;
