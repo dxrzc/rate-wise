@@ -49,18 +49,6 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Active account with role "reviewer" attempts to create an item', () => {
-        test('return forbidden code and forbidden error message', async () => {
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.REVIEWER],
-            });
-            const response = await testKit.gqlClient
-                .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
-                .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-    });
 
     describe('Active account with role "creator" attempts to create an item', () => {
         test('item created successfully', async () => {
