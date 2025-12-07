@@ -51,7 +51,7 @@ describe('GET verify account endpoint with token', () => {
             expect(userInCache).toBeUndefined();
         });
 
-        test('do not change the user roles', async () => {
+        test('user roles remain unchanged', async () => {
             const { id, roles } = await createAccount();
             const token = await testKit.accVerifToken.generate({ id });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
