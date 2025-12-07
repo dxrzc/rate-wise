@@ -10,6 +10,7 @@ import { Item } from 'src/items/entities/item.entity';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('Gql - createReview', () => {
     async function createItemForOtherAccount(): Promise<Item> {
@@ -40,7 +41,7 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Pending verification attempts to create a review', () => {
+    describe('User with account status "pending verification" attempts to create a review', () => {
         test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
@@ -57,7 +58,7 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Suspended account attempts to create a review', () => {
+    describe('User with account status "suspended" attempts to create a review', () => {
         test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.SUSPENDED,
@@ -106,6 +107,77 @@ describe('Gql - createReview', () => {
                 .send(createReview({ args: reviewData, fields: ['id'] }))
                 .set('Cookie', sessionCookie);
             expect(response).toFailWith(Code.FORBIDDEN, REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
+        });
+    });
+
+    describe('Account status is active and role is "reviewer"', () => {
+        test('create review successfully', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.REVIEWER],
+            });
+            const { id: itemId } = await createItemForOtherAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).notToFail();
+        });
+    });
+
+    describe('Account status is active and role is "creator"', () => {
+        test('return forbidden code and forbidden error message', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
+            const { id: itemId } = await createItemForOtherAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
+        });
+    });
+    describe('Account status is active and role is "moderator"', () => {
+        test('return forbidden code and forbidden error message', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.MODERATOR],
+            });
+            const { id: itemId } = await createItemForOtherAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
+        });
+    });
+
+    describe('Account status is active and role is "admin"', () => {
+        test('return forbidden code and forbidden error message', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.ADMIN],
+            });
+            const { id: itemId } = await createItemForOtherAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
         });
     });
 
