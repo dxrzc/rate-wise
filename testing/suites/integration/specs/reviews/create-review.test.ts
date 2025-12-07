@@ -110,7 +110,7 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Account status is active and role is "reviewer"', () => {
+    describe('User with account status "active" and role "reviewer" attempts to create a review', () => {
         test('create review successfully', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
