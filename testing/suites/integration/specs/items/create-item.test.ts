@@ -17,7 +17,7 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Pending verification account attempts to create an item', () => {
+    describe('Account with status "pending verification" attempts to create an item', () => {
         test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
@@ -29,7 +29,7 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Suspended account attempts to create an item', () => {
+    describe('Account with status "suspended" attempts to create an item', () => {
         test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.SUSPENDED });
             const response = await testKit.gqlClient
@@ -39,16 +39,56 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Active account with roles [creator] attempts to create an item', () => {
-        test('user can create item successfully', async () => {
+    describe('Account with status "active" attempts to create an item', () => {
+        test('user creates item successfully', async () => {
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            const response = await testKit.gqlClient
+                .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).notToFail();
+        });
+    });
+
+    describe('Active account with role "creator" attempts to create an item', () => {
+        test('item created successfully', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.CREATOR],
             });
-            await testKit.gqlClient
+            const response = await testKit.gqlClient
                 .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
-                .set('Cookie', sessionCookie)
-                .expect(success);
+                .set('Cookie', sessionCookie);
+            expect(response).notToFail();
+        });
+    });
+
+    describe.each([UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN])(
+        'Active account with role "%s" attempts to create an item',
+        (role) => {
+            test('return forbidden code and forbidden error message', async () => {
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [role],
+                });
+                const response = await testKit.gqlClient
+                    .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
+                    .set('Cookie', sessionCookie);
+                expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
+            });
+        },
+    );
+    describe.each(['title', 'description', 'category'])('Property "%s" not provided', (prop) => {
+        test('return bad user input code', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
+            const itemData = { ...testKit.itemSeed.itemInput };
+            delete itemData[prop];
+            const response = await testKit.gqlClient
+                .send(createItem({ args: itemData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining(prop));
         });
     });
 
