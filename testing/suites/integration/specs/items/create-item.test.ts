@@ -75,32 +75,21 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe('Active account with role "moderator" attempts to create an item', () => {
-        test('return forbidden code and forbidden error message', async () => {
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.MODERATOR],
+    describe.each([UserRole.REVIEWER, UserRole.MODERATOR, UserRole.ADMIN])(
+        'Active account with role "%s" attempts to create an item',
+        (role) => {
+            test('return forbidden code and forbidden error message', async () => {
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [role],
+                });
+                const response = await testKit.gqlClient
+                    .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
+                    .set('Cookie', sessionCookie);
+                expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
             });
-            const response = await testKit.gqlClient
-                .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
-                .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-    });
-
-    describe('Active account with role "admin" attempts to create an item', () => {
-        test('return forbidden code and forbidden error message', async () => {
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.ADMIN],
-            });
-            const response = await testKit.gqlClient
-                .send(createItem({ args: testKit.itemSeed.itemInput, fields: ['id'] }))
-                .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-    });
-
+        }
+    );
     describe.each(['title', 'description', 'category'])('Property "%s" not provided', (prop) => {
         test('return bad user input code', async () => {
             const { sessionCookie } = await createAccount({
