@@ -5,7 +5,7 @@ export class AddReviewTable1763697287276 implements MigrationInterface {
         // create table
         await queryRunner.query(`
             CREATE TABLE "review" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
                 "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "content" text NOT NULL,
