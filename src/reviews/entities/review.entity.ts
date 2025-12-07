@@ -12,6 +12,12 @@ export class Review extends BaseEntity {
     @Column('integer', { default: 0 })
     rating!: number; // 0–10 enforced by DB
 
+    @Column('integer', { name: 'upvotes', default: 0 })
+    upVotes!: number;
+
+    @Column('integer', { name: 'downvotes', default: 0 })
+    downVotes!: number;
+
     @ManyToOne(() => User, (user) => user.reviews, {
         nullable: false,
         onDelete: 'CASCADE',
