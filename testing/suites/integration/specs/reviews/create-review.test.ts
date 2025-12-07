@@ -129,7 +129,7 @@ describe('Gql - createReview', () => {
     });
 
     describe.each([UserRole.CREATOR, UserRole.MODERATOR, UserRole.ADMIN])(
-        'Account status is active and role is "%s"',
+        'Users with account status "active" and role "%s" attempt to create a review',
         (role) => {
             test('return forbidden code and forbidden error message', async () => {
                 const { sessionCookie } = await createAccount({
