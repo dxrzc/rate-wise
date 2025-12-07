@@ -26,7 +26,7 @@ describe('GET verify account endpoint with token', () => {
             expect(userInDb?.status).toBe(AccountStatus.ACTIVE);
         });
 
-        test('token is blacklisted', async () => {
+        test('token in url is blacklisted', async () => {
             const { id } = await createAccount();
             const { token, jti } = await testKit.accVerifToken.generate({ id }, { metadata: true });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
@@ -36,7 +36,7 @@ describe('GET verify account endpoint with token', () => {
             expect(isBlacklisted).toBe(1);
         });
 
-        test('User is deleted from redis cache', async () => {
+        test('user is deleted from redis cache', async () => {
             const { id } = await createAccount();
             const cacheKey = createUserCacheKey(id);
             // trigger caching
@@ -50,16 +50,38 @@ describe('GET verify account endpoint with token', () => {
             const userInCache = await testKit.cacheManager.get(cacheKey);
             expect(userInCache).toBeUndefined();
         });
+
+        test('do not change the user roles', async () => {
+            const { id, roles } = await createAccount();
+            const token = await testKit.accVerifToken.generate({ id });
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
+            const userInDb = await testKit.userRepos.findOneBy({ id });
+            expect(res.status).toBe(HttpStatus.OK);
+            expect(userInDb?.roles).toEqual(roles.map((r) => r.toLowerCase()));
+        });
     });
 
     describe('Account does not exist', () => {
-        test('return not found code and not found error message', async () => {
+        test('return not found code and user not found error message', async () => {
             const { id } = await createAccount();
             const token = await testKit.accVerifToken.generate({ id });
             await testKit.userRepos.delete(id); // user deleted
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
             expect(res.body).toStrictEqual({ error: USER_MESSAGES.NOT_FOUND });
             expect(res.statusCode).toBe(HttpStatus.NOT_FOUND);
+        });
+    });
+
+    describe('Same token sent twice', () => {
+        test('return unauthorized status code and invalid token error message', async () => {
+            const { id } = await createAccount();
+            const token = await testKit.accVerifToken.generate({ id });
+            // first use
+            await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`).expect(status2xx);
+            // second use
+            const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
+            expect(res.body).toStrictEqual({ error: AUTH_MESSAGES.INVALID_TOKEN });
+            expect(res.status).toBe(HttpStatus.UNAUTHORIZED);
         });
     });
 
