@@ -128,58 +128,26 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Account status is active and role is "creator"', () => {
-        test('return forbidden code and forbidden error message', async () => {
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.CREATOR],
+    describe.each([UserRole.CREATOR, UserRole.MODERATOR, UserRole.ADMIN])(
+        'Account status is active and role is "%s"',
+        (role) => {
+            test('return forbidden code and forbidden error message', async () => {
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [role],
+                });
+                const { id: itemId } = await createItemForOtherAccount();
+                const reviewData = {
+                    ...testKit.reviewSeed.reviewInput,
+                    itemId: itemId,
+                };
+                const response = await testKit.gqlClient
+                    .send(createReview({ args: reviewData, fields: ['id'] }))
+                    .set('Cookie', sessionCookie);
+                expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
             });
-            const { id: itemId } = await createItemForOtherAccount();
-            const reviewData = {
-                ...testKit.reviewSeed.reviewInput,
-                itemId: itemId,
-            };
-            const response = await testKit.gqlClient
-                .send(createReview({ args: reviewData, fields: ['id'] }))
-                .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-    });
-    describe('Account status is active and role is "moderator"', () => {
-        test('return forbidden code and forbidden error message', async () => {
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.MODERATOR],
-            });
-            const { id: itemId } = await createItemForOtherAccount();
-            const reviewData = {
-                ...testKit.reviewSeed.reviewInput,
-                itemId: itemId,
-            };
-            const response = await testKit.gqlClient
-                .send(createReview({ args: reviewData, fields: ['id'] }))
-                .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-    });
-
-    describe('Account status is active and role is "admin"', () => {
-        test('return forbidden code and forbidden error message', async () => {
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.ADMIN],
-            });
-            const { id: itemId } = await createItemForOtherAccount();
-            const reviewData = {
-                ...testKit.reviewSeed.reviewInput,
-                itemId: itemId,
-            };
-            const response = await testKit.gqlClient
-                .send(createReview({ args: reviewData, fields: ['id'] }))
-                .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-    });
+        },
+    );
 
     describe('Review created successfully', () => {
         test('votes should be 0 by default', async () => {
