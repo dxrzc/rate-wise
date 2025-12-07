@@ -95,12 +95,4 @@ export class ReviewService {
             },
         });
     }
-
-    async voteReview(reviewId: string, user: AuthenticatedUser) {
-        const review = await this.findOneByIdOrThrow(reviewId);
-        review.votes += 1;
-        await this.reviewRepository.save(review);
-        this.logger.info(`User ${user.id} voted review ${review.id}`);
-        return review;
-    }
 }
