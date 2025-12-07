@@ -88,7 +88,7 @@ describe('Gql - createItem', () => {
                     .set('Cookie', sessionCookie);
                 expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
             });
-        }
+        },
     );
     describe.each(['title', 'description', 'category'])('Property "%s" not provided', (prop) => {
         test('return bad user input code', async () => {
