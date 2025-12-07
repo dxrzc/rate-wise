@@ -6,7 +6,6 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { ReviewModel } from './models/review.model';
-import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ReviewPaginationModel } from './models/pagination.model';
 import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
@@ -15,6 +14,8 @@ import { createReviewDocs } from './docs/createReview.docs';
 import { findAllReviewsByUserDocs } from './docs/findAllReviewsByUser.docs';
 import { findAllItemReviewsDocs } from './docs/findAllItemReviews.docs';
 import { voteReviewDocs } from './docs/voteReview.docs';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Resolver()
 export class ReviewResolver {
@@ -22,7 +23,7 @@ export class ReviewResolver {
 
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @AllRolesAllowed()
+    @Roles([UserRole.REVIEWER])
     @Mutation(() => ReviewModel, createReviewDocs)
     async createOne(
         @Args('review_data') review: CreateReviewInput,
@@ -47,7 +48,7 @@ export class ReviewResolver {
 
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @AllRolesAllowed()
+    @Roles([UserRole.REVIEWER])
     @Mutation(() => Boolean, voteReviewDocs)
     async voteReview(
         @Args('review_id', { type: () => ID }) reviewId: string,
