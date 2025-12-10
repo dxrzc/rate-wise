@@ -17,6 +17,7 @@ import { ItemsSeedService } from 'src/seed/services/items-seed.service';
 import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { SeedService } from 'src/seed/seed.service';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 beforeAll(() => {
     testKit.userSeed = testKit.app.get(UserSeedService);
@@ -26,6 +27,7 @@ beforeAll(() => {
     testKit.authConfig = testKit.app.get(AuthConfigService);
     testKit.userRepos = testKit.app.get(DataSource).getRepository(User);
     testKit.itemRepos = testKit.app.get(DataSource).getRepository(Item);
+    testKit.votesRepos = testKit.app.get(DataSource).getRepository(Vote);
     testKit.reviewRepos = testKit.app.get(DataSource).getRepository(Review);
     testKit.tokensRedisClient = testKit.app.get<RedisClientAdapter>(TOKENS_REDIS_CONNECTION);
     testKit.sessionsRedisClient = testKit.app.get<RedisClientAdapter>(SESSIONS_REDIS_CONNECTION);
