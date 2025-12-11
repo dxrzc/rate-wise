@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsService } from 'src/items/items.service';
@@ -14,6 +14,7 @@ import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
+import { VoteAction } from 'src/votes/enum/vote.enum';
 
 @Injectable()
 export class ReviewService {
@@ -37,17 +38,26 @@ export class ReviewService {
         await this.itemsService.updateItemAvgRating(item, newAvg);
     }
 
-    async findOneByIdOrThrow(reviewId: string): Promise<Review> {
+    private handleNonExistentReview(reviewId: string) {
+        this.logger.error(`Review with id ${reviewId} not found`);
+        throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
+    }
+
+    async existsOrThrow(reviewId: string): Promise<void> | never {
         if (!validUUID(reviewId)) {
             this.logger.error('Invalid UUID');
             throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
         }
-        const review = await this.reviewRepository.findOneBy({ id: reviewId });
-        if (!review) {
-            this.logger.error(`Review with id ${reviewId} not found`);
-            throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
+        const count = await this.reviewRepository.countBy({ id: reviewId });
+        if (count === 0) {
+            this.handleNonExistentReview(reviewId);
         }
-        return review;
+    }
+
+    async findOneByIdOrThrow(reviewId: string): Promise<Review> {
+        await this.existsOrThrow(reviewId);
+        const review = await this.reviewRepository.findOneBy({ id: reviewId });
+        return review!;
     }
 
     async createOne(reviewData: CreateReviewInput, user: AuthenticatedUser) {
@@ -62,6 +72,7 @@ export class ReviewService {
             createdBy: user.id,
         });
         this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
+        // TODO: use a queue instead.
         await this.refreshItemAvgRating(item);
         return review;
     }
@@ -94,5 +105,18 @@ export class ReviewService {
                 sqbAlias,
             },
         });
+    }
+
+    // always inside a transaction
+    async addVote(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
+        if (vote === VoteAction.UP) {
+            await manager
+                .withRepository(this.reviewRepository)
+                .increment({ id: reviewId }, 'upVotes', 1);
+        } else {
+            await manager
+                .withRepository(this.reviewRepository)
+                .increment({ id: reviewId }, 'downVotes', 1);
+        }
     }
 }
