@@ -14,6 +14,7 @@ import { ItemsSeedService } from 'src/seed/services/items-seed.service';
 import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { SeedService } from 'src/seed/seed.service';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 export interface ITestKit {
     app: INestApplication<App>;
@@ -25,6 +26,7 @@ export interface ITestKit {
     userRepos: Repository<User>;
     itemRepos: Repository<Item>;
     reviewRepos: Repository<Review>;
+    votesRepos: Repository<Vote>;
     tokensRedisClient: RedisClientAdapter;
     sessionsRedisClient: RedisClientAdapter;
     cacheManager: Cache;

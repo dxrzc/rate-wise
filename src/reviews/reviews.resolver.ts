@@ -1,4 +1,4 @@
-import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
 import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
@@ -13,13 +13,19 @@ import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
 import { createReviewDocs } from './docs/createReview.docs';
 import { findAllReviewsByUserDocs } from './docs/findAllReviewsByUser.docs';
 import { findAllItemReviewsDocs } from './docs/findAllItemReviews.docs';
-import { voteReviewDocs } from './docs/voteReview.docs';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { VotePaginationModel } from 'src/votes/models/pagination.model';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { Review } from './entities/review.entity';
+import { VotesService } from 'src/votes/votes.service';
 
-@Resolver()
+@Resolver(() => ReviewModel)
 export class ReviewResolver {
-    constructor(private readonly reviewService: ReviewService) {}
+    constructor(
+        private readonly reviewService: ReviewService,
+        private readonly votesService: VotesService,
+    ) {}
 
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
@@ -46,15 +52,13 @@ export class ReviewResolver {
         return await this.reviewService.findAllItemReviews(args);
     }
 
-    @RelaxedThrottle()
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Roles([UserRole.REVIEWER])
-    @Mutation(() => Boolean, voteReviewDocs)
-    async voteReview(
-        @Args('review_id', { type: () => ID }) reviewId: string,
-        @Context('req') req: RequestContext,
-    ) {
-        await this.reviewService.voteReview(reviewId, req.user);
-        return true;
+    @ResolveField(() => VotePaginationModel, {
+        description: 'Paginated list of votes for this review.',
+    })
+    async votes(@Args() paginationArgs: PaginationArgs, @Parent() review: Review) {
+        return await this.votesService.findAllVotesForReview({
+            ...paginationArgs,
+            reviewId: review.id,
+        });
     }
 }

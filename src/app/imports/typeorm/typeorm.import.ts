@@ -4,6 +4,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { DbConfigService } from 'src/config/services/db.config.service';
 import { Review } from 'src/reviews/entities/review.entity';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -14,7 +15,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
             synchronize: false,
             url: this.dbConfigService.postgresUri,
             autoLoadEntities: false,
-            entities: [User, Item, Review],
+            entities: [User, Item, Review, Vote],
             type: 'postgres',
             retryDelay: 1000,
             retryAttempts: 3,

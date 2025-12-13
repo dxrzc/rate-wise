@@ -1,12 +1,12 @@
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 
-export function voteReview({ args, fields }: IOperation<string, void>) {
+export function voteReview({ args, fields }: IOperation<{ vote: string; reviewId: string }, void>) {
     return operationFactory(
         {
             operationName: 'voteReview',
-            argumentName: 'review_id',
-            inputType: 'ID',
+            argumentName: 'vote_data',
+            inputType: 'CreateVoteInput',
         },
         {
             args,

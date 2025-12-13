@@ -5,6 +5,7 @@ import { UserRole } from '../enums/user-role.enum';
 import { AccountStatus } from '../enums/account-status.enum';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
 import { Review } from 'src/reviews/entities/review.entity';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 @Entity('account')
 export class User extends BaseEntity {
@@ -42,4 +43,7 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Review, (review) => review.user)
     reviews!: Review[];
+
+    @OneToMany(() => Vote, (vote) => vote.user)
+    votes!: Vote[];
 }

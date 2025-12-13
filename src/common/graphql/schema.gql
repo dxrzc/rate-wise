@@ -196,14 +196,20 @@ type ReviewModel {
   """The rating score given in the review."""
   rating: Int!
 
-  """The number of votes this review has received."""
-  votes: Int!
-
   """The ID of the user who created this review."""
   createdBy: String!
 
   """The ID of the item this review is for."""
   relatedItem: String!
+
+  """Paginated list of votes for this review."""
+  votes(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): VotePaginationModel!
 }
 
 """Edge type for ReviewModel in a paginated list."""
@@ -222,6 +228,60 @@ type ReviewPaginationModel {
 
   "\n                List of ReviewModel nodes in the current page.\n            "
   nodes: [ReviewModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
+"\n        Vote model representing a user's vote for a review.\n    "
+type VoteModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  """The action of the vote (UP or DOWN)."""
+  vote: VoteAction!
+
+  """The ID of the user who created this vote."""
+  createdBy: String!
+
+  """The ID of the review this vote is for."""
+  relatedReview: String!
+}
+
+"""Possible actions for voting on a review."""
+enum VoteAction {
+  """An upvote indicating approval of the review."""
+  UP
+
+  """A downvote indicating disapproval of the review."""
+  DOWN
+}
+
+"""Edge type for VoteModel in a paginated list."""
+type VoteModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type VoteModel contained in this edge.\n            "
+  node: VoteModel!
+}
+
+"\n        Paginated model for VoteModel representing a paginated list of votes.\n    "
+type VotePaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type VoteModel.\n            "
+  edges: [VoteModelEdge!]
+
+  "\n                List of VoteModel nodes in the current page.\n            "
+  nodes: [VoteModel!]
 
   "\n                The total number of items available across all pages.\n            "
   totalCount: Int!
@@ -319,6 +379,18 @@ type Query {
     """The unique ID of the item whose reviews to retrieve."""
     itemId: ID!
   ): ReviewPaginationModel!
+
+  """Retrieve a paginated list of votes for a specific review."""
+  findAllVotesForReview(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+
+    """The unique ID of the review for which to fetch votes."""
+    reviewId: ID!
+  ): VotePaginationModel!
 }
 
 type Mutation {
@@ -337,14 +409,19 @@ type Mutation {
   """
   seedReviews(reviews_per_item: Int!): Boolean!
 
+  """
+  Seed the database with votes for all reviews by all users. Deletes existing votes first.
+  """
+  seedVotes: Boolean!
+
   "\n        Create a new item to be rated and reviewed by the community.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create items\n        \n        **Effect:** Creates a new item with the provided title, description, category, and optional tags. The item is associated with the authenticated user as the creator.\n        \n        **Rate Limiting:** Balanced throttle applied to prevent spam\n        \n        **Returns:** The created item with ID, timestamps, title, description, category, tags, initial average rating (0), and creator ID\n    "
   createItem(item_data: CreateItemInput!): ItemModel!
 
   "\n        Create a new review for an item with a rating and text content.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create reviews\n        \n        **Effect:** Creates a new review with content (10-2000 characters) and rating (0-10) for the specified item. The review is associated with the authenticated user. The item's average rating is recalculated upon review creation.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** The created review with ID, timestamps, content, rating, initial vote count (0), creator ID, and related item ID\n    "
   createReview(review_data: CreateReviewInput!): ReviewModel!
 
-  "\n        Vote for a review to help highlight helpful reviews to other users.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can vote on reviews\n        \n        **Effect:** Increments the vote count for the specified review by 1. This helps surface the most helpful reviews to other users.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
-  voteReview(review_id: ID!): Boolean!
+  "\n        Vote on a review by upvoting or downvoting it.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** REVIEWER role required\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can vote on reviews\n        \n        **Effect:** Records the user's vote (upvote or downvote) on a review. If the user has previously voted on the same review with a different vote type, the previous vote is removed and replaced with the new vote. If the user votes with the same vote type again, the operation is idempotent (no change occurs). The review's vote counts (upvotes and downvotes) are automatically updated in a transaction.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Boolean true upon successful vote recording\n    "
+  voteReview(vote_data: CreateVoteInput!): Boolean!
 
   "\n        Suspend a user account, preventing them from accessing protected endpoints.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** Restricted to MODERATOR role only\n        \n        **Account Status Required:** ACTIVE - the calling user must have an active account\n        \n        **Effect:** Changes the target user's account status to SUSPENDED, preventing them from accessing most endpoints. Suspended users can still sign in but will have limited access.\n        \n        **Restrictions:** \n        - ADMIN accounts cannot be suspended.\n        - MODERATOR accounts cannot be suspended.\n        \n        **Rate Limiting:** Critical throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
   suspendAccount(user_id: ID!): Boolean!
@@ -399,6 +476,15 @@ input CreateReviewInput {
 
   """The unique ID of the item being reviewed."""
   itemId: String!
+}
+
+"""Input data required to create a new vote for a review."""
+input CreateVoteInput {
+  """The action of the vote, either UP or DOWN."""
+  vote: VoteAction!
+
+  """The unique ID of the review being voted on."""
+  reviewId: String!
 }
 
 """Input data required for user sign-up."""

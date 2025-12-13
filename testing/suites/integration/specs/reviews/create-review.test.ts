@@ -150,7 +150,7 @@ describe('Gql - createReview', () => {
     );
 
     describe('Review created successfully', () => {
-        test('votes should be 0 by default', async () => {
+        test('upVotes should be 0 by default', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
@@ -165,7 +165,25 @@ describe('Gql - createReview', () => {
                 .expect(success);
             const reviewId = body.data.createReview.id;
             const reviewInDb = await testKit.reviewRepos.findOneBy({ id: reviewId });
-            expect(reviewInDb!.votes).toBe(0);
+            expect(reviewInDb!.upVotes).toBe(0);
+        });
+
+        test('downVotes should be 0 by default', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+            });
+            const { id: itemId } = await createItemForOtherAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const { body } = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            const reviewId = body.data.createReview.id;
+            const reviewInDb = await testKit.reviewRepos.findOneBy({ id: reviewId });
+            expect(reviewInDb!.downVotes).toBe(0);
         });
 
         test('rating should be the value provided by the user', async () => {
@@ -256,8 +274,12 @@ describe('Gql - createReview', () => {
             const reviewInDb = await testKit.reviewRepos.findOneBy({
                 id: body.data.createReview.id,
             });
-            expect(body.data.createReview).toEqual({
-                ...reviewInDb,
+            expect(body.data.createReview).toStrictEqual({
+                id: reviewInDb?.id,
+                content: reviewInDb?.content,
+                rating: reviewInDb?.rating,
+                createdBy: reviewInDb?.createdBy,
+                relatedItem: reviewInDb?.relatedItem,
                 createdAt: reviewInDb?.createdAt.toISOString(),
                 updatedAt: reviewInDb?.updatedAt.toISOString(),
             });
