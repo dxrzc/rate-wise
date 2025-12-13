@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from './services/user-seed.service';
@@ -11,6 +11,8 @@ import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from './services/items-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { ReviewSeedService } from './services/reviews-seed.service';
+import { Vote } from 'src/votes/entities/vote.entity';
+import { VoteAction } from 'src/votes/enum/vote.enum';
 
 @Injectable()
 export class SeedService {
@@ -21,6 +23,9 @@ export class SeedService {
         private readonly itemRepository: Repository<Item>,
         @InjectRepository(Review)
         private readonly reviewRepository: Repository<Review>,
+        @InjectRepository(Vote)
+        private readonly voteRepository: Repository<Vote>,
+        private readonly dataSource: DataSource,
         private readonly usersSeed: UserSeedService,
         private readonly itemsSeed: ItemsSeedService,
         private readonly reviewsSeed: ReviewSeedService,
@@ -95,5 +100,42 @@ export class SeedService {
         const reviews = await Promise.all(promises);
         this.logger.debug(`${reviewsPerItem} reviews per item seeded`);
         return reviews;
+    }
+
+    // all the users vote on every review once
+    async createVotesForReviews() {
+        // Delete existing its mandatory since only one vote per user per review is allowed
+        await this.voteRepository.deleteAll();
+        // fetch users
+        const usersInDb = await this.userRepository.find({ select: { id: true } });
+        if (usersInDb.length === 0) throw new Error('No users found. Seed users first');
+        const usersIds = usersInDb.map((e) => e.id);
+        // fetch reviews
+        const reviewsInDb = await this.reviewRepository.find({ select: { id: true } });
+        if (reviewsInDb.length === 0) throw new Error('No reviews found. Seed users first');
+        const reviewsIds = reviewsInDb.map((e) => e.id);
+        // seed votes
+        const promises = new Array<Promise<void>>();
+        for (const createdBy of usersIds) {
+            for (const reviewId of reviewsIds) {
+                const transaction = this.dataSource.transaction(async (manager: EntityManager) => {
+                    const randomVote = Object.values(VoteAction).at(Math.floor(Math.random() * 2))!;
+                    await manager.withRepository(this.voteRepository).save({
+                        vote: randomVote,
+                        createdBy,
+                        reviewId,
+                    });
+                    await manager
+                        .withRepository(this.reviewRepository)
+                        .increment(
+                            { id: reviewId },
+                            randomVote === VoteAction.UP ? 'upVotes' : 'downVotes',
+                            1,
+                        );
+                });
+                promises.push(transaction);
+            }
+        }
+        await Promise.all(promises);
     }
 }

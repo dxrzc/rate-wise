@@ -39,4 +39,15 @@ export class SeedResolver {
         await this.seedService.createReviews(n, { deleteExisting: true });
         return true;
     }
+
+    @Public()
+    @Mutation(() => Boolean, {
+        name: 'seedVotes',
+        description:
+            'Seed the database with votes for all reviews by all users. Deletes existing votes first.',
+    })
+    async seedVotes() {
+        await this.seedService.createVotesForReviews();
+        return true;
+    }
 }
