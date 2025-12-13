@@ -27,7 +27,6 @@ export const reviewData = [
     'updatedAt',
     'content',
     'rating',
-    'votes',
     'createdBy',
     'relatedItem',
 ];
