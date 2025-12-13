@@ -4,7 +4,6 @@ export interface IConfigs {
     NODE_ENV: Environment;
     PORT: number;
     CACHE_TTL_SECONDS: number;
-    PASSWORD_SALT_ROUNDS: number;
     POSTGRES_URI: string;
     REDIS_AUTH_URI: string;
     REDIS_QUEUES_URI: string;

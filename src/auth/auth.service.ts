@@ -77,7 +77,7 @@ export class AuthService {
     }
 
     private async hashPassword(password: string): Promise<string> {
-        const hash = await this.hashingService.hash(password, this.authConfig.passwordSaltRounds);
+        const hash = await this.hashingService.hash(password);
         return hash;
     }
 

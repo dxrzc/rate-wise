@@ -38,8 +38,4 @@ export class AuthConfigService {
     get maxUserSessions(): number {
         return this.configService.get('MAX_USER_SESSIONS');
     }
-
-    get passwordSaltRounds(): number {
-        return this.configService.get('PASSWORD_SALT_ROUNDS');
-    }
 }
