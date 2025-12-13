@@ -13,7 +13,6 @@ export const envSchema = Joi.object<IConfigs, true>({
     SESS_COOKIE_MAX_AGE_MS: Joi.number().integer().positive().required(),
     SESS_COOKIE_NAME: Joi.string().required(),
     MAX_USER_SESSIONS: Joi.number().integer().positive().required(),
-    PASSWORD_SALT_ROUNDS: Joi.number().integer().positive().required(),
     ACCOUNT_VERIFICATION_TOKEN_EXP: Joi.string().required(),
     ACCOUNT_VERIFICATION_TOKEN_SECRET: Joi.string().required(),
     ACCOUNT_DELETION_TOKEN_EXP: Joi.string().required(),
