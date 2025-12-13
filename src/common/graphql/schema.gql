@@ -201,6 +201,15 @@ type ReviewModel {
 
   """The ID of the item this review is for."""
   relatedItem: String!
+
+  """Paginated list of votes for this review."""
+  votes(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int!
+  ): VotePaginationModel!
 }
 
 """Edge type for ReviewModel in a paginated list."""
