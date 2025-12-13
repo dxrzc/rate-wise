@@ -247,7 +247,7 @@ type VoteModel {
   "\n            The date and time when the model instance was last updated\n        "
   updatedAt: Date!
 
-  """"""
+  """The action of the vote (UP or DOWN)."""
   vote: VoteAction!
 
   """The ID of the user who created this vote."""
