@@ -27,5 +27,5 @@ export class Vote extends BaseEntity {
     createdBy!: string;
 
     @Column({ name: 'review_id' })
-    reviewId!: string;
+    relatedReview!: string;
 }

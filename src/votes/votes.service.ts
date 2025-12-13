@@ -6,10 +6,14 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { VoteAction } from './enum/vote.enum';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { ReviewService } from 'src/reviews/reviews.service';
+import { ReviewVotesArgs } from './dtos/args/review-votes.args';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 
 @Injectable()
 export class VotesService {
     constructor(
+        private readonly paginationService: PaginationService<Vote>,
         @InjectRepository(Vote)
         private readonly voteRepository: Repository<Vote>,
         private readonly loggerService: HttpLoggerService,
@@ -43,7 +47,7 @@ export class VotesService {
 
     private async findUserVoteInReview(userId: string, reviewId: string): Promise<Vote | null> {
         const userVote = await this.voteRepository.findOne({
-            where: { reviewId, createdBy: userId },
+            where: { relatedReview: reviewId, createdBy: userId },
         });
         return userVote;
     }
@@ -57,5 +61,20 @@ export class VotesService {
         }
         if (action === VoteAction.UP) await this.upVoteReview(reviewId, user);
         else await this.downVoteReview(reviewId, user);
+    }
+
+    async findAllVotesForReview(args: ReviewVotesArgs): Promise<IPaginatedType<Vote>> {
+        await this.reviewService.existsOrThrow(args.reviewId);
+        const sqbAlias = 'vote';
+        return await this.paginationService.create({
+            limit: args.limit,
+            cursor: args.cursor,
+            cache: true,
+            queryBuilder: {
+                sqbModifier: (qb) =>
+                    qb.where(`${sqbAlias}.review_id = :reviewId`, { reviewId: args.reviewId }),
+                sqbAlias,
+            },
+        });
     }
 }
