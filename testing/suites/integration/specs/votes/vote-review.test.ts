@@ -27,6 +27,18 @@ describe('Gql - voteReview', () => {
         });
     });
 
+    test('users can vote their own reviews', async () => {
+        const { sessionCookie, id: userId } = await createAccount({
+            roles: [UserRole.REVIEWER],
+            status: AccountStatus.ACTIVE,
+        });
+        const { id: reviewId } = await createReview(undefined, userId);
+        await testKit.gqlClient
+            .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+            .set('Cookie', sessionCookie)
+            .expect(success);
+    });
+
     describe.each(['reviewId', 'vote'] as const)('Missing required field: %s', (missingField) => {
         test('return bad user input code', async () => {
             const { sessionCookie } = await createAccount({
