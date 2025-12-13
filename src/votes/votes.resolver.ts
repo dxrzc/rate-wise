@@ -29,6 +29,7 @@ export class VotesResolver {
         return true;
     }
 
+    // TODO: test
     @Public()
     @BalancedThrottle()
     @Query(() => VotePaginationModel, findAllReviewVotesDocs)
