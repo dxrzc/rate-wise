@@ -123,7 +123,7 @@ export class SeedService {
                     await manager.withRepository(this.voteRepository).save({
                         vote: randomVote,
                         createdBy,
-                        relatedReview: { id: reviewId },
+                        relatedReview: reviewId,
                     });
                     await manager
                         .withRepository(this.reviewRepository)
