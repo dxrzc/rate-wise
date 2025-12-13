@@ -7,7 +7,7 @@ export class UpdateReviewTableWithVotes1765149708188 implements MigrationInterfa
             ALTER TABLE "review" DROP COLUMN "votes";
         `);
 
-        // add "upvotes" and "downvote column"
+        // add "upvotes" and "downvotes" columns
         await queryRunner.query(`
             ALTER TABLE "review"
             ADD COLUMN "upvotes" INTEGER NOT NULL DEFAULT 0;
