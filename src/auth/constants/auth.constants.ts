@@ -7,9 +7,6 @@ export const AUTH_LIMITS = {
         MIN: 8,
         MAX: 60,
     },
-    PASSWORD_HASH: {
-        MAX: 128,
-    },
     EMAIL: {
         MAX: 45,
     },
