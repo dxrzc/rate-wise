@@ -21,30 +21,6 @@ export class VotesService {
         private readonly dataSource: DataSource,
     ) {}
 
-    private async upVoteReview(reviewId: string, user: AuthenticatedUser): Promise<void> {
-        await this.dataSource.transaction(async (manager: EntityManager) => {
-            await manager.withRepository(this.voteRepository).save({
-                vote: VoteAction.UP,
-                createdBy: user.id,
-                relatedReview: reviewId,
-            });
-            await this.reviewService.addVote(reviewId, VoteAction.UP, manager);
-        });
-        this.loggerService.info(`User ${user.id} upvoted review ${reviewId}`);
-    }
-
-    private async downVoteReview(reviewId: string, user: AuthenticatedUser): Promise<void> {
-        await this.dataSource.transaction(async (manager: EntityManager) => {
-            await manager.withRepository(this.voteRepository).save({
-                vote: VoteAction.DOWN,
-                createdBy: user.id,
-                relatedReview: reviewId,
-            });
-            await this.reviewService.addVote(reviewId, VoteAction.DOWN, manager);
-        });
-        this.loggerService.info(`User ${user.id} downvoted review ${reviewId}`);
-    }
-
     private async findUserVoteInReview(userId: string, reviewId: string): Promise<Vote | null> {
         const userVote = await this.voteRepository.findOne({
             where: { relatedReview: reviewId, createdBy: userId },
@@ -55,12 +31,22 @@ export class VotesService {
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
         await this.reviewService.existsOrThrow(reviewId);
         const previousVote = await this.findUserVoteInReview(user.id, reviewId);
-        if (previousVote) {
-            if (previousVote.vote === action) return;
-            await this.voteRepository.delete({ id: previousVote.id });
-        }
-        if (action === VoteAction.UP) await this.upVoteReview(reviewId, user);
-        else await this.downVoteReview(reviewId, user);
+        await this.dataSource.transaction(async (manager: EntityManager) => {
+            if (previousVote) {
+                if (previousVote.vote === action) return;
+                // delete old vote
+                await manager.withRepository(this.voteRepository).delete({ id: previousVote.id });
+                await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+            }
+            // add vote
+            await manager.withRepository(this.voteRepository).save({
+                vote: action,
+                createdBy: user.id,
+                relatedReview: reviewId,
+            });
+            await this.reviewService.addVoteTx(reviewId, action, manager);
+        });
+        this.loggerService.info(`User ${user.id} ${action}voted review ${reviewId}`);
     }
 
     async findAllVotesForReview(args: ReviewVotesArgs): Promise<IPaginatedType<Vote>> {

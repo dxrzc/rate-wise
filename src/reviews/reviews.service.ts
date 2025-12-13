@@ -107,16 +107,17 @@ export class ReviewService {
         });
     }
 
-    // always inside a transaction
-    async addVote(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
-        if (vote === VoteAction.UP) {
-            await manager
-                .withRepository(this.reviewRepository)
-                .increment({ id: reviewId }, 'upVotes', 1);
-        } else {
-            await manager
-                .withRepository(this.reviewRepository)
-                .increment({ id: reviewId }, 'downVotes', 1);
-        }
+    async addVoteTx(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
+        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
+        await manager
+            .withRepository(this.reviewRepository)
+            .increment({ id: reviewId }, propPath, 1);
+    }
+
+    async removeVoteTx(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
+        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
+        await manager
+            .withRepository(this.reviewRepository)
+            .decrement({ id: reviewId }, propPath, 1);
     }
 }
