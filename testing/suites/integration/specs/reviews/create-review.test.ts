@@ -274,8 +274,12 @@ describe('Gql - createReview', () => {
             const reviewInDb = await testKit.reviewRepos.findOneBy({
                 id: body.data.createReview.id,
             });
-            expect(body.data.createReview).toEqual({
-                ...reviewInDb,
+            expect(body.data.createReview).toStrictEqual({
+                id: reviewInDb?.id,
+                content: reviewInDb?.content,
+                rating: reviewInDb?.rating,
+                createdBy: reviewInDb?.createdBy,
+                relatedItem: reviewInDb?.relatedItem,
                 createdAt: reviewInDb?.createdAt.toISOString(),
                 updatedAt: reviewInDb?.updatedAt.toISOString(),
             });
