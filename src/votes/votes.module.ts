@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { VotesResolver } from './votes.resolver';
 import { VotesService } from './votes.service';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
@@ -12,12 +12,13 @@ import { createVoteCacheKey } from './cache/create-cache-key';
     imports: [
         TypeOrmModule.forFeature([Vote]),
         HttpLoggerModule.forFeature({ context: 'votes' }),
-        ReviewsModule,
+        forwardRef(() => ReviewsModule),
         PaginationModule.register({
             createCacheKeyFunction: createVoteCacheKey,
             repositoryToken: getRepositoryToken(Vote),
         }),
     ],
     providers: [VotesResolver, VotesService],
+    exports: [VotesService],
 })
 export class VotesModule {}

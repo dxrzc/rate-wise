@@ -9,10 +9,12 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { PaginationModule } from 'src/pagination/pagination.module';
 import { createReviewCacheKey } from './cache/create-cache-key';
 import { UsersModule } from 'src/users/users.module';
+import { VotesModule } from 'src/votes/votes.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Review, Item]),
+        forwardRef(() => VotesModule),
         forwardRef(() => ItemsModule),
         HttpLoggerModule.forFeature({ context: 'Reviews' }),
         forwardRef(() => UsersModule),
