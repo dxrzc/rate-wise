@@ -154,6 +154,30 @@ describe('Gql - voteReview', () => {
                 expect(votes).toHaveLength(1);
                 expect(votes[0].vote).toBe(VoteAction.UP);
             });
+
+            test('review counts should be consistent: downvotes 0, upvotes 1', async () => {
+                const { id: reviewId } = await createReview();
+                const { sessionCookie } = await createAccount({
+                    roles: [UserRole.REVIEWER],
+                    status: AccountStatus.ACTIVE,
+                });
+                // downvote the review
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.DOWN } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // upvote the same review
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // fetch the review and verify counts
+                const review = await testKit.reviewRepos.findOne({
+                    where: { id: reviewId },
+                });
+                expect(review?.downVotes).toBe(0);
+                expect(review?.upVotes).toBe(1);
+            });
         });
 
         describe('User downvotes the review again', () => {
@@ -179,6 +203,30 @@ describe('Gql - voteReview', () => {
                 });
                 expect(votes).toHaveLength(1);
                 expect(votes[0].vote).toBe(VoteAction.DOWN);
+            });
+
+            test('review counts should remain consistent: downvotes 1, upvotes 0', async () => {
+                const { id: reviewId } = await createReview();
+                const { sessionCookie } = await createAccount({
+                    roles: [UserRole.REVIEWER],
+                    status: AccountStatus.ACTIVE,
+                });
+                // downvote the review
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.DOWN } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // downvote the same review again
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.DOWN } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // fetch the review and verify counts
+                const review = await testKit.reviewRepos.findOne({
+                    where: { id: reviewId },
+                });
+                expect(review?.downVotes).toBe(1);
+                expect(review?.upVotes).toBe(0);
             });
         });
     });
@@ -208,6 +256,30 @@ describe('Gql - voteReview', () => {
                 expect(votes).toHaveLength(1);
                 expect(votes[0].vote).toBe(VoteAction.DOWN);
             });
+
+            test('review counts should be consistent: downvotes 1, upvotes 0', async () => {
+                const { id: reviewId } = await createReview();
+                const { sessionCookie } = await createAccount({
+                    roles: [UserRole.REVIEWER],
+                    status: AccountStatus.ACTIVE,
+                });
+                // upvote the review
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // downvote the same review
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.DOWN } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // fetch the review and verify counts
+                const review = await testKit.reviewRepos.findOne({
+                    where: { id: reviewId },
+                });
+                expect(review?.downVotes).toBe(1);
+                expect(review?.upVotes).toBe(0);
+            });
         });
 
         describe('User upvotes the review again', () => {
@@ -234,6 +306,160 @@ describe('Gql - voteReview', () => {
                 expect(votes).toHaveLength(1);
                 expect(votes[0].vote).toBe(VoteAction.UP);
             });
+
+            test('review counts should remain consistent: downvotes 0, upvotes 1', async () => {
+                const { id: reviewId } = await createReview();
+                const { sessionCookie } = await createAccount({
+                    roles: [UserRole.REVIEWER],
+                    status: AccountStatus.ACTIVE,
+                });
+                // upvote the review
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // upvote the same review again
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                // fetch the review and verify counts
+                const review = await testKit.reviewRepos.findOne({
+                    where: { id: reviewId },
+                });
+                expect(review?.downVotes).toBe(0);
+                expect(review?.upVotes).toBe(1);
+            });
+        });
+    });
+
+    describe('Rapid voting', () => {
+        test('user rapidly upvotes multiple times should result in only one upvote', async () => {
+            const { id: reviewId } = await createReview();
+            const { sessionCookie } = await createAccount({
+                roles: [UserRole.REVIEWER],
+                status: AccountStatus.ACTIVE,
+            });
+            // rapidly upvote the review 5 times
+            const votePromises = Array(5)
+                .fill(null)
+                .map(() =>
+                    testKit.gqlClient
+                        .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+                        .set('Cookie', sessionCookie),
+                );
+            await Promise.all(votePromises);
+            // should exist only 1 vote with UP action
+            const votes = await testKit.votesRepos.find({
+                where: { review: { id: reviewId } },
+            });
+            expect(votes).toHaveLength(1);
+            expect(votes[0].vote).toBe(VoteAction.UP);
+            // verify review counts
+            const review = await testKit.reviewRepos.findOne({
+                where: { id: reviewId },
+            });
+            expect(review?.upVotes).toBe(1);
+            expect(review?.downVotes).toBe(0);
+        });
+
+        test('user rapidly downvotes multiple times should result in only one downvote', async () => {
+            const { id: reviewId } = await createReview();
+            const { sessionCookie } = await createAccount({
+                roles: [UserRole.REVIEWER],
+                status: AccountStatus.ACTIVE,
+            });
+            // rapidly downvote the review 5 times
+            const votePromises = Array(5)
+                .fill(null)
+                .map(() =>
+                    testKit.gqlClient
+                        .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.DOWN } }))
+                        .set('Cookie', sessionCookie),
+                );
+            await Promise.all(votePromises);
+            // should exist only 1 vote with DOWN action
+            const votes = await testKit.votesRepos.find({
+                where: { review: { id: reviewId } },
+            });
+            expect(votes).toHaveLength(1);
+            expect(votes[0].vote).toBe(VoteAction.DOWN);
+            // verify review counts
+            const review = await testKit.reviewRepos.findOne({
+                where: { id: reviewId },
+            });
+            expect(review?.downVotes).toBe(1);
+            expect(review?.upVotes).toBe(0);
+        });
+
+        test('user rapidly alternates between upvote and downvote, final vote should be downvote', async () => {
+            const { id: reviewId } = await createReview();
+            const { sessionCookie } = await createAccount({
+                roles: [UserRole.REVIEWER],
+                status: AccountStatus.ACTIVE,
+            });
+            // rapidly alternate between upvote and downvote, ending with downvote
+            const votes = [
+                inputVotes.UP,
+                inputVotes.DOWN,
+                inputVotes.UP,
+                inputVotes.DOWN,
+                inputVotes.UP,
+                inputVotes.DOWN,
+            ];
+            for (const vote of votes) {
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: vote } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+            }
+            // should exist only 1 vote with DOWN action (the last one)
+            const userVotes = await testKit.votesRepos.find({
+                where: { review: { id: reviewId } },
+            });
+            expect(userVotes).toHaveLength(1);
+            expect(userVotes[0].vote).toBe(VoteAction.DOWN);
+            // verify review counts
+            const review = await testKit.reviewRepos.findOne({
+                where: { id: reviewId },
+            });
+            expect(review?.downVotes).toBe(1);
+            expect(review?.upVotes).toBe(0);
+        });
+
+        test('user rapidly alternates between downvote and upvote, final vote should be upvote', async () => {
+            const { id: reviewId } = await createReview();
+            const { sessionCookie } = await createAccount({
+                roles: [UserRole.REVIEWER],
+                status: AccountStatus.ACTIVE,
+            });
+            // rapidly alternate between downvote and upvote, ending with upvote
+            const votes = [
+                inputVotes.DOWN,
+                inputVotes.UP,
+                inputVotes.DOWN,
+                inputVotes.UP,
+                inputVotes.DOWN,
+                inputVotes.UP,
+            ];
+            for (const vote of votes) {
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: vote } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+            }
+            // should exist only 1 vote with UP action (the last one)
+            const userVotes = await testKit.votesRepos.find({
+                where: { review: { id: reviewId } },
+            });
+            expect(userVotes).toHaveLength(1);
+            expect(userVotes[0].vote).toBe(VoteAction.UP);
+            // verify review counts
+            const review = await testKit.reviewRepos.findOne({
+                where: { id: reviewId },
+            });
+            expect(review?.upVotes).toBe(1);
+            expect(review?.downVotes).toBe(0);
         });
     });
 
