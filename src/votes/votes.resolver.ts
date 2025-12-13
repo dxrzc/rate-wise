@@ -5,7 +5,7 @@ import { MinAccountStatusRequired } from 'src/common/decorators/min-account-stat
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { voteReview } from './docs/voteReview.docs';
+import { voteReviewDocs } from './docs/voteReview.docs';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { CreateVoteInput } from './dtos/create-vote.input';
 import { ReviewVotesArgs } from './dtos/args/review-votes.args';
@@ -20,7 +20,7 @@ export class VotesResolver {
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
     @Roles([UserRole.REVIEWER])
-    @Mutation(() => Boolean, voteReview)
+    @Mutation(() => Boolean, voteReviewDocs)
     async voteReview(
         @Args('vote_data') voteData: CreateVoteInput,
         @Context('req') req: RequestContext,
