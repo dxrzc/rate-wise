@@ -8,7 +8,7 @@ import { BaseModel } from 'src/common/models/base.model';
     `,
 })
 export class VoteModel extends BaseModel {
-    @Field(() => VoteAction, { description: `` })
+    @Field(() => VoteAction, { description: 'The action of the vote (UP or DOWN).' })
     vote!: VoteAction;
 
     @Field(() => String, {
