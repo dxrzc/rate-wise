@@ -1,4 +1,4 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
 import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
 import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
@@ -15,10 +15,17 @@ import { findAllReviewsByUserDocs } from './docs/findAllReviewsByUser.docs';
 import { findAllItemReviewsDocs } from './docs/findAllItemReviews.docs';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { VotePaginationModel } from 'src/votes/models/pagination.model';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { Review } from './entities/review.entity';
+import { VotesService } from 'src/votes/votes.service';
 
-@Resolver()
+@Resolver(() => ReviewModel)
 export class ReviewResolver {
-    constructor(private readonly reviewService: ReviewService) {}
+    constructor(
+        private readonly reviewService: ReviewService,
+        private readonly votesService: VotesService,
+    ) {}
 
     @RelaxedThrottle()
     @MinAccountStatusRequired(AccountStatus.ACTIVE)
@@ -43,5 +50,15 @@ export class ReviewResolver {
     @Query(() => ReviewPaginationModel, findAllItemReviewsDocs)
     async findAllItemReviews(@Args() args: ItemReviewsArgs) {
         return await this.reviewService.findAllItemReviews(args);
+    }
+
+    @ResolveField(() => VotePaginationModel, {
+        description: 'Paginated list of votes for this review.',
+    })
+    async votes(@Args() paginationArgs: PaginationArgs, @Parent() review: Review) {
+        return await this.votesService.findAllVotesForReview({
+            ...paginationArgs,
+            reviewId: review.id,
+        });
     }
 }
