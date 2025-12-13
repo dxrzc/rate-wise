@@ -26,7 +26,7 @@ export class VotesService {
             await manager.withRepository(this.voteRepository).save({
                 vote: VoteAction.UP,
                 createdBy: user.id,
-                reviewId,
+                relatedReview: reviewId,
             });
             await this.reviewService.addVote(reviewId, VoteAction.UP, manager);
         });
@@ -38,7 +38,7 @@ export class VotesService {
             await manager.withRepository(this.voteRepository).save({
                 vote: VoteAction.DOWN,
                 createdBy: user.id,
-                reviewId,
+                relatedReview: reviewId,
             });
             await this.reviewService.addVote(reviewId, VoteAction.DOWN, manager);
         });
