@@ -10,6 +10,7 @@ import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
+import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -21,6 +22,7 @@ import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
+import { VoteAction } from 'src/votes/enum/vote.enum';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
 
@@ -186,8 +188,48 @@ describe('GET delete account endpoint with token', () => {
             }
         });
 
-        test.todo('All votes are also deleted');
-        test.todo('Voted reviews are updated accordingly');
+        test('all votes belonging to user are deleted from database', async () => {
+            const { id: userID, sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.REVIEWER],
+            });
+            // item and reviews from another user
+            const { id: itemID } = await createItem(
+                (await createAccount({ status: AccountStatus.ACTIVE })).id,
+            );
+            const { id: review1ID } = await createReview(itemID);
+            const { id: review2ID } = await createReview(itemID);
+            // user votes on reviews
+            await testKit.gqlClient
+                .send(
+                    voteReview({
+                        args: { reviewId: review1ID, vote: VoteAction.UP.toUpperCase() },
+                    }),
+                )
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            await testKit.gqlClient
+                .send(
+                    voteReview({
+                        args: { reviewId: review2ID, vote: VoteAction.DOWN.toUpperCase() },
+                    }),
+                )
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            // verify votes exist in db
+            const votesBeforeDeletion = await testKit.votesRepos.find({
+                where: { user: { id: userID } },
+            });
+            expect(votesBeforeDeletion).toHaveLength(2);
+            // delete account
+            const token = await testKit.accDeletionToken.generate({ id: userID });
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
+            // verify votes deleted from db
+            const votesAfterDeletion = await testKit.votesRepos.find({
+                where: { user: { id: userID } },
+            });
+            expect(votesAfterDeletion).toHaveLength(0);
+        });
     });
 
     describe('Account does not exist', () => {
