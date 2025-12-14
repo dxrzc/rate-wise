@@ -21,22 +21,21 @@ export class VotesService {
         private readonly dataSource: DataSource,
     ) {}
 
-    private async findUserVoteInReview(userId: string, reviewId: string): Promise<Vote | null> {
-        const userVote = await this.voteRepository.findOne({
-            where: { relatedReview: reviewId, createdBy: userId },
-        });
-        return userVote;
-    }
-
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
         await this.reviewService.existsOrThrow(reviewId);
-        const previousVote = await this.findUserVoteInReview(user.id, reviewId);
         await this.dataSource.transaction(async (manager: EntityManager) => {
+            const previousVote = await manager
+                .withRepository(this.voteRepository)
+                .createQueryBuilder('vote')
+                .setLock('pessimistic_write')
+                .where('vote.review_id = :reviewId', { reviewId })
+                .andWhere('vote.account_id = :userId', { userId: user.id })
+                .getOne();
             if (previousVote) {
                 if (previousVote.vote === action) return;
-                // delete old vote
+                // delete old vote (row locked by pessimistic_write)
                 await manager.withRepository(this.voteRepository).delete({ id: previousVote.id });
-                await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+                await this.reviewService.deleteVoteTx(reviewId, previousVote.vote, manager);
             }
             // add vote
             await manager.withRepository(this.voteRepository).save({
@@ -47,6 +46,28 @@ export class VotesService {
             await this.reviewService.addVoteTx(reviewId, action, manager);
         });
         this.loggerService.info(`User ${user.id} ${action}voted review ${reviewId}`);
+    }
+
+    async deleteVote(reviewId: string, user: AuthenticatedUser): Promise<boolean> {
+        await this.reviewService.existsOrThrow(reviewId);
+        let deleted = false;
+        await this.dataSource.transaction(async (manager: EntityManager) => {
+            const previousVote = await manager
+                .withRepository(this.voteRepository)
+                .createQueryBuilder('vote')
+                .setLock('pessimistic_write')
+                .where('vote.review_id = :reviewId', { reviewId })
+                .andWhere('vote.account_id = :userId', { userId: user.id })
+                .getOne();
+            if (!previousVote) return;
+            await manager.withRepository(this.voteRepository).delete({ id: previousVote.id });
+            await this.reviewService.deleteVoteTx(reviewId, previousVote.vote, manager);
+            deleted = true;
+        });
+        if (deleted) {
+            this.loggerService.info(`User ${user.id} removed vote from review ${reviewId}`);
+        }
+        return deleted;
     }
 
     async findAllVotesForReview(args: ReviewVotesArgs): Promise<IPaginatedType<Vote>> {

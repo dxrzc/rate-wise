@@ -6,6 +6,7 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { voteReviewDocs } from './docs/voteReview.docs';
+import { deleteVoteDocs } from './docs/deleteVote.docs';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { CreateVoteInput } from './dtos/create-vote.input';
 import { ReviewVotesArgs } from './dtos/args/review-votes.args';
@@ -27,6 +28,17 @@ export class VotesResolver {
     ) {
         await this.votesService.voteReview(voteData.reviewId, req.user, voteData.vote);
         return true;
+    }
+
+    @RelaxedThrottle()
+    @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @Roles([UserRole.REVIEWER])
+    @Mutation(() => Boolean, deleteVoteDocs)
+    async deleteVote(
+        @Args('reviewId', { type: () => String }) reviewId: string,
+        @Context('req') req: RequestContext,
+    ) {
+        return await this.votesService.deleteVote(reviewId, req.user);
     }
 
     // TODO: test
