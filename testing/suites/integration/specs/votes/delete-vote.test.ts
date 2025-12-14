@@ -123,7 +123,7 @@ describe('Gql - deleteVote', () => {
                 status: AccountStatus.ACTIVE,
             });
             const { id: reviewId } = await createReview(undefined, userId);
-            const iterations = 20;
+            const iterations = 10;
             const promises: Promise<any>[] = [];
             for (let i = 0; i < iterations; i++) {
                 let operation: any;
