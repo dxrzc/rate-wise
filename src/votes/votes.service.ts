@@ -39,7 +39,7 @@ export class VotesService {
                     .withRepository(this.voteRepository)
                     .delete({ id: previousVote.id });
                 if (deleteResult.affected && deleteResult.affected > 0) {
-                    await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+                    await this.reviewService.deleteVoteTx(reviewId, previousVote.vote, manager);
                 }
             }
             // add vote
@@ -66,7 +66,7 @@ export class VotesService {
                 .withRepository(this.voteRepository)
                 .delete({ id: previousVote.id });
             if (deleteResult.affected && deleteResult.affected > 0) {
-                await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+                await this.reviewService.deleteVoteTx(reviewId, previousVote.vote, manager);
             }
         });
 
