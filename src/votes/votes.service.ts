@@ -35,8 +35,12 @@ export class VotesService {
             if (previousVote) {
                 if (previousVote.vote === action) return;
                 // delete old vote
-                await manager.withRepository(this.voteRepository).delete({ id: previousVote.id });
-                await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+                const deleteResult = await manager
+                    .withRepository(this.voteRepository)
+                    .delete({ id: previousVote.id });
+                if (deleteResult.affected && deleteResult.affected > 0) {
+                    await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+                }
             }
             // add vote
             await manager.withRepository(this.voteRepository).save({
