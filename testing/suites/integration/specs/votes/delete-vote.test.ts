@@ -116,7 +116,7 @@ describe('Gql - deleteVote', () => {
         });
     });
 
-    describe('Stress Test', () => {
+    describe('Rapid voting', () => {
         test('concurrent vote and delete requests should result in consistent state', async () => {
             const { sessionCookie, id: userId } = await createAccount({
                 roles: [UserRole.REVIEWER],
