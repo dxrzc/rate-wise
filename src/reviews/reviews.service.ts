@@ -114,7 +114,7 @@ export class ReviewService {
             .increment({ id: reviewId }, propPath, 1);
     }
 
-    async removeVoteTx(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
+    async deleteVoteTx(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
         const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
         await manager
             .withRepository(this.reviewRepository)

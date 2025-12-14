@@ -427,6 +427,27 @@ describe('Gql - voteReview', () => {
             expect(review?.upVotes).toBe(0);
         });
 
+        test('concurrent vote requests from different users should result in consistent state', async () => {
+            const numberOfVotes = 10;
+            const promises = new Array<Promise<any>>();
+            const { id: reviewId } = await createReview();
+            for (let i = 0; i < numberOfVotes; i++) {
+                const { sessionCookie } = await createAccount({
+                    roles: [UserRole.REVIEWER],
+                    status: AccountStatus.ACTIVE,
+                });
+                const operation = testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+                promises.push(operation);
+            }
+            await Promise.all(promises);
+            // find review
+            const updatedReview = await testKit.reviewRepos.findOneBy({ id: reviewId });
+            expect(updatedReview?.upVotes).toBe(numberOfVotes);
+        });
+
         test('user rapidly alternates between downvote and upvote, final vote should be upvote', async () => {
             const { id: reviewId } = await createReview();
             const { sessionCookie } = await createAccount({
