@@ -49,6 +49,27 @@ export class VotesService {
         this.loggerService.info(`User ${user.id} ${action}voted review ${reviewId}`);
     }
 
+    async deleteVote(reviewId: string, user: AuthenticatedUser): Promise<boolean> {
+        await this.reviewService.existsOrThrow(reviewId);
+        const previousVote = await this.findUserVoteInReview(user.id, reviewId);
+
+        if (!previousVote) {
+            return false;
+        }
+
+        await this.dataSource.transaction(async (manager: EntityManager) => {
+            const deleteResult = await manager
+                .withRepository(this.voteRepository)
+                .delete({ id: previousVote.id });
+            if (deleteResult.affected && deleteResult.affected > 0) {
+                await this.reviewService.removeVoteTx(reviewId, previousVote.vote, manager);
+            }
+        });
+
+        this.loggerService.info(`User ${user.id} removed vote from review ${reviewId}`);
+        return true;
+    }
+
     async findAllVotesForReview(args: ReviewVotesArgs): Promise<IPaginatedType<Vote>> {
         await this.reviewService.existsOrThrow(args.reviewId);
         const sqbAlias = 'vote';
