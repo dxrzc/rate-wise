@@ -21,13 +21,6 @@ export class VotesService {
         private readonly dataSource: DataSource,
     ) {}
 
-    private async findUserVoteInReview(userId: string, reviewId: string): Promise<Vote | null> {
-        const userVote = await this.voteRepository.findOne({
-            where: { relatedReview: reviewId, createdBy: userId },
-        });
-        return userVote;
-    }
-
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
         await this.reviewService.existsOrThrow(reviewId);
         await this.dataSource.transaction(async (manager: EntityManager) => {
