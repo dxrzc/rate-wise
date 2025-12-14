@@ -123,37 +123,30 @@ describe('Gql - deleteVote', () => {
                 status: AccountStatus.ACTIVE,
             });
             const { id: reviewId } = await createReview(undefined, userId);
-
             const iterations = 20;
             const promises: Promise<any>[] = [];
-
             for (let i = 0; i < iterations; i++) {
+                let operation: any;
                 // Mix of vote and delete requests
                 if (i % 2 === 0) {
-                    promises.push(
-                        testKit.gqlClient
-                            .send(voteReview({ args: { reviewId, vote: inputVotes.UP } }))
-                            .set('Cookie', sessionCookie)
-                            .catch((e) => e),
-                    );
+                    operation = testKit.gqlClient
+                        .send(voteReview({ args: { reviewId, vote: inputVotes.UP } }))
+                        .set('Cookie', sessionCookie)
+                        .expect(success);
                 } else {
-                    promises.push(
-                        testKit.gqlClient
-                            .send(deleteVote({ args: reviewId }))
-                            .set('Cookie', sessionCookie)
-                            .catch((e) => e),
-                    );
+                    operation = testKit.gqlClient
+                        .send(deleteVote({ args: reviewId }))
+                        .set('Cookie', sessionCookie)
+                        .expect(success);
                 }
+                promises.push(operation);
             }
-
             await Promise.all(promises);
-
             // Check final state
             const review = await testKit.reviewRepos.findOne({ where: { id: reviewId } });
             const vote = await testKit.votesRepos.findOne({
                 where: { relatedReview: reviewId, createdBy: userId },
             });
-
             if (vote) {
                 expect(review?.upVotes).toBe(1);
             } else {
