@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { User } from 'src/users/entities/user.entity';
 import { Vote } from './entities/vote.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { VoteAction } from './enum/vote.enum';
@@ -21,21 +22,39 @@ export class VotesService {
         private readonly dataSource: DataSource,
     ) {}
 
+    /**
+     * All the transactions by the same user will happen sequentially.
+     * This prevents race conditions if a user votes/downvotes/delete-votes multiple times in a short period.
+     */
+    private async lockUserTx(userId: string, manager: EntityManager) {
+        // similar to std::lock_guard in C++
+        await manager
+            .getRepository(User)
+            .createQueryBuilder('user')
+            .setLock('pessimistic_write')
+            .where('user.id = :id', { id: userId })
+            .getOne();
+    }
+
+    private async deleteVoteAndUpdateReviewTx(
+        vote: Vote,
+        reviewId: string,
+        manager: EntityManager,
+    ) {
+        await manager.withRepository(this.voteRepository).delete({ id: vote.id });
+        await this.reviewService.deleteVoteTx(reviewId, vote.vote, manager);
+    }
+
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
         await this.reviewService.existsOrThrow(reviewId);
         await this.dataSource.transaction(async (manager: EntityManager) => {
-            const previousVote = await manager
-                .withRepository(this.voteRepository)
-                .createQueryBuilder('vote')
-                .setLock('pessimistic_write')
-                .where('vote.review_id = :reviewId', { reviewId })
-                .andWhere('vote.account_id = :userId', { userId: user.id })
-                .getOne();
+            await this.lockUserTx(user.id, manager); // one at a time per user
+            const previousVote = await manager.withRepository(this.voteRepository).findOne({
+                where: { relatedReview: reviewId, createdBy: user.id },
+            });
             if (previousVote) {
                 if (previousVote.vote === action) return;
-                // delete old vote (row locked by pessimistic_write)
-                await manager.withRepository(this.voteRepository).delete({ id: previousVote.id });
-                await this.reviewService.deleteVoteTx(reviewId, previousVote.vote, manager);
+                await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, manager);
             }
             // add vote
             await manager.withRepository(this.voteRepository).save({
@@ -52,16 +71,12 @@ export class VotesService {
         await this.reviewService.existsOrThrow(reviewId);
         let deleted = false;
         await this.dataSource.transaction(async (manager: EntityManager) => {
-            const previousVote = await manager
-                .withRepository(this.voteRepository)
-                .createQueryBuilder('vote')
-                .setLock('pessimistic_write')
-                .where('vote.review_id = :reviewId', { reviewId })
-                .andWhere('vote.account_id = :userId', { userId: user.id })
-                .getOne();
+            await this.lockUserTx(user.id, manager); // one at a time per user
+            const previousVote = await manager.withRepository(this.voteRepository).findOne({
+                where: { relatedReview: reviewId, createdBy: user.id },
+            });
             if (!previousVote) return;
-            await manager.withRepository(this.voteRepository).delete({ id: previousVote.id });
-            await this.reviewService.deleteVoteTx(reviewId, previousVote.vote, manager);
+            await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, manager);
             deleted = true;
         });
         if (deleted) {
