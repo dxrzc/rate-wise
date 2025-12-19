@@ -5,7 +5,6 @@ import { EntityManager, Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsService } from 'src/items/items.service';
-import { Item } from 'src/items/entities/item.entity';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';

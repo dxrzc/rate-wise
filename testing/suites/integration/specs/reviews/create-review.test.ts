@@ -3,6 +3,7 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { createReview } from '@testing/tools/gql-operations/reviews/create-review.operation';
+import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -303,7 +304,7 @@ describe('Gql - createReview', () => {
                         .expect(success);
                     const { body } = await testKit.gqlClient
                         .send(
-                            testKit.gqlOperations.items.findItemById({
+                            findItemById({
                                 args: itemId,
                                 fields: ['averageRating'],
                             }),
@@ -334,7 +335,7 @@ describe('Gql - createReview', () => {
                     }
                     const { body } = await testKit.gqlClient
                         .send(
-                            testKit.gqlOperations.items.findItemById({
+                            findItemById({
                                 args: itemId,
                                 fields: ['averageRating'],
                             }),
