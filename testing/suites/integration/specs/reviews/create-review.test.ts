@@ -3,6 +3,7 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { createReview } from '@testing/tools/gql-operations/reviews/create-review.operation';
+import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -301,8 +302,15 @@ describe('Gql - createReview', () => {
                         .send(createReview({ args: reviewData, fields: ['id'] }))
                         .set('Cookie', sessionCookie)
                         .expect(success);
-                    const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
-                    expect(itemInDb!.averageRating).toBe(reviewData.rating);
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
+                    expect(body.data.findItemById.averageRating).toBe(reviewData.rating);
                 });
             });
 
@@ -325,10 +333,17 @@ describe('Gql - createReview', () => {
                             .set('Cookie', sessionCookie)
                             .expect(success);
                     }
-                    const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
                     const expectedAverage =
                         ratings.reduce((sum, curr) => sum + curr, 0) / ratings.length;
-                    expect(itemInDb!.averageRating).toBe(expectedAverage);
+                    expect(body.data.findItemById.averageRating).toBe(expectedAverage);
                 });
             });
         });

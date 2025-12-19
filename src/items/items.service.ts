@@ -134,7 +134,8 @@ export class ItemsService {
         try {
             const created = await this.itemRepository.save({ ...item, createdBy: user.id });
             this.logger.info(`Item with id ${created.id} by user ${user.id} created`);
-            return created;
+            // Type assertion needed: averageRating is computed by GraphQL @ResolveField, not stored in DB
+            return created as unknown as ItemModel;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
@@ -142,12 +143,5 @@ export class ItemsService {
             }
             throw new InternalServerErrorException(error);
         }
-    }
-
-    async updateItemAvgRating(item: Item, newAvg: number): Promise<Item> {
-        item.averageRating = newAvg;
-        await this.itemRepository.save(item);
-        this.logger.info(`Item with id ${item.id} avg rating updated to ${newAvg}`);
-        return item;
     }
 }

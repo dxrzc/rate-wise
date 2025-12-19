@@ -1,6 +1,7 @@
 import {
     Args,
     Context,
+    Float,
     ID,
     Mutation,
     Parent,
@@ -92,6 +93,13 @@ export class ItemsResolver {
             limit: args.limit,
             cursor: args.cursor,
         });
+    }
+
+    @ResolveField(() => Float, {
+        description: 'The average rating of the item based on all reviews.',
+    })
+    async averageRating(@Parent() item: ItemModel): Promise<number> {
+        return await this.reviewsService.calculateItemAverageRating(item.id);
     }
 
     @ResolveField(() => ReviewPaginationModel, {

@@ -100,13 +100,12 @@ describe('Gql - createItem', () => {
             });
             const itemData = testKit.itemSeed.itemInput;
             const res = await testKit.gqlClient
-                .send(createItem({ args: itemData, fields: ['id'] }))
+                .send(createItem({ args: itemData, fields: ['id', 'averageRating'] }))
                 .set('Cookie', sessionCookie)
                 .expect(success);
             const itemId = res.body.data.createItem.id;
             expect(itemId).toBeDefined();
-            const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
-            expect(itemInDb?.averageRating).toBe(0);
+            expect(res.body.data.createItem.averageRating).toBe(0);
         });
 
         describe('Provided category with uppercase letter and leading and trailing spaces', () => {

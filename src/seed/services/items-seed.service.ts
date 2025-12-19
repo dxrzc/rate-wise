@@ -24,10 +24,6 @@ export class ItemsSeedService {
         return faker.commerce.department();
     }
 
-    get averageRating(): number {
-        return Math.round(Math.random() * 100) / 10;
-    }
-
     get tags(): string[] {
         const tagsCount = Math.floor(Math.random() * 5) + 1;
         const tagsSet = new Set<string>();
@@ -43,7 +39,6 @@ export class ItemsSeedService {
             description: this.description,
             category: this.category,
             tags: this.tags,
-            averageRating: this.averageRating,
         };
     }
 

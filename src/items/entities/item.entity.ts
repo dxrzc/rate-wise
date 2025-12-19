@@ -3,7 +3,6 @@ import { BaseEntity } from 'src/common/entites/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { ITEMS_LIMITS } from '../constants/items.constants';
 import { Review } from 'src/reviews/entities/review.entity';
-import { ColumnNumericTransformer } from 'src/common/entites/column-numeric-transformer';
 
 @Entity()
 export class Item extends BaseEntity {
@@ -24,15 +23,6 @@ export class Item extends BaseEntity {
         length: ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH,
     })
     tags!: string[];
-
-    @Column('numeric', {
-        name: 'average_rating',
-        precision: 3,
-        scale: 1,
-        default: 0,
-        transformer: new ColumnNumericTransformer(),
-    })
-    averageRating!: number;
 
     @OneToMany(() => Review, (review) => review.item)
     reviews!: Review[];
