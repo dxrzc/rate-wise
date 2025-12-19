@@ -134,7 +134,7 @@ export class ItemsService {
         try {
             const created = await this.itemRepository.save({ ...item, createdBy: user.id });
             this.logger.info(`Item with id ${created.id} by user ${user.id} created`);
-            return created;
+            return created as unknown as ItemModel;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
                 this.logger.error(getDuplicatedErrorKeyDetail(error));
