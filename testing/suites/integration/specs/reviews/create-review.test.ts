@@ -301,8 +301,15 @@ describe('Gql - createReview', () => {
                         .send(createReview({ args: reviewData, fields: ['id'] }))
                         .set('Cookie', sessionCookie)
                         .expect(success);
-                    const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
-                    expect(itemInDb!.averageRating).toBe(reviewData.rating);
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            testKit.gqlOperations.items.findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
+                    expect(body.data.findItemById.averageRating).toBe(reviewData.rating);
                 });
             });
 
@@ -325,10 +332,17 @@ describe('Gql - createReview', () => {
                             .set('Cookie', sessionCookie)
                             .expect(success);
                     }
-                    const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            testKit.gqlOperations.items.findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
                     const expectedAverage =
                         ratings.reduce((sum, curr) => sum + curr, 0) / ratings.length;
-                    expect(itemInDb!.averageRating).toBe(expectedAverage);
+                    expect(body.data.findItemById.averageRating).toBe(expectedAverage);
                 });
             });
         });

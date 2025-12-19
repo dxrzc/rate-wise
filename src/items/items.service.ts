@@ -143,11 +143,4 @@ export class ItemsService {
             throw new InternalServerErrorException(error);
         }
     }
-
-    async updateItemAvgRating(item: Item, newAvg: number): Promise<Item> {
-        item.averageRating = newAvg;
-        await this.itemRepository.save(item);
-        this.logger.info(`Item with id ${item.id} avg rating updated to ${newAvg}`);
-        return item;
-    }
 }

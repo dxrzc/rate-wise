@@ -27,17 +27,6 @@ export class ReviewService {
         private readonly logger: HttpLoggerService,
     ) {}
 
-    private async refreshItemAvgRating(item: Item) {
-        const itemReviews = await this.reviewRepository.find({
-            select: { rating: true },
-            where: { relatedItem: item.id },
-        });
-        const itemReviewsRating = itemReviews.map((i) => i.rating);
-        const newAvg =
-            itemReviewsRating.reduce((prev, curr) => prev + curr, 0) / itemReviews.length;
-        await this.itemsService.updateItemAvgRating(item, newAvg);
-    }
-
     private handleNonExistentReview(reviewId: string) {
         this.logger.error(`Review with id ${reviewId} not found`);
         throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
@@ -72,8 +61,6 @@ export class ReviewService {
             createdBy: user.id,
         });
         this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
-        // TODO: use a queue instead.
-        await this.refreshItemAvgRating(item);
         return review;
     }
 
@@ -119,5 +106,19 @@ export class ReviewService {
         await manager
             .withRepository(this.reviewRepository)
             .decrement({ id: reviewId }, propPath, 1);
+    }
+
+    async calculateItemAverageRating(itemId: string): Promise<number> {
+        const result = await this.reviewRepository
+            .createQueryBuilder('review')
+            .select('AVG(review.rating)::numeric(3,2)', 'average')
+            .where('review.item_id = :itemId', { itemId })
+            .getRawOne<{ average: string | null }>();
+
+        if (!result || result.average === null) {
+            return 0;
+        }
+
+        return parseFloat(result.average);
     }
 }
