@@ -134,6 +134,7 @@ export class ItemsService {
         try {
             const created = await this.itemRepository.save({ ...item, createdBy: user.id });
             this.logger.info(`Item with id ${created.id} by user ${user.id} created`);
+            // Type assertion needed: averageRating is computed by GraphQL @ResolveField, not stored in DB
             return created as unknown as ItemModel;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {

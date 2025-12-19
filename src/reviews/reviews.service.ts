@@ -111,7 +111,7 @@ export class ReviewService {
         const result = await this.reviewRepository
             .createQueryBuilder('review')
             .select('AVG(review.rating)::numeric(3,2)', 'average')
-            .where('review.item_id = :itemId', { itemId })
+            .where('review.relatedItem = :itemId', { itemId })
             .getRawOne<{ average: string | null }>();
 
         if (!result || result.average === null) {
