@@ -66,19 +66,19 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         const qbAlias = queryBuilder?.sqbAlias || 'e';
 
         let qb = this.repository.createQueryBuilder(qbAlias);
-        qb = qb.select(`${qbAlias}.id`, 'id').addSelect(`${qbAlias}.created_at::text`, 'cursor');
+        qb = qb.select(`${qbAlias}.id`, 'id').addSelect(`${qbAlias}.createdAt`, 'cursor');
         if (queryBuilder) {
             // apply caller's modifier (joins, filters, etc...)
             qb = queryBuilder.sqbModifier(qb);
         }
         if (decodedCursor) {
-            qb = qb.andWhere(`(${qbAlias}.created_at, ${qbAlias}.id) > (:date, :id)`, {
+            qb = qb.andWhere(`(${qbAlias}.createdAt, ${qbAlias}.id) > (:date, :id)`, {
                 date: decodedCursor.createdAt,
                 id: decodedCursor.id,
             });
         }
         qb = qb
-            .orderBy(`${qbAlias}.created_at`, 'ASC')
+            .orderBy(`${qbAlias}.createdAt`, 'ASC')
             .addOrderBy(`${qbAlias}.id`, 'ASC')
             .limit(limit + 1);
         const idsAndCursors = await qb.getRawMany<{ id: string; cursor: string }>();

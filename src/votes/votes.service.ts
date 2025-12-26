@@ -94,7 +94,7 @@ export class VotesService {
             cache: true,
             queryBuilder: {
                 sqbModifier: (qb) =>
-                    qb.where(`${sqbAlias}.review_id = :reviewId`, { reviewId: args.reviewId }),
+                    qb.where(`${sqbAlias}.relatedReview = :reviewId`, { reviewId: args.reviewId }),
                 sqbAlias,
             },
         });
