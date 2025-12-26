@@ -14,6 +14,7 @@ import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
+import { isUniqueViolationError } from 'src/common/functions/error/is-unique-violation-error';
 
 @Injectable()
 export class ReviewService {
@@ -50,24 +51,25 @@ export class ReviewService {
 
     async createOne(reviewData: CreateReviewInput, user: AuthenticatedUser) {
         const item = await this.itemsService.findOneByIdOrThrow(reviewData.itemId);
-        const alreadyReviewed = await this.reviewRepository.exists({
-            where: { createdBy: user.id, relatedItem: reviewData.itemId },
-        });
-        if (alreadyReviewed) {
-            this.logger.error(`User ${user.id} has already reviewed item ${item.id}`);
-            throw GqlHttpError.Conflict(REVIEW_MESSAGES.ALREADY_REVIEWED);
-        }
         if (item.createdBy === user.id) {
             this.logger.error(`User ${user.id} attempted to review their own item ${item.id}`);
             throw GqlHttpError.Forbidden(REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
         }
-        const review = await this.reviewRepository.save({
-            ...reviewData,
-            relatedItem: item.id,
-            createdBy: user.id,
-        });
-        this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
-        return review;
+        try {
+            const review = await this.reviewRepository.save({
+                ...reviewData,
+                relatedItem: item.id,
+                createdBy: user.id,
+            });
+            this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
+            return review;
+        } catch (error) {
+            if (isUniqueViolationError(error)) {
+                this.logger.error(`User ${user.id} has already reviewed item ${item.id}`);
+                throw GqlHttpError.Conflict(REVIEW_MESSAGES.ALREADY_REVIEWED);
+            }
+            throw error;
+        }
     }
 
     async findAllByUser(args: ReviewsByUserArgs) {
