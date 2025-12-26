@@ -24,9 +24,6 @@ type AccountModel {
 
   "\n            Current status of the user account\n        "
   status: AccountStatus!
-
-  "\n            Reputation score of the user\n        "
-  reputationScore: Float!
 }
 
 """Available roles for a user."""
@@ -141,9 +138,6 @@ type UserModel {
 
   "\n            Current status of the user account\n        "
   status: AccountStatus!
-
-  "\n            Reputation score of the user\n        "
-  reputationScore: Float!
 
   """Paginated list of items created by the user."""
   items(

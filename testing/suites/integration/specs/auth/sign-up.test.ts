@@ -106,16 +106,6 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test('default reputation score is 0', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.reputationScore).toBe(0);
-        });
-
         test('user password is hashed in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
@@ -158,7 +148,6 @@ describe('GraphQL - signUp', () => {
             const userDb = await testKit.userRepos.findOneByOrFail({ id: responseData.id });
             expect(responseData).toStrictEqual({
                 username: userDb?.username,
-                reputationScore: userDb?.reputationScore,
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,

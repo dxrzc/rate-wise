@@ -54,7 +54,6 @@ describe('GraphQL - signIn', () => {
             const userDb = await testKit.userRepos.findOneByOrFail({ id });
             expect(res.body.data.signIn).toStrictEqual({
                 username: userDb?.username,
-                reputationScore: userDb?.reputationScore,
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,

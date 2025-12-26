@@ -31,10 +31,6 @@ export class UserSeedService {
         return roles[faker.number.int({ min: 0, max: roles.length - 1 })] as UserRole;
     }
 
-    get reputationScore(): number {
-        return faker.number.int({ min: 0, max: 10000 });
-    }
-
     get password(): string {
         const randomNumber = faker.number.int({ max: 4 });
         return faker.internet.password({
@@ -54,7 +50,6 @@ export class UserSeedService {
         return {
             ...this.signUpInput,
             role: this.role,
-            reputationScore: this.reputationScore,
         };
     }
 }
