@@ -117,14 +117,9 @@ export class ReviewService {
     async calculateItemAverageRating(itemId: string): Promise<number> {
         const result = await this.reviewRepository
             .createQueryBuilder('review')
-            .select('AVG(review.rating)::numeric(3,2)', 'average')
-            .where('review.relatedItem = :itemId', { itemId })
+            .select('ROUND(AVG(review.rating), 1)', 'average')
+            .where('review.item_id = :itemId', { itemId })
             .getRawOne<{ average: string | null }>();
-
-        if (!result || result.average === null) {
-            return 0;
-        }
-
-        return parseFloat(result.average);
+        return result?.average ? Number(result.average) : 0;
     }
 }
