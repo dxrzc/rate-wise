@@ -35,9 +35,6 @@ export class User extends BaseEntity {
     })
     status!: AccountStatus;
 
-    @Column('integer', { default: 0, name: 'reputation_score' })
-    reputationScore!: number;
-
     @OneToMany(() => Item, (item) => item.user)
     items!: Item[];
 

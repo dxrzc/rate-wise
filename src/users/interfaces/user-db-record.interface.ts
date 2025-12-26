@@ -6,6 +6,5 @@ export interface IUserDbRecord extends IBaseRawDbRecord {
     email: string;
     password: string;
     roles: string;
-    reputation_score: number;
     cursor: string;
 }
