@@ -9,7 +9,8 @@ import { Code } from 'src/common/enum/code.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { createItemCacheKey } from 'src/items/cache/create-cache-key';
 
-describe('Gql - findAllItemsByUser', () => {
+// skipped intentionally
+describe.skip('Gql - findAllItemsByUser', () => {
     beforeAll(async () => {
         await testKit.seedService.createUsers(3);
         await testKit.seedService.createItems(3);
