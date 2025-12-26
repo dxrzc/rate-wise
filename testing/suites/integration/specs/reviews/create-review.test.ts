@@ -337,18 +337,18 @@ describe('Gql - createReview', () => {
 
             describe('Five reviews created for item', () => {
                 test('item average should be the average of the five reviews', async () => {
-                    const { sessionCookie } = await createAccount({
-                        status: AccountStatus.ACTIVE,
-                    });
                     const { id: itemId } = await createItemForOtherAccount();
                     const ratings = [5, 4, 3, 2, 1];
                     for (const rating of ratings) {
+                        const { sessionCookie } = await createAccount({
+                            status: AccountStatus.ACTIVE,
+                        });
                         const reviewData = {
                             ...testKit.reviewSeed.reviewInput,
                             itemId: itemId,
                             rating,
                         };
-                        // create five reviews for item
+                        // create five reviews for item using different users
                         await testKit.gqlClient
                             .send(createReview({ args: reviewData, fields: ['id'] }))
                             .set('Cookie', sessionCookie)
