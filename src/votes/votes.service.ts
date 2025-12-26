@@ -46,8 +46,8 @@ export class VotesService {
     }
 
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
-        await this.reviewService.existsOrThrow(reviewId);
         await this.dataSource.transaction(async (manager: EntityManager) => {
+            await this.reviewService.existsOrThrowTx(reviewId, manager);
             await this.lockUserTx(user.id, manager); // one at a time per user
             const previousVote = await manager.withRepository(this.voteRepository).findOne({
                 where: { relatedReview: reviewId, createdBy: user.id },

@@ -33,12 +33,24 @@ export class ReviewService {
         throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
     }
 
-    async existsOrThrow(reviewId: string): Promise<void> | never {
-        if (!validUUID(reviewId)) {
+    private verifyUUidOrThrow(id: string) {
+        if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
             throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
         }
+    }
+
+    async existsOrThrow(reviewId: string): Promise<void> | never {
+        this.verifyUUidOrThrow(reviewId);
         const count = await this.reviewRepository.countBy({ id: reviewId });
+        if (count === 0) {
+            this.handleNonExistentReview(reviewId);
+        }
+    }
+
+    async existsOrThrowTx(reviewId: string, manager: EntityManager): Promise<void> | never {
+        this.verifyUUidOrThrow(reviewId);
+        const count = await manager.withRepository(this.reviewRepository).countBy({ id: reviewId });
         if (count === 0) {
             this.handleNonExistentReview(reviewId);
         }
