@@ -48,7 +48,7 @@ export class ItemsService {
             ...pagArgs,
             cache: true,
             queryBuilder: {
-                sqbModifier: (qb) => qb.where(`${sqbAlias}.account_id = :userId`, { userId }),
+                sqbModifier: (qb) => qb.where(`${sqbAlias}.createdBy = :userId`, { userId }),
                 sqbAlias,
             },
         });

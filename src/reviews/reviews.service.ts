@@ -82,7 +82,7 @@ export class ReviewService {
             cache: true,
             queryBuilder: {
                 sqbModifier: (qb) =>
-                    qb.where(`${sqbAlias}.account_id = :userId`, { userId: args.userId }),
+                    qb.where(`${sqbAlias}.createdBy = :userId`, { userId: args.userId }),
                 sqbAlias,
             },
         });
@@ -97,7 +97,7 @@ export class ReviewService {
             cache: true,
             queryBuilder: {
                 sqbModifier: (qb) =>
-                    qb.where(`${sqbAlias}.item_id = :itemId`, { itemId: args.itemId }),
+                    qb.where(`${sqbAlias}.relatedItem = :itemId`, { itemId: args.itemId }),
                 sqbAlias,
             },
         });
