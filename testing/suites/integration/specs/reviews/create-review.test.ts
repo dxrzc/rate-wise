@@ -28,6 +28,27 @@ describe('Gql - createReview', () => {
         });
     });
 
+    describe('User reviews the same item twice', () => {
+        test('return conflict code and item already reviewed error message', async () => {
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: itemId } = await createItemForOtherAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            // review 1st time
+            await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            // review again
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.CONFLICT, REVIEW_MESSAGES.ALREADY_REVIEWED);
+        });
+    });
+
     describe('Invalid item id provided', () => {
         test('return bad request code and invalid input error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
