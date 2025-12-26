@@ -41,6 +41,13 @@ export class AddReviewTable1763697287276 implements MigrationInterface {
             ON DELETE CASCADE
         `);
 
+        // one-review-per-user-per-item constraint
+        await queryRunner.query(`
+            ALTER TABLE "review"
+            ADD CONSTRAINT unique_review_per_user_item
+            UNIQUE ("account_id", "item_id");
+        `);
+
         // delete "review_count" column in item
         await queryRunner.query(`
             ALTER TABLE "item"
