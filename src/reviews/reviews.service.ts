@@ -50,6 +50,13 @@ export class ReviewService {
 
     async createOne(reviewData: CreateReviewInput, user: AuthenticatedUser) {
         const item = await this.itemsService.findOneByIdOrThrow(reviewData.itemId);
+        const alreadyReviewed = await this.reviewRepository.exists({
+            where: { createdBy: user.id, relatedItem: reviewData.itemId },
+        });
+        if (alreadyReviewed) {
+            this.logger.error(`User ${user.id} has already reviewed item ${item.id}`);
+            throw GqlHttpError.Conflict(REVIEW_MESSAGES.ALREADY_REVIEWED);
+        }
         if (item.createdBy === user.id) {
             this.logger.error(`User ${user.id} attempted to review their own item ${item.id}`);
             throw GqlHttpError.Forbidden(REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
