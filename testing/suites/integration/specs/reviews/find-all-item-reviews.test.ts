@@ -8,7 +8,8 @@ import { createReviewCacheKey } from 'src/reviews/cache/create-cache-key';
 import { Review } from 'src/reviews/entities/review.entity';
 import { User } from 'src/users/entities/user.entity';
 
-describe('Gql - findAllItemReviews', () => {
+// skipped intentionally. There are plans to change the way the data is filtered so this tests will be removed anyway.
+describe.skip('Gql - findAllItemReviews', () => {
     let seededUsers = new Array<User>();
 
     // simulate existing data

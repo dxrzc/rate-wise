@@ -163,14 +163,17 @@ describe('GET delete account endpoint with token', () => {
 
         test('all reviews belonging to user are deleted from database', async () => {
             const { id: userID } = await createAccount({ status: AccountStatus.ACTIVE });
-            // item from another user
-            const { id: itemID } = await createItem(
-                (await createAccount({ status: AccountStatus.ACTIVE })).id,
-            );
-            // user creates reviews
+            const otherAccount = await createAccount({ status: AccountStatus.ACTIVE });
+            // items from another user (one review per item due to the new constraint)
+            const items = await Promise.all([
+                createItem(otherAccount.id),
+                createItem(otherAccount.id),
+            ]);
+            const [item1ID, item2ID] = items.map((item) => item.id);
+            // user creates reviews on different items
             const reviews = await Promise.all([
-                createReview(itemID, userID),
-                createReview(itemID, userID),
+                createReview(item1ID, userID),
+                createReview(item2ID, userID),
             ]);
             const reviewsIds = reviews.map((review) => review.id);
             // verify reviews exist in db

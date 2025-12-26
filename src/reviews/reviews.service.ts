@@ -14,6 +14,8 @@ import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
+import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
+import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 
 @Injectable()
 export class ReviewService {
@@ -54,13 +56,21 @@ export class ReviewService {
             this.logger.error(`User ${user.id} attempted to review their own item ${item.id}`);
             throw GqlHttpError.Forbidden(REVIEW_MESSAGES.CANNOT_REVIEW_OWN_ITEM);
         }
-        const review = await this.reviewRepository.save({
-            ...reviewData,
-            relatedItem: item.id,
-            createdBy: user.id,
-        });
-        this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
-        return review;
+        try {
+            const review = await this.reviewRepository.save({
+                ...reviewData,
+                relatedItem: item.id,
+                createdBy: user.id,
+            });
+            this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
+            return review;
+        } catch (error) {
+            if (isDuplicatedKeyError(error)) {
+                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                throw GqlHttpError.Conflict(REVIEW_MESSAGES.ALREADY_REVIEWED);
+            }
+            throw error;
+        }
     }
 
     async findAllByUser(args: ReviewsByUserArgs) {
@@ -110,14 +120,10 @@ export class ReviewService {
     async calculateItemAverageRating(itemId: string): Promise<number> {
         const result = await this.reviewRepository
             .createQueryBuilder('review')
-            .select('AVG(review.rating)::numeric(3,2)', 'average')
+            .select('AVG(review.rating)', 'average')
             .where('review.relatedItem = :itemId', { itemId })
             .getRawOne<{ average: string | null }>();
-
-        if (!result || result.average === null) {
-            return 0;
-        }
-
-        return parseFloat(result.average);
+        const avg = result?.average;
+        return avg ? Math.round(Number(avg) * 10) / 10 : 0;
     }
 }
