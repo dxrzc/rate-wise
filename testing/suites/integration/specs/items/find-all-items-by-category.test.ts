@@ -9,7 +9,7 @@ import { ITEMS_LIMITS } from 'src/items/constants/items.constants';
 import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 
-// skipped intentionally
+// skipped intentionally. There are plans to change the way the data is filtered so this tests will be removed anyway.
 describe.skip('Gql - findAllItemsByCategory', () => {
     const targetCategory = 'test-category';
 
