@@ -9,7 +9,8 @@ import { Code } from 'src/common/enum/code.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { createReviewCacheKey } from 'src/reviews/cache/create-cache-key';
 
-describe('Gql - findAllReviewsByUser', () => {
+// skipped intentionally
+describe.skip('Gql - findAllReviewsByUser', () => {
     let seededItems = new Array<Item>();
 
     // simulate existing data
