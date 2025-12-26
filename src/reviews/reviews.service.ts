@@ -14,7 +14,8 @@ import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
-import { isUniqueViolationError } from 'src/common/functions/error/is-unique-violation-error';
+import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
+import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 
 @Injectable()
 export class ReviewService {
@@ -64,8 +65,8 @@ export class ReviewService {
             this.logger.info(`Created review for item ${item.id} by user ${user.id}`);
             return review;
         } catch (error) {
-            if (isUniqueViolationError(error)) {
-                this.logger.error(`User ${user.id} has already reviewed item ${item.id}`);
+            if (isDuplicatedKeyError(error)) {
+                this.logger.error(getDuplicatedErrorKeyDetail(error));
                 throw GqlHttpError.Conflict(REVIEW_MESSAGES.ALREADY_REVIEWED);
             }
             throw error;
