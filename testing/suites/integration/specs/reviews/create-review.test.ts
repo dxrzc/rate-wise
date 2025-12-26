@@ -335,20 +335,20 @@ describe('Gql - createReview', () => {
                 });
             });
 
-            describe('Five reviews created for item', () => {
-                test('item average should be the average of the five reviews', async () => {
+            describe('Multiple reviews created for item', () => {
+                test('item average should be an integer value when ratings sum evenly', async () => {
                     const { id: itemId } = await createItemForOtherAccount();
-                    const ratings = [5, 4, 3, 2, 1];
+                    const ratings = [10, 10, 10, 10];
                     for (const rating of ratings) {
                         const { sessionCookie } = await createAccount({
                             status: AccountStatus.ACTIVE,
                         });
                         const reviewData = {
                             ...testKit.reviewSeed.reviewInput,
-                            itemId: itemId,
+                            itemId,
                             rating,
                         };
-                        // create five reviews for item using different users
+                        // create reviews for item using different users
                         await testKit.gqlClient
                             .send(createReview({ args: reviewData, fields: ['id'] }))
                             .set('Cookie', sessionCookie)
@@ -362,9 +362,36 @@ describe('Gql - createReview', () => {
                             }),
                         )
                         .expect(success);
-                    const expectedAverage =
-                        ratings.reduce((sum, curr) => sum + curr, 0) / ratings.length;
-                    expect(body.data.findItemById.averageRating).toBe(expectedAverage);
+                    expect(body.data.findItemById.averageRating).toBe(10);
+                });
+
+                test('item average should support decimal values when ratings do not sum evenly', async () => {
+                    const { id: itemId } = await createItemForOtherAccount();
+                    const ratings = [10, 9, 9, 10];
+                    for (const rating of ratings) {
+                        const { sessionCookie } = await createAccount({
+                            status: AccountStatus.ACTIVE,
+                        });
+                        const reviewData = {
+                            ...testKit.reviewSeed.reviewInput,
+                            itemId,
+                            rating,
+                        };
+                        // create reviews for item using different users
+                        await testKit.gqlClient
+                            .send(createReview({ args: reviewData, fields: ['id'] }))
+                            .set('Cookie', sessionCookie)
+                            .expect(success);
+                    }
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
+                    expect(body.data.findItemById.averageRating).toBe(9.5);
                 });
             });
         });
