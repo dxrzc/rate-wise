@@ -388,25 +388,8 @@ type Query {
 }
 
 type Mutation {
-  """
-  Seed the database with a specified number of test users. Deletes existing users first.
-  """
-  seedUsers(quantity: Int!): Boolean!
-
-  """
-  Seed the database with a specified number of items per user. Deletes existing items first.
-  """
-  seedItems(items_per_user: Int!): Boolean!
-
-  """
-  Seed the database with a specified number of reviews per item. Deletes existing reviews first.
-  """
-  seedReviews(reviews_per_item: Int!): Boolean!
-
-  """
-  Seed the database with votes for all reviews by all users. Deletes existing votes first.
-  """
-  seedVotes: Boolean!
+  "\n        Run the database seeding process with specified options.\n        - Every user reviews every item but their own\n        - Every user upvotes every review (and their own)\n     "
+  runSeed(seed_options: SeedInput!): Boolean!
 
   "\n        Create a new item to be rated and reviewed by the community.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create items\n        \n        **Effect:** Creates a new item with the provided title, description, category, and optional tags. The item is associated with the authenticated user as the creator.\n        \n        **Rate Limiting:** Balanced throttle applied to prevent spam\n        \n        **Returns:** The created item with ID, timestamps, title, description, category, tags, initial average rating (0), and creator ID\n    "
   createItem(item_data: CreateItemInput!): ItemModel!
@@ -440,6 +423,15 @@ type Mutation {
 
   "\n        Sign out the authenticated user from all active sessions across all devices.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Re-authentication:** Requires the user's password to be provided for security verification before terminating all sessions\n        \n        **Session:** Destroys all active user sessions on the server and clears the session cookie (connect.sid) from the current client. The user will be signed out from all devices and browsers and will need to sign in again.\n        \n        **Effect:** This is a security feature to revoke access from all devices. Useful if the user suspects their account has been compromised or wants to sign out from all locations remotely.\n        \n        **Rate Limiting:** Ultra-critical throttle applied to prevent abuse\n        \n        **Returns:** Boolean indicating success (true)\n    "
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
+}
+
+"""Input data required for seeding the database."""
+input SeedInput {
+  """Number of users to create during the seeding process."""
+  users: Int!
+
+  """Number of items to create per user during the seeding process."""
+  itemsPerUser: Int!
 }
 
 """Input type for creating a new item"""
