@@ -13,11 +13,11 @@ describe.skip('Gql - findAllItemReviews', () => {
     let seededUsers = new Array<User>();
 
     // simulate existing data
-    beforeAll(async () => {
-        seededUsers = await testKit.seedService.createUsers(3);
-        await testKit.seedService.createItems(3);
-        await testKit.seedService.createReviews(2); // 18 reviews
-    });
+    // beforeAll(async () => {
+    //     seededUsers = await testKit.seedService.createUsers(3);
+    //     await testKit.seedService.createItems(3);
+    //     await testKit.seedService.createReviews(2); // 18 reviews
+    // });
 
     function getRandomUserId(): string {
         const { id: randomUserId } = seededUsers[Math.floor(Math.random() * seededUsers.length)];
