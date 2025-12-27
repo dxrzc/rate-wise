@@ -13,10 +13,10 @@ import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 describe.skip('Gql - findAllItemsByCategory', () => {
     const targetCategory = 'test-category';
 
-    beforeAll(async () => {
-        await testKit.seedService.createUsers(2);
-        await testKit.seedService.createItems(3);
-    });
+    // beforeAll(async () => {
+    //     await testKit.seedService.createUsers(2);
+    //     await testKit.seedService.createItems(3);
+    // });
 
     async function createItemWithCategory(userId: string, category: string): Promise<Item> {
         const itemData = testKit.itemSeed.itemInput;

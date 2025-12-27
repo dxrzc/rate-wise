@@ -14,11 +14,11 @@ describe.skip('Gql - findAllReviewsByUser', () => {
     let seededItems = new Array<Item>();
 
     // simulate existing data
-    beforeAll(async () => {
-        await testKit.seedService.createUsers(3);
-        seededItems = await testKit.seedService.createItems(3);
-        await testKit.seedService.createReviews(3); // 27 reviews
-    });
+    // beforeAll(async () => {
+    //     await testKit.seedService.createUsers(3);
+    //     seededItems = await testKit.seedService.createItems(3);
+    //     await testKit.seedService.createReviews(3); // 27 reviews
+    // });
 
     async function createReviewsByUser(
         userId: string,

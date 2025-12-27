@@ -11,11 +11,11 @@ import { createItemCacheKey } from 'src/items/cache/create-cache-key';
 
 // skipped intentionally. There are plans to change the way the data is filtered so this tests will be removed anyway.
 describe.skip('Gql - findAllItemsByUser', () => {
-    beforeAll(async () => {
-        await testKit.seedService.createUsers(3);
-        await testKit.seedService.createItems(3);
-        await testKit.seedService.createReviews(3);
-    });
+    // beforeAll(async () => {
+    //     await testKit.seedService.createUsers(3);
+    //     await testKit.seedService.createItems(3);
+    //     await testKit.seedService.createReviews(3);
+    // });
 
     async function createItemsByUser(userId: string, itemsNumber: number = 4): Promise<Item[]> {
         const promises = new Array<Promise<Item>>();
