@@ -106,9 +106,9 @@ export class ItemsResolver {
         description: 'Paginated list of reviews for this item.',
     })
     async reviews(@Args() paginationArgs: PaginationArgs, @Parent() item: ItemModel) {
-        return await this.reviewsService.findAllItemReviews({
+        return await this.reviewsService.filterReviews({
             ...paginationArgs,
-            itemId: item.id,
+            relatedItem: item.id,
         });
     }
 }

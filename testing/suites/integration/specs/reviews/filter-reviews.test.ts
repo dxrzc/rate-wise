@@ -1,0 +1,208 @@
+import { createAccount } from '@integration/utils/create-account.util';
+import { createItem } from '@integration/utils/create-item.util';
+import { createReview } from '@integration/utils/create-review.util';
+import { success } from '@integration/utils/no-errors.util';
+import { testKit } from '@integration/utils/test-kit.util';
+import { Code } from 'src/common/enum/code.enum';
+import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
+import { Review } from 'src/reviews/entities/review.entity';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { USER_MESSAGES } from 'src/users/messages/user.messages';
+
+describe('Gql - filterReviews', () => {
+    beforeAll(async () => {
+        // simulates existing data
+        const initialReviewCount = 3;
+        const { id: creatorId } = await createAccount({ status: AccountStatus.ACTIVE });
+        for (let i = 0; i < initialReviewCount; i++) {
+            const { id: itemId } = await createItem(creatorId);
+            const { id: reviewerId } = await createAccount({ status: AccountStatus.ACTIVE });
+            await createReview(itemId, reviewerId);
+        }
+    });
+
+    describe('"createdBy" and "relatedItem" provided', () => {
+        test('return only the review created by the user for the specified item', async () => {
+            const { id: creatorId } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: itemId } = await createItem(creatorId);
+            //  create review
+            const { id: reviewerId } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: createdReviewId } = await createReview(itemId, reviewerId);
+            // filter
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query Nodes($limit: Int!, $createdBy: ID, $relatedItem: ID) {
+                          filterReviews(limit: $limit, createdBy: $createdBy, relatedItem: $relatedItem) {
+                            nodes {
+                              id
+                              createdAt
+                              updatedAt
+                              content
+                              rating
+                              createdBy
+                              relatedItem
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    createdBy: reviewerId,
+                    relatedItem: itemId,
+                },
+            });
+            const totalCount = response.body.data.filterReviews.totalCount;
+            expect(totalCount).toBe(1);
+            const nodes = response.body.data.filterReviews.nodes as Review[];
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].id).toBe(createdReviewId);
+        });
+    });
+
+    describe('"relatedItem provided"', () => {
+        test('return only the reviews created for the target item', async () => {
+            // create 5 reviews for the same item
+            const reviewsCount = 5;
+            const { id: creatorId } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: itemId } = await createItem(creatorId);
+            const reviewsCreatedIds: string[] = [];
+            for (let i = 0; i < reviewsCount; i++) {
+                // different reviewer
+                const { id: reviewerId } = await createAccount({ status: AccountStatus.ACTIVE });
+                const { id: reviewId } = await createReview(itemId, reviewerId);
+                reviewsCreatedIds.push(reviewId);
+            }
+            // filter
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query Nodes($limit: Int!, $relatedItem: ID) {
+                          filterReviews(limit: $limit, relatedItem: $relatedItem) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    relatedItem: itemId,
+                },
+            });
+            const totalCount = response.body.data.filterReviews.totalCount;
+            expect(totalCount).toBe(reviewsCount);
+            const nodes = response.body.data.filterReviews.nodes as Review[];
+            expect(nodes.length).toBe(reviewsCount);
+            const nodesIds = nodes.map((n) => n.id);
+            reviewsCreatedIds.forEach((id) => {
+                expect(nodesIds).toContain(id);
+            });
+        });
+    });
+
+    describe('"createdBy" provided', () => {
+        test('return only the reviews created by the specified user', async () => {
+            // create 5 items and 5 reviews
+            const reviewsCount = 5;
+            const reviewsCreatedIds: string[] = [];
+            const { id: reviewerId } = await createAccount({ status: AccountStatus.ACTIVE });
+            for (let i = 0; i < reviewsCount; i++) {
+                const { id: creatorId } = await createAccount({ status: AccountStatus.ACTIVE });
+                const { id: itemId } = await createItem(creatorId);
+                const { id: reviewId } = await createReview(itemId, reviewerId);
+                reviewsCreatedIds.push(reviewId);
+            }
+            // filter
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query Nodes($limit: Int!, $createdBy: ID) {
+                          filterReviews(limit: $limit, createdBy: $createdBy) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    createdBy: reviewerId,
+                },
+            });
+            const totalCount = response.body.data.filterReviews.totalCount;
+            expect(totalCount).toBe(reviewsCount);
+            const nodes = response.body.data.filterReviews.nodes as Review[];
+            expect(nodes.length).toBe(reviewsCount);
+            const nodesIds = nodes.map((n) => n.id);
+            reviewsCreatedIds.forEach((id) => {
+                expect(nodesIds).toContain(id);
+            });
+        });
+    });
+
+    describe('No filters provided', () => {
+        test('return all the reviews in database', async () => {
+            const allInDbCount = await testKit.reviewRepos.count();
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query Nodes($limit: Int!) {
+                          filterReviews(limit: $limit) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                },
+            });
+            const totalCount = response.body.data.filterReviews.totalCount;
+            expect(totalCount).toBe(allInDbCount);
+            const nodes = response.body.data.filterReviews.nodes as Review[];
+            expect(nodes.length).toBe(allInDbCount);
+        });
+    });
+
+    describe('Invalid createdBy id', () => {
+        test('return not found code and user not found error message', async () => {
+            const invalidUserId = 'invalidUserUUid12345_';
+            const response = await testKit.gqlClient.send({
+                query: `query Nodes($limit: Int!, $createdBy: ID) {
+                          filterReviews(limit: $limit, createdBy: $createdBy) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    createdBy: invalidUserId,
+                },
+            });
+            expect(response).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe('Invalid relatedItem id', () => {
+        test('return not found code and item not found error message', async () => {
+            const invalidItemId = 'invalidItemUUid@@@';
+            const response = await testKit.gqlClient.send({
+                query: `query Nodes($limit: Int!, $relatedItem: ID) {
+                          filterReviews(limit: $limit, relatedItem: $relatedItem) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    relatedItem: invalidItemId,
+                },
+            });
+            expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
+        });
+    });
+});
