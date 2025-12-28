@@ -1,8 +1,11 @@
+import { faker } from '@faker-js/faker';
 import { createAccount } from '@integration/utils/create-account.util';
 import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
+import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { ITEMS_LIMITS } from 'src/items/constants/items.constants';
 import { Item } from 'src/items/entities/item.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
@@ -294,6 +297,50 @@ describe('Gql - filterItems', () => {
                 },
             });
             expect(response).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe('Invalid category length', () => {
+        test('return bad request code and invalid input error message', async () => {
+            const invalidCategory = faker.string.alpha({ length: ITEMS_LIMITS.CATEGORY.MAX + 1 });
+            const response = await testKit.gqlClient.send({
+                query: `query FilterItems($limit: Int!, $category: String) {
+                          filterItems(limit: $limit, category: $category) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    category: invalidCategory,
+                },
+            });
+            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+        });
+    });
+
+    describe('Invalid tag length', () => {
+        test('return bad request code and invalid input error message', async () => {
+            const invalidTag = faker.string.alpha({ length: ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH + 1 });
+            const response = await testKit.gqlClient.send({
+                query: `query FilterItems($limit: Int!, $tag: String) {
+                          filterItems(limit: $limit, tag: $tag) {
+                            nodes {
+                              id
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    limit: 100,
+                    tag: invalidTag,
+                },
+            });
+            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
         });
     });
 });
