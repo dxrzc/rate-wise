@@ -15,9 +15,8 @@ import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createItemCacheKey } from './cache/create-cache-key';
 import { deserializeItem } from './functions/deserialize-item.entity';
 import { PaginationService } from 'src/pagination/pagination.service';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
-import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 import { UsersService } from 'src/users/users.service';
+import { ItemFiltersArgs } from './dtos/args/item-filters.args';
 
 @Injectable()
 export class ItemsService {
@@ -38,63 +37,30 @@ export class ItemsService {
         }
     }
 
-    async findAllByUser(
-        userId: string,
-        pagArgs: PaginationArgs,
-    ): Promise<IPaginatedType<ItemModel>> {
-        await this.usersService.findOneByIdOrThrow(userId);
+    async filterItems(filters: ItemFiltersArgs) {
+        if (filters.createdBy) await this.usersService.findOneByIdOrThrow(filters.createdBy);
         const sqbAlias = 'item';
         return await this.paginationService.create({
-            ...pagArgs,
+            cursor: filters.cursor,
+            limit: filters.limit,
             cache: true,
             queryBuilder: {
-                sqbModifier: (qb) => qb.where(`${sqbAlias}.createdBy = :userId`, { userId }),
-                sqbAlias,
-            },
-        });
-    }
-
-    /**
-     * - Find all items using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
-    async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
-        return await this.paginationService.create({
-            ...paginationArgs,
-            cache: true,
-        });
-    }
-
-    /**
-     * - Find all items by category using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
-    async findAllByCategory(
-        category: string,
-        pagArgs: PaginationArgs,
-    ): Promise<IPaginatedType<ItemModel>> {
-        const sqbAlias = 'item';
-        return await this.paginationService.create({
-            ...pagArgs,
-            cache: true,
-            queryBuilder: {
-                sqbModifier: (qb) => qb.where(`${sqbAlias}.category = :category`, { category }),
-                sqbAlias,
-            },
-        });
-    }
-
-    /**
-     * - Find all items that contain the specified tag using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
-    async findAllByTag(tag: string, pagArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
-        const sqbAlias = 'item';
-        return await this.paginationService.create({
-            ...pagArgs,
-            cache: true,
-            queryBuilder: {
-                sqbModifier: (qb) => qb.where(`:tag = ANY(${sqbAlias}.tags)`, { tag }),
+                sqbModifier: (qb) => {
+                    if (filters.createdBy) {
+                        qb.andWhere(`${sqbAlias}.createdBy = :createdBy`, {
+                            createdBy: filters.createdBy,
+                        });
+                    }
+                    if (filters.category) {
+                        qb.andWhere(`${sqbAlias}.category = :category`, {
+                            category: filters.category,
+                        });
+                    }
+                    if (filters.tag) {
+                        qb.andWhere(`:tag = ANY(${sqbAlias}.tags)`, { tag: filters.tag });
+                    }
+                    return qb;
+                },
                 sqbAlias,
             },
         });

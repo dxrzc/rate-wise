@@ -14,7 +14,7 @@ import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
-import { ReviewFiltersArgs } from './dtos/args/review.filters.args';
+import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
 
 @Injectable()
 export class ReviewService {

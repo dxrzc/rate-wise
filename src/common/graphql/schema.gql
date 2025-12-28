@@ -303,51 +303,22 @@ type Query {
   "\n        Find an item by its unique identifier.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Caching:** Results are cached for improved performance. Subsequent requests for the same item ID may return cached data.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Item details including ID, timestamps, title, description, category, tags, average rating, and creator ID\n    "
   findItemById(item_id: ID!): ItemModel!
 
-  "\n        Find all items created by a specific user with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items created by the specified user, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemsByUser(
+  "Retrieve items based on specified filters such as creator, category, or tag.\n    \n    **Authentication:** Not required (public endpoint)\n        \n    **Authorization:** None\n        \n    **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n    **Rate Limiting:** Balanced throttle applied\n        \n    **Returns:** Paginated list of items filtered by the provided arguments, including edges, nodes, total count, and hasNextPage indicator\n "
+  filterItems(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
 
-    """The unique ID of the user whose items to retrieve."""
-    userId: ID!
-  ): ItemPaginationModel!
+    """ID of the user who created the item"""
+    createdBy: ID
 
-  "\n        Find all items with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of all items with edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItems(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
+    """Filter items by category. Minimum length: 3, Maximum length: 40."""
+    category: String
 
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-  ): ItemPaginationModel!
-
-  "\n        Find all items in a specified category with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Filtering:** Returns only items that belong to the specified category\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items in the specified category, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemsByCategory(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """
-    The category to filter items by. Minimum length: 3, Maximum length: 40.
-    """
-    category: String!
-  ): ItemPaginationModel!
-
-  "\n        Find all items that contain a specified tag with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Filtering:** Returns only items that have the specified tag in their tags array\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items with the specified tag, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemsByTag(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """The tag to filter items by. Minimum length: 2, Maximum length: 20."""
-    tag: String!
+    """Filter items by tag. Minimum length: 2, Maximum length: 20."""
+    tag: String
   ): ItemPaginationModel!
 
   "Retrieve reviews based on specified filters such as creator or related item.\n    \n    **Authentication:** Not required (public endpoint)\n        \n    **Authorization:** None\n        \n    **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n    **Rate Limiting:** Balanced throttle applied\n        \n    **Returns:** Paginated list of reviews filtered by the provided arguments, including edges, nodes, total count, and hasNextPage indicator\n "

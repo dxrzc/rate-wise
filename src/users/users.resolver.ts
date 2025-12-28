@@ -28,7 +28,10 @@ export class UsersResolver {
         description: 'Paginated list of items created by this user.',
     })
     async items(@Args() paginationArgs: PaginationArgs, @Parent() user: UserModel) {
-        const items = await this.itemsService.findAllByUser(user.id, paginationArgs);
+        const items = await this.itemsService.filterItems({
+            ...paginationArgs,
+            createdBy: user.id,
+        });
         return items;
     }
 

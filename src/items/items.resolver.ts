@@ -20,18 +20,13 @@ import { CreateItemInput } from './dtos/create-item.input';
 import { ItemsService } from './items.service';
 import { ItemModel } from './models/item.model';
 import { ItemPaginationModel } from './models/pagination.model';
-import { ItemsByUserArgs } from './dtos/args/user-reviews.args';
-import { ItemsByCategoryArgs } from './dtos/args/items-by-category.args';
-import { ItemsByTagArgs } from './dtos/args/items-by-tag.args';
 import { ReviewPaginationModel } from 'src/reviews/models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { ReviewService } from 'src/reviews/reviews.service';
 import { createItemDocs } from './docs/createItem.docs';
 import { findItemByIdDocs } from './docs/findItemById.docs';
-import { findAllItemsByUserDocs } from './docs/findAllItemsByUser.docs';
-import { findAllItemsDocs } from './docs/findAllItems.docs';
-import { findAllItemsByCategoryDocs } from './docs/findAllItemsByCategory.docs';
-import { findAllItemsByTagDocs } from './docs/findAllItemsByTag.docs';
+import { filterItemsDocs } from './docs/filterItems.docs';
+import { ItemFiltersArgs } from './dtos/args/item-filters.args';
 
 @Resolver(() => ItemModel)
 export class ItemsResolver {
@@ -60,39 +55,9 @@ export class ItemsResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ItemPaginationModel, findAllItemsByUserDocs)
-    async findAllItemsByUser(@Args() args: ItemsByUserArgs) {
-        return this.itemsService.findAllByUser(args.userId, {
-            limit: args.limit,
-            cursor: args.cursor,
-        });
-    }
-
-    @Public()
-    @BalancedThrottle()
-    @Query(() => ItemPaginationModel, findAllItemsDocs)
-    async findAll(@Args() paginationArgs: PaginationArgs) {
-        return await this.itemsService.findAll(paginationArgs);
-    }
-
-    @Public()
-    @BalancedThrottle()
-    @Query(() => ItemPaginationModel, findAllItemsByCategoryDocs)
-    async findAllItemsByCategory(@Args() args: ItemsByCategoryArgs) {
-        return this.itemsService.findAllByCategory(args.category, {
-            limit: args.limit,
-            cursor: args.cursor,
-        });
-    }
-
-    @Public()
-    @BalancedThrottle()
-    @Query(() => ItemPaginationModel, findAllItemsByTagDocs)
-    async findAllItemsByTag(@Args() args: ItemsByTagArgs) {
-        return this.itemsService.findAllByTag(args.tag, {
-            limit: args.limit,
-            cursor: args.cursor,
-        });
+    @Query(() => ItemPaginationModel, filterItemsDocs)
+    async filterItems(@Args() filters: ItemFiltersArgs) {
+        return await this.itemsService.filterItems(filters);
     }
 
     @ResolveField(() => Float, {
