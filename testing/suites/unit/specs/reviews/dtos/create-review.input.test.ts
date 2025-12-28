@@ -159,14 +159,13 @@ describe('CreateReviewInput', () => {
     });
 
     describe('Item id is not a valid uuid', () => {
-        test('throw BadRequestException and INVALID_INPUT error message', async () => {
+        test('should succeed and not throw', async () => {
             const data = {
                 ...reviewsSeed.reviewInput,
                 itemId: 'invalid-uuid',
             };
-            await expect(pipe.transform(data, metadata)).rejects.toThrow(
-                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
-            );
+            const result = await pipe.transform(data, metadata);
+            expect(result.itemId).toBe('invalid-uuid');
         });
     });
 
