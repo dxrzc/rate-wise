@@ -350,28 +350,19 @@ type Query {
     tag: String!
   ): ItemPaginationModel!
 
-  "\n        Find all reviews created by a specific user with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of reviews created by the specified user, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllReviewsByUser(
+  "Retrieve reviews based on specified filters such as creator or related item.\n    \n    **Authentication:** Not required (public endpoint)\n        \n    **Authorization:** None\n        \n    **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n    **Rate Limiting:** Balanced throttle applied\n        \n    **Returns:** Paginated list of reviews filtered by the provided arguments, including edges, nodes, total count, and hasNextPage indicator\n "
+  filterReviews(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
     limit: Int!
 
-    """The unique ID of the user whose reviews to retrieve."""
-    userId: ID!
-  ): ReviewPaginationModel!
+    """ID of the user who created the review"""
+    createdBy: ID
 
-  "\n        Find all reviews for a specific item with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of reviews for the specified item, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemReviews(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """The unique ID of the item whose reviews to retrieve."""
-    itemId: ID!
+    """ID of the item being reviewed"""
+    relatedItem: ID
   ): ReviewPaginationModel!
 
   """Retrieve a paginated list of votes for a specific review."""
