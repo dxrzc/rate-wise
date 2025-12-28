@@ -8,17 +8,15 @@ import { CreateReviewInput } from './dtos/create-review.input';
 import { ReviewModel } from './models/review.model';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ReviewPaginationModel } from './models/pagination.model';
-import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
-import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
 import { createReviewDocs } from './docs/createReview.docs';
-import { findAllReviewsByUserDocs } from './docs/findAllReviewsByUser.docs';
-import { findAllItemReviewsDocs } from './docs/findAllItemReviews.docs';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { VotePaginationModel } from 'src/votes/models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { Review } from './entities/review.entity';
 import { VotesService } from 'src/votes/votes.service';
+import { ReviewFiltersArgs } from './dtos/args/review.filters.args';
+import { filterReviewsDocs } from './docs/filterReviews.docs';
 
 @Resolver(() => ReviewModel)
 export class ReviewResolver {
@@ -40,16 +38,9 @@ export class ReviewResolver {
 
     @Public()
     @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, findAllReviewsByUserDocs)
-    async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
-        return this.reviewService.findAllByUser(args);
-    }
-
-    @Public()
-    @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, findAllItemReviewsDocs)
-    async findAllItemReviews(@Args() args: ItemReviewsArgs) {
-        return await this.reviewService.findAllItemReviews(args);
+    @Query(() => ReviewPaginationModel, filterReviewsDocs)
+    async filterReviews(@Args() filters: ReviewFiltersArgs) {
+        return await this.reviewService.filterReviews(filters);
     }
 
     @ResolveField(() => VotePaginationModel, {
