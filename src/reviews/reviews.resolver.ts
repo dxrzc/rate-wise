@@ -15,7 +15,7 @@ import { VotePaginationModel } from 'src/votes/models/pagination.model';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { Review } from './entities/review.entity';
 import { VotesService } from 'src/votes/votes.service';
-import { ReviewFiltersArgs } from './dtos/args/review.filters.args';
+import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
 import { filterReviewsDocs } from './docs/filterReviews.docs';
 
 @Resolver(() => ReviewModel)
