@@ -5,7 +5,6 @@ import { testKit } from '@integration/utils/test-kit.util';
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
-import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
@@ -117,7 +116,7 @@ describe('Gql - voteReview', () => {
     });
 
     describe('Review id is not a valid uuid', () => {
-        test('return bad request code and invalid input error message', async () => {
+        test('return not found and not found error message', async () => {
             const { sessionCookie } = await createAccount({
                 roles: [UserRole.REVIEWER],
                 status: AccountStatus.ACTIVE,
@@ -125,7 +124,7 @@ describe('Gql - voteReview', () => {
             const response = await testKit.gqlClient
                 .send(voteReview({ args: { reviewId: 'invalid-uuid', vote: inputVotes.UP } }))
                 .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+            expect(response).toFailWith(Code.NOT_FOUND, REVIEW_MESSAGES.NOT_FOUND);
         });
     });
 
