@@ -6,7 +6,6 @@ import { createReview } from '@testing/tools/gql-operations/reviews/create-revie
 import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
-import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { Item } from 'src/items/entities/item.entity';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';
@@ -50,7 +49,7 @@ describe('Gql - createReview', () => {
     });
 
     describe('Invalid item id provided', () => {
-        test('return bad request code and invalid input error message', async () => {
+        test('return not found code and item not found error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
@@ -59,7 +58,7 @@ describe('Gql - createReview', () => {
             const response = await testKit.gqlClient
                 .send(createReview({ args: reviewData, fields: ['id'] }))
                 .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+            expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
         });
     });
 
