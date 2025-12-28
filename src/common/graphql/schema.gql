@@ -88,7 +88,7 @@ type ItemModel {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): ReviewPaginationModel!
 }
 
@@ -145,7 +145,7 @@ type UserModel {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): ItemPaginationModel!
 }
 
@@ -202,7 +202,7 @@ type ReviewModel {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): VotePaginationModel!
 }
 
@@ -297,7 +297,7 @@ type Query {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): UserPaginationModel!
 
   "\n        Find an item by its unique identifier.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Caching:** Results are cached for improved performance. Subsequent requests for the same item ID may return cached data.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Item details including ID, timestamps, title, description, category, tags, average rating, and creator ID\n    "
@@ -309,7 +309,7 @@ type Query {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
 
     """ID of the user who created the item"""
     createdBy: ID
@@ -327,7 +327,7 @@ type Query {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
 
     """ID of the user who created the review"""
     createdBy: ID
@@ -342,7 +342,7 @@ type Query {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
 
     """The unique ID of the review for which to fetch votes."""
     reviewId: ID!
