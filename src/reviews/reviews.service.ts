@@ -95,7 +95,7 @@ export class ReviewService {
             queryBuilder: {
                 sqbModifier: (qb) => {
                     if (filters.createdBy) {
-                        qb = qb.andWhere(`${sqbAlias}.createdBy = :createdBy`, {
+                        qb.andWhere(`${sqbAlias}.createdBy = :createdBy`, {
                             createdBy: filters.createdBy,
                         });
                     }
