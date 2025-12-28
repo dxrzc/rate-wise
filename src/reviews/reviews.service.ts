@@ -7,15 +7,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsService } from 'src/items/items.service';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { PaginationService } from 'src/pagination/pagination.service';
-import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
 import { UsersService } from 'src/users/users.service';
-import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
+import { ReviewFiltersArgs } from './dtos/args/review.filters.args';
 
 @Injectable()
 export class ReviewService {
@@ -85,31 +84,28 @@ export class ReviewService {
         }
     }
 
-    async findAllByUser(args: ReviewsByUserArgs) {
-        await this.usersService.findOneByIdOrThrow(args.userId);
+    async filterReviews(filters: ReviewFiltersArgs) {
+        if (filters.createdBy) await this.usersService.findOneByIdOrThrow(filters.createdBy);
+        if (filters.relatedItem) await this.itemsService.findOneByIdOrThrow(filters.relatedItem);
         const sqbAlias = 'review';
         return await this.paginationService.create({
-            limit: args.limit,
-            cursor: args.cursor,
+            cursor: filters.cursor,
+            limit: filters.limit,
             cache: true,
             queryBuilder: {
-                sqbModifier: (qb) =>
-                    qb.where(`${sqbAlias}.createdBy = :userId`, { userId: args.userId }),
-                sqbAlias,
-            },
-        });
-    }
-
-    async findAllItemReviews(args: ItemReviewsArgs) {
-        await this.itemsService.findOneByIdOrThrow(args.itemId);
-        const sqbAlias = 'review';
-        return await this.paginationService.create({
-            limit: args.limit,
-            cursor: args.cursor,
-            cache: true,
-            queryBuilder: {
-                sqbModifier: (qb) =>
-                    qb.where(`${sqbAlias}.relatedItem = :itemId`, { itemId: args.itemId }),
+                sqbModifier: (qb) => {
+                    if (filters.createdBy) {
+                        qb = qb.andWhere(`${sqbAlias}.createdBy = :createdBy`, {
+                            createdBy: filters.createdBy,
+                        });
+                    }
+                    if (filters.relatedItem) {
+                        qb.andWhere(`${sqbAlias}.relatedItem = :relatedItem`, {
+                            relatedItem: filters.relatedItem,
+                        });
+                    }
+                    return qb;
+                },
                 sqbAlias,
             },
         });
