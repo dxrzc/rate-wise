@@ -21,14 +21,14 @@ export class ItemsSeedService {
     }
 
     get category(): string {
-        return faker.commerce.department();
+        return faker.commerce.department().toLowerCase();
     }
 
     get tags(): string[] {
         const tagsCount = Math.floor(Math.random() * 5) + 1;
         const tagsSet = new Set<string>();
         while (tagsSet.size < tagsCount) {
-            tagsSet.add(faker.commerce.productAdjective());
+            tagsSet.add(faker.commerce.productAdjective().toLowerCase());
         }
         return Array.from(tagsSet);
     }
