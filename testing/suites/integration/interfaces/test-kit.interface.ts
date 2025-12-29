@@ -34,6 +34,7 @@ export interface ITestKit {
     restClient: RestClient;
     accDeletionToken: AuthTokenService;
     accVerifToken: AuthTokenService;
+    signOutAllToken: AuthTokenService;
     endpointsREST: {
         verifyAccount: string;
         deleteAccount: string;
