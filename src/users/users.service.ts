@@ -26,6 +26,11 @@ export class UsersService {
         private readonly logger: HttpLoggerService,
     ) {}
 
+    private handleNonExistingUser(id: string): never {
+        this.logger.error(`User with id ${id} not found`);
+        throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+    }
+
     /**
      * Deletes user in redis cache
      */
@@ -61,10 +66,7 @@ export class UsersService {
      */
     async findOneByIdOrThrow(id: string) {
         const userFound = await this.findOneById(id);
-        if (!userFound) {
-            this.logger.error(`User with id ${id} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
+        if (!userFound) this.handleNonExistingUser(id);
         return userFound;
     }
 
@@ -107,6 +109,12 @@ export class UsersService {
             ...paginationArgs,
             cache: true,
         });
+    }
+
+    async existsOrThrow(id: string): Promise<void> {
+        this.validUuidOrThrow(id);
+        const exists = await this.userRepository.existsBy({ id });
+        if (!exists) this.handleNonExistingUser(id);
     }
 
     async saveOne(user: User) {
