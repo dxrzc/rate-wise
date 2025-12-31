@@ -62,7 +62,7 @@ export class UsersService {
     async findOneByIdOrThrow(id: string) {
         const userFound = await this.findOneById(id);
         if (!userFound) {
-            this.logger.error(`Item with id ${id} not found`);
+            this.logger.error(`User with id ${id} not found`);
             throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
         }
         return userFound;
