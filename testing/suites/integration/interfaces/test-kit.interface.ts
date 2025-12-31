@@ -38,5 +38,6 @@ export interface ITestKit {
     endpointsREST: {
         verifyAccount: string;
         deleteAccount: string;
+        signOutAll: string;
     };
 }
