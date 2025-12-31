@@ -31,18 +31,12 @@ export class UsersService {
         throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
     }
 
-    /**
-     * Deletes user in redis cache
-     */
     private async deleteUserFromCache(id: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
     }
 
-    /**
-     * Validates uuid or throws.
-     */
     private validUuidOrThrow(id: string) {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
@@ -100,10 +94,6 @@ export class UsersService {
         return userInCache;
     }
 
-    /**
-     * - Find all users using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         return await this.paginationService.create({
             ...paginationArgs,
