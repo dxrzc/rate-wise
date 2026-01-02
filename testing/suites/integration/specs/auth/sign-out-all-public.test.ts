@@ -171,7 +171,7 @@ describe('GET sign-out-all (public)', () => {
         });
     });
 
-    describe('More than allowed attemps from the same ip', () => {
+    describe('More than allowed attempts from the same ip', () => {
         test('return too many requests code and too many requests error message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
