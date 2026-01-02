@@ -3,10 +3,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class AddIndexes1767330000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // for paginating all accounts
-        await queryRunner.query(`CREATE INDEX account_idx_created_id ON account (created_at, id)`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS account_idx_created_id ON account (created_at, id)`);
 
         // for paginating all items (without filters)
-        await queryRunner.query(`CREATE INDEX item_idx_created_id ON item (created_at, id)`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS item_idx_created_id ON item (created_at, id)`);
 
         // for paginating items by account + FK(account_id) ON DELETE CASCADE support
         await queryRunner.query(
