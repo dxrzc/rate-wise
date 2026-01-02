@@ -65,13 +65,6 @@ export class AuthService {
         }
     }
 
-    private validateEmailConstraintsOrThrow(email: string) {
-        if (!matchesConstraints(email, AUTH_LIMITS.EMAIL)) {
-            this.logger.error('Invalid email length');
-            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-    }
-
     private accountIsNotAlreadyVerifiedOrThrow(user: Pick<User, 'status' | 'id'>) {
         if (user.status === AccountStatus.ACTIVE) {
             this.logger.error(`Account ${user.id} already verified`);
@@ -147,7 +140,6 @@ export class AuthService {
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
-        this.validateEmailConstraintsOrThrow(credentials.email);
         this.validatePasswordConstraintsOrThrow(credentials.password);
         const user = await this.getUserInEmailOrThrow(credentials.email);
         await this.passwordsMatchOrThrow(user.password, credentials.password);
