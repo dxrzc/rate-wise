@@ -6,7 +6,7 @@ import { Field, InputType } from '@nestjs/graphql';
 })
 export class SignInInput {
     @IsString()
-    @IsEmail({})
+    @IsEmail()
     @Field(() => String, { description: 'The email address of the user.' })
     email!: string;
 
