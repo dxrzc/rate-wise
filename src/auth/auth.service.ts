@@ -172,7 +172,6 @@ export class AuthService {
     }
 
     async requestSignOutAll(email: string): Promise<void> {
-        this.validateEmailConstraintsOrThrow(email);
         const user = await this.userService.findOneByEmail(email);
         if (!user) {
             this.logger.error('User in email does not exist, skipping email sending');
