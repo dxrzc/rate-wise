@@ -1,4 +1,4 @@
-export function accountDeleted(): string {
+export function accountDeletedPage(): string {
     return `
     <div style="text-align: center; padding: 40px; font-family: Arial, sans-serif;">
         <h1 style="color: #d32f2f;">Account Deleted</h1>
