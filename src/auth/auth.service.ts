@@ -23,7 +23,7 @@ import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
-import { matchesLengthConstraints } from 'src/common/functions/input/input-matches-constraints';
+import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
 
 @Injectable()
 export class AuthService {
