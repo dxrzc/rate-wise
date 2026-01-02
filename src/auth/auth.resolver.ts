@@ -21,6 +21,9 @@ import { requestAccountVerificationDocs } from './docs/requestAccountVerificatio
 import { requestAccountDeletionDocs } from './docs/requestAccountDeletion.docs';
 import { signOutDocs } from './docs/signOut.docs';
 import { signOutAllDocs } from './docs/signOutAll.docs';
+import { AUTH_MESSAGES } from './messages/auth.messages';
+import { RequestSignOutAllInput } from './dtos/request-sign-out-all.input';
+import { requestSignOutAllDocs } from './docs/requestSignOutAll.docs';
 
 @Resolver()
 export class AuthResolver {
@@ -66,6 +69,14 @@ export class AuthResolver {
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
         await this.authService.requestAccountDeletion(req.user);
         return true;
+    }
+
+    @Public()
+    @UltraCriticalThrottle()
+    @Mutation(() => String, requestSignOutAllDocs)
+    async requestSignOutAll(@Args('input') input: RequestSignOutAllInput) {
+        await this.authService.requestSignOutAll(input.email);
+        return AUTH_MESSAGES.EMAIL_SENT_IF_EXISTS;
     }
 
     @AllRolesAllowed()

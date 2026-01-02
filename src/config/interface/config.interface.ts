@@ -21,4 +21,6 @@ export interface IConfigs {
     ACCOUNT_VERIFICATION_TOKEN_SECRET: string;
     ACCOUNT_DELETION_TOKEN_EXP: string;
     ACCOUNT_DELETION_TOKEN_SECRET: string;
+    SIGN_OUT_ALL_TOKEN_EXP: string;
+    SIGN_OUT_ALL_TOKEN_SECRET: string;
 }

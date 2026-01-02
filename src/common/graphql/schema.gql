@@ -380,6 +380,9 @@ type Mutation {
   "\n        Send an account deletion confirmation email to the authenticated user.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Effect:** Sends a confirmation email with a deletion link. The user must confirm the deletion via the email link for the account to be permanently deleted. This is a two-step process for security.\n        \n        **Rate Limiting:** Critical throttle applied to prevent abuse\n        \n        **Returns:** Boolean indicating success (true)\n    "
   requestAccountDeletion: Boolean!
 
+  "\n        Send a sign-out-all confirmation email to the provided address so the holder can remotely terminate every session.\n\n        **Authentication:** Not required (open endpoint)\n\n        **Authorization:** Public (no role or account required)\n\n        **Account Status Required:** ACTIVE or PENDING_VERIFICATION - suspended accounts are ignored for safety\n\n        **Effect:** Queues an email containing a secure link. Following the link invokes the public signOutAll endpoint and clears every session for the associated account.\n\n        **Rate Limiting:** Ultra-critical throttle applied to prevent abuse\n\n        **Returns:** A string confirming the email was queued if the address exists, otherwise the same response is returned to avoid user enumeration\n    "
+  requestSignOutAll(input: RequestSignOutAllInput!): String!
+
   "\n        Sign out the authenticated user from the current session.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Session:** Destroys the current user session on the server and clears the session cookie (connect.sid) from the client. The user will need to sign in again to access protected endpoints.\n        \n        **Effect:** Only signs out from the current session. Other active sessions on different devices/browsers remain active. Use signOutAll to terminate all sessions.\n        \n        **Rate Limiting:** Critical throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
   signOut: Boolean!
 
@@ -443,7 +446,7 @@ input SignUpInput {
   "              \n        - **Maximum length:** 30 characters.\n        - **Minimum length:** 3 characters.        \n        "
   username: String!
 
-  "        \n        - **Valid email format.**\n        - **Maximum length:** 45 characters.\n        "
+  "        \n        - **Valid email format.**        \n        "
   email: String!
 
   "        \n        - **Minimum length:** 8 characters.\n        - **Maximum length:** 60 characters.        \n        "
@@ -457,6 +460,12 @@ input SignInInput {
 
   """The password of the user."""
   password: String!
+}
+
+"""Input type for requesting sign out from all sessions"""
+input RequestSignOutAllInput {
+  """The email address of the user."""
+  email: String!
 }
 
 """Input type for re-authentication using password"""

@@ -23,6 +23,14 @@ export class AuthConfigService {
         return this.configService.get('ACCOUNT_DELETION_TOKEN_SECRET');
     }
 
+    get signOutAllTokenSecret(): string {
+        return this.configService.get('SIGN_OUT_ALL_TOKEN_SECRET');
+    }
+
+    get signOutAllTokenExp(): StringValue {
+        return this.configService.get('SIGN_OUT_ALL_TOKEN_EXP');
+    }
+
     get sessCookieSecret(): string {
         return this.configService.get('SESS_COOKIE_SECRET');
     }
