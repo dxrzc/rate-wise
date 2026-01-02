@@ -1,6 +1,7 @@
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
+    SIGN_OUT_ALL_TOKEN,
 } from './constants/tokens.provider.constant';
 import { Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
@@ -31,6 +32,8 @@ export class AuthService {
         private readonly accountVerificationToken: AuthTokenService,
         @Inject(ACCOUNT_DELETION_TOKEN)
         private readonly accountDeletionToken: AuthTokenService,
+        @Inject(SIGN_OUT_ALL_TOKEN)
+        private readonly signOutAllToken: AuthTokenService,
         private readonly authConfig: AuthConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionsService,
@@ -166,5 +169,34 @@ export class AuthService {
         await this.passwordsMatchOrThrow(user.password, auth.password);
         await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
+    }
+
+    async requestSignOutAll(email: string): Promise<void> {
+        this.validateEmailConstraintsOrThrow(email);
+        const user = await this.userService.findOneByEmail(email);
+        if (!user) {
+            this.logger.error('User in email does not exist, skipping email sending');
+            return;
+        }
+        if (user.status === AccountStatus.SUSPENDED) {
+            this.logger.error('Account suspended, skipping email sending');
+            return;
+        }
+        await this.authNotifs.sendSignOutAllEmail(user);
+        this.logger.info(`Queued sign-out-all email for user ${user.id}`);
+    }
+
+    async signOutAllPublic(tokenInUrl: string) {
+        const { id, jti, exp } = await verifyTokenOrThrow(
+            this.signOutAllToken,
+            this.logger,
+            tokenInUrl,
+        );
+        await this.userService.existsOrThrow(id);
+        await runSettledOrThrow([
+            this.sessionService.deleteAll(id),
+            this.signOutAllToken.blacklist(jti, exp),
+        ]);
+        this.logger.info(`All sessions of user ${id} has been deleted successfully`);
     }
 }
