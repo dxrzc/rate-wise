@@ -2,7 +2,8 @@
  * Useful when you dont want the InputType to reject the input with an invalid input message
  * for security reasons. (e.g password length validation).
  */
-export function matchesConstraints(
+
+export function matchesLengthConstraints(
     input: string,
     constraints: { MIN?: number; MAX?: number },
 ): boolean {
