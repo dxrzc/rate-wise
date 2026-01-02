@@ -21,11 +21,9 @@ export class SignUpInput {
 
     @IsString()
     @IsEmail()
-    @MaxLength(AUTH_LIMITS.EMAIL.MAX)
     @Field(() => String, {
         description: `        
-        - **Valid email format.**
-        - **Maximum length:** ${AUTH_LIMITS.EMAIL.MAX} characters.
+        - **Valid email format.**        
         `,
     })
     email!: string;

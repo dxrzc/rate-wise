@@ -12,7 +12,7 @@ export class User extends BaseEntity {
     @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.USERNAME.MAX })
     username!: string;
 
-    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.EMAIL.MAX })
+    @Column({ type: 'varchar', unique: true, length: 254 })
     email!: string;
 
     @Column({ type: 'text' })
