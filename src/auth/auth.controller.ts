@@ -6,6 +6,7 @@ import { accountVerifiedPage } from './pages/account-verified.page';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { UltraCriticalThrottle } from 'src/common/decorators/throttling.decorator';
 import { accountDeleted } from './pages/account-deleted.page';
+import { allSignedOutPage } from './pages/all-signed-out.page';
 
 @Controller('auth')
 export class AuthController {
@@ -35,5 +36,14 @@ export class AuthController {
         if (!token) this.handleNonProvidedToken();
         await this.authService.deleteAccount(token);
         return accountDeleted();
+    }
+
+    @Public()
+    @UltraCriticalThrottle()
+    @Get('sign-out-all')
+    async signOutAll(@Query('token') token: string) {
+        if (!token) this.handleNonProvidedToken();
+        await this.authService.signOutAllPublic(token);
+        return allSignedOutPage();
     }
 }
