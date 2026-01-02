@@ -168,6 +168,22 @@ describe('Sessions Service ', () => {
             await expect(redisClient.get(userAndSessionRelationKey(sess1Id))).resolves.toBeNull();
             await expect(redisClient.get(userAndSessionRelationKey(sess2Id))).resolves.toBeNull();
         });
+
+        test('return the number of the deleted sessions', async () => {
+            const userId = faker.string.alpha(10);
+
+            // create sessions
+            const sess1Id = faker.string.uuid();
+            mockRequest.sessionID = sess1Id;
+            await sessionsService.create(<any>mockRequest, userId);
+
+            const sess2Id = faker.string.uuid();
+            mockRequest.sessionID = sess2Id;
+            await sessionsService.create(<any>mockRequest, userId);
+
+            const deletedSessions = await sessionsService.deleteAll(userId);
+            expect(deletedSessions).toBe(2);
+        });
     });
 
     // This only works on expired events, not on del events anymore.
