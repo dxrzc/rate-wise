@@ -192,10 +192,10 @@ export class AuthService {
             tokenInUrl,
         );
         await this.userService.existsOrThrow(id);
-        await runSettledOrThrow([
+        const [sessions] = await runSettledOrThrow<[number, void]>([
             this.sessionService.deleteAll(id),
             this.signOutAllToken.blacklist(jti, exp),
         ]);
-        this.logger.info(`All sessions of user ${id} has been deleted successfully`);
+        this.logger.info(`${sessions} sessions of user ${id} have been deleted successfully`);
     }
 }
