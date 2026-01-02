@@ -9,5 +9,5 @@ export const AUTH_MESSAGES = {
     ACCOUNT_ALREADY_SUSPENDED: 'Account is already suspended',
     ACCOUNT_IS_NOT_ACTIVE: 'Account not active. Please verify your email.',
     ACCOUNT_IS_SUSPENDED: 'Your account has been temporarily disabled.',
-    EMAIL_HAS_BEEN_SENT: 'An email has been sent to your email address with further instructions.',
+    EMAIL_HAS_BEEN_SENT: 'An email has been sent to your email address if it exists in our system.',
 };
