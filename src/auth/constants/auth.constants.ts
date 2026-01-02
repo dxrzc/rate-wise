@@ -7,4 +7,7 @@ export const AUTH_LIMITS = {
         MIN: 8,
         MAX: 60,
     },
+    EMAIL: {
+        MAX: 254,
+    },
 };
