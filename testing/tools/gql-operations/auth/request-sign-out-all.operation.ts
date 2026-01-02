@@ -1,12 +1,13 @@
+import { RequestSignOutAllInput } from 'src/auth/dtos/request-sign-out-all.input';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 
-export function requestSignOutAll({ args, fields }: IOperation<string, void>) {
+export function requestSignOutAll({ args, fields }: IOperation<RequestSignOutAllInput, void>) {
     return operationFactory(
         {
             operationName: 'requestSignOutAll',
-            argumentName: 'email',
-            inputType: 'String',
+            argumentName: 'input',
+            inputType: 'RequestSignOutAllInput',
         },
         {
             args,
