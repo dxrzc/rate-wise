@@ -15,6 +15,8 @@ import { VoteAction } from 'src/votes/enum/vote.enum';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class ReviewService {
@@ -37,6 +39,28 @@ export class ReviewService {
             this.logger.error('Invalid UUID');
             throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
         }
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    async refreshReviewVotes() {
+        await this.reviewRepository.query(`
+            WITH actual AS (
+              SELECT
+                review_id,
+                COUNT(*) FILTER (WHERE vote = 'up')   AS up,
+                COUNT(*) FILTER (WHERE vote = 'down') AS down
+              FROM vote
+              GROUP BY review_id
+            )
+            UPDATE review r
+            SET
+              upvotes = a.up,
+              downvotes = a.down
+            FROM actual a
+            WHERE r.id = a.review_id
+              AND (r.upvotes != a.up OR r.downvotes != a.down);
+        `);
+        SystemLogger.getInstance().log('Review votes refreshed via cron job');
     }
 
     async existsOrThrow(reviewId: string): Promise<void> | never {
