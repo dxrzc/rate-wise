@@ -1,7 +1,8 @@
 import { createAccount } from '@integration/utils/create-account.util';
 import { createReview } from '@integration/utils/create-review.util';
-import { createVote } from '@integration/utils/create-vote.util';
+import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
+import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { ReviewService } from 'src/reviews/reviews.service';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
@@ -18,14 +19,28 @@ describe('Refresh Reviews CronJob', () => {
         const numberOfVotes = 3;
         // add 3 upvotes for the review
         for (let i = 0; i < numberOfVotes; i++) {
-            const { id: voterId } = await createAccount({ status: AccountStatus.ACTIVE });
-            await createVote({ reviewId, voterId, action: VoteAction.UP });
+            const voteAction = VoteAction.UP.toUpperCase();
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+            });
+            await testKit.gqlClient
+                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
         }
         // add 3 downvotes for the review
         for (let i = 0; i < numberOfVotes; i++) {
-            const { id: voterId } = await createAccount({ status: AccountStatus.ACTIVE });
-            await createVote({ reviewId, voterId, action: VoteAction.DOWN });
+            const voteAction = VoteAction.DOWN.toUpperCase();
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            await testKit.gqlClient
+                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
         }
+        // check votes exist for review
+        const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
+        expect(reviewBeforeRefresh!.upVotes).toBe(numberOfVotes);
+        expect(reviewBeforeRefresh!.downVotes).toBe(numberOfVotes);
         // remove votes
         await testKit.reviewRepos.update(reviewId, {
             upVotes: 0,
@@ -46,14 +61,26 @@ describe('Refresh Reviews CronJob', () => {
         const numberOfVotes = 2;
         // add 2 upvotes for the review
         for (let i = 0; i < numberOfVotes; i++) {
-            const { id: voterId } = await createAccount({ status: AccountStatus.ACTIVE });
-            await createVote({ reviewId, voterId, action: VoteAction.UP });
+            const voteAction = VoteAction.UP.toUpperCase();
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            await testKit.gqlClient
+                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
         }
         // add 2 downvotes for the review
         for (let i = 0; i < numberOfVotes; i++) {
-            const { id: voterId } = await createAccount({ status: AccountStatus.ACTIVE });
-            await createVote({ reviewId, voterId, action: VoteAction.DOWN });
+            const voteAction = VoteAction.DOWN.toUpperCase();
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            await testKit.gqlClient
+                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
         }
+        // check votes exist for review
+        const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
+        expect(reviewBeforeRefresh!.upVotes).toBe(numberOfVotes);
+        expect(reviewBeforeRefresh!.downVotes).toBe(numberOfVotes);
         // execute job
         const reviewSvc = testKit.app.get(ReviewService);
         await reviewSvc.refreshReviewVotes();
