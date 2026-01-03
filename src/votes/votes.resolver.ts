@@ -1,7 +1,7 @@
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { VotesService } from './votes.service';
-import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
+import { RequireAccountStatus } from 'src/common/decorators/min-account-status.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
@@ -18,9 +18,9 @@ import { VotePaginationModel } from './models/pagination.model';
 export class VotesResolver {
     constructor(private readonly votesService: VotesService) {}
 
-    @RelaxedThrottle()
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Roles([UserRole.REVIEWER])
+    @RateLimit(RateLimitTier.RELAXED)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
+    @Roles(UserRole.REVIEWER)
     @Mutation(() => Boolean, voteReviewDocs)
     async voteReview(
         @Args('vote_data') voteData: CreateVoteInput,
@@ -30,9 +30,9 @@ export class VotesResolver {
         return true;
     }
 
-    @RelaxedThrottle()
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Roles([UserRole.REVIEWER])
+    @RateLimit(RateLimitTier.RELAXED)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
+    @Roles(UserRole.REVIEWER)
     @Mutation(() => Boolean, deleteVoteDocs)
     async deleteVote(
         @Args('reviewId', { type: () => String }) reviewId: string,
@@ -43,7 +43,7 @@ export class VotesResolver {
 
     // TODO: test
     @Public()
-    @BalancedThrottle()
+    @RateLimit(RateLimitTier.BALANCED)
     @Query(() => VotePaginationModel, findAllReviewVotesDocs)
     async findAllVotesForReview(@Args() args: ReviewVotesArgs) {
         return await this.votesService.findAllVotesForReview(args);

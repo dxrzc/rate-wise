@@ -1,7 +1,7 @@
 import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
-import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
+import { RequireAccountStatus } from 'src/common/decorators/min-account-status.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { CreateReviewInput } from './dtos/create-review.input';
@@ -25,9 +25,9 @@ export class ReviewResolver {
         private readonly votesService: VotesService,
     ) {}
 
-    @RelaxedThrottle()
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Roles([UserRole.REVIEWER])
+    @RateLimit(RateLimitTier.RELAXED)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
+    @Roles(UserRole.REVIEWER)
     @Mutation(() => ReviewModel, createReviewDocs)
     async createOne(
         @Args('review_data') review: CreateReviewInput,
@@ -37,7 +37,7 @@ export class ReviewResolver {
     }
 
     @Public()
-    @BalancedThrottle()
+    @RateLimit(RateLimitTier.BALANCED)
     @Query(() => ReviewPaginationModel, filterReviewsDocs)
     async filterReviews(@Args() filters: ReviewFiltersArgs) {
         return await this.reviewService.filterReviews(filters);
