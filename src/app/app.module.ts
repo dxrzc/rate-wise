@@ -73,7 +73,7 @@ import { VotesModule } from 'src/votes/votes.module';
         ThrottlerModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: ({ redisAuthUri }: DbConfigService) => ({
-                // default policy, overrided with decorators
+                // default policy, overrode with decorators
                 throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
                 storage: new ThrottlerStorageRedisService(redisAuthUri),
             }),
