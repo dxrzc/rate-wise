@@ -26,18 +26,17 @@ export class UsersService {
         private readonly logger: HttpLoggerService,
     ) {}
 
-    /**
-     * Deletes user in redis cache
-     */
+    private handleNonExistingUser(id: string): never {
+        this.logger.error(`User with id ${id} not found`);
+        throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+    }
+
     private async deleteUserFromCache(id: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
     }
 
-    /**
-     * Validates uuid or throws.
-     */
     private validUuidOrThrow(id: string) {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
@@ -61,10 +60,7 @@ export class UsersService {
      */
     async findOneByIdOrThrow(id: string) {
         const userFound = await this.findOneById(id);
-        if (!userFound) {
-            this.logger.error(`Item with id ${id} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
+        if (!userFound) this.handleNonExistingUser(id);
         return userFound;
     }
 
@@ -98,15 +94,17 @@ export class UsersService {
         return userInCache;
     }
 
-    /**
-     * - Find all users using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         return await this.paginationService.create({
             ...paginationArgs,
             cache: true,
         });
+    }
+
+    async existsOrThrow(id: string): Promise<void> {
+        this.validUuidOrThrow(id);
+        const exists = await this.userRepository.existsBy({ id });
+        if (!exists) this.handleNonExistingUser(id);
     }
 
     async saveOne(user: User) {

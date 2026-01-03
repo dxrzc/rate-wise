@@ -1,67 +1,67 @@
-import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
+import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
 
 describe('matchesConstraints', () => {
     test('return true when no constraints are provided', () => {
-        expect(matchesConstraints('hello', {})).toBe(true);
+        expect(matchesLengthConstraints('hello', {})).toBe(true);
     });
 
     describe('MIN constraint', () => {
         test('return false when input length is less than MIN', () => {
-            expect(matchesConstraints('hi', { MIN: 5 })).toBe(false);
+            expect(matchesLengthConstraints('hi', { MIN: 5 })).toBe(false);
         });
 
         test('return true when input length equals MIN', () => {
-            expect(matchesConstraints('hello', { MIN: 5 })).toBe(true);
+            expect(matchesLengthConstraints('hello', { MIN: 5 })).toBe(true);
         });
 
         test('return true when input length is greater than MIN', () => {
-            expect(matchesConstraints('hello world', { MIN: 5 })).toBe(true);
+            expect(matchesLengthConstraints('hello world', { MIN: 5 })).toBe(true);
         });
     });
 
     describe('MAX constraint', () => {
         test('return false when input length is greater than MAX', () => {
-            expect(matchesConstraints('hello world', { MAX: 5 })).toBe(false);
+            expect(matchesLengthConstraints('hello world', { MAX: 5 })).toBe(false);
         });
 
         test('return true when input length equals MAX', () => {
-            expect(matchesConstraints('hello', { MAX: 5 })).toBe(true);
+            expect(matchesLengthConstraints('hello', { MAX: 5 })).toBe(true);
         });
 
         test('return true when input length is less than MAX', () => {
-            expect(matchesConstraints('hi', { MAX: 5 })).toBe(true);
+            expect(matchesLengthConstraints('hi', { MAX: 5 })).toBe(true);
         });
     });
 
     describe('MIN and MAX constraints together', () => {
         test('return true when input length is within range', () => {
-            expect(matchesConstraints('hello', { MIN: 3, MAX: 10 })).toBe(true);
+            expect(matchesLengthConstraints('hello', { MIN: 3, MAX: 10 })).toBe(true);
         });
 
         test('return false when input length is below MIN', () => {
-            expect(matchesConstraints('hi', { MIN: 3, MAX: 10 })).toBe(false);
+            expect(matchesLengthConstraints('hi', { MIN: 3, MAX: 10 })).toBe(false);
         });
 
         test('return false when input length is above MAX', () => {
-            expect(matchesConstraints('this is too long', { MIN: 3, MAX: 10 })).toBe(false);
+            expect(matchesLengthConstraints('this is too long', { MIN: 3, MAX: 10 })).toBe(false);
         });
 
         test('return true when input length equals both MIN and MAX', () => {
-            expect(matchesConstraints('abc', { MIN: 3, MAX: 3 })).toBe(true);
+            expect(matchesLengthConstraints('abc', { MIN: 3, MAX: 3 })).toBe(true);
         });
     });
 
     describe('edge cases', () => {
         test('handles empty string with no constraints', () => {
-            expect(matchesConstraints('', {})).toBe(true);
+            expect(matchesLengthConstraints('', {})).toBe(true);
         });
 
         test('handles empty string with MIN = 0', () => {
-            expect(matchesConstraints('', { MIN: 0 })).toBe(true);
+            expect(matchesLengthConstraints('', { MIN: 0 })).toBe(true);
         });
 
         test('handles empty string with MIN > 0', () => {
-            expect(matchesConstraints('', { MIN: 1 })).toBe(false);
+            expect(matchesLengthConstraints('', { MIN: 1 })).toBe(false);
         });
     });
 });

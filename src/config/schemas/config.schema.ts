@@ -17,6 +17,8 @@ export const envSchema = Joi.object<IConfigs, true>({
     ACCOUNT_VERIFICATION_TOKEN_SECRET: Joi.string().required(),
     ACCOUNT_DELETION_TOKEN_EXP: Joi.string().required(),
     ACCOUNT_DELETION_TOKEN_SECRET: Joi.string().required(),
+    SIGN_OUT_ALL_TOKEN_EXP: Joi.string().required(),
+    SIGN_OUT_ALL_TOKEN_SECRET: Joi.string().required(),
     // SMTP
     SMTP_HOST: Joi.string().hostname().required(),
     SMTP_PORT: Joi.number().port().required(),

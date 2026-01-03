@@ -45,14 +45,15 @@ export class SessionsService {
             .exec();
     }
 
-    async deleteAll(userId: string): Promise<void> {
+    async deleteAll(userId: string): Promise<number> {
         const sessIDs = await this.redisClient.setMembers(userSessionsSetKey(userId));
         await Promise.all([
             this.deleteAllUserSessions(sessIDs),
             this.deleteAllSessionRelations(sessIDs),
             this.deleteUserSessionsIndex(userId),
         ]);
-        this.logger.debug(`All sessions for user ${userId} deleted`);
+        this.logger.debug(`${sessIDs.length} sessions deleted for user ${userId}`);
+        return sessIDs.length;
     }
 
     async count(userId: string): Promise<number> {

@@ -115,6 +115,18 @@ describe('GraphQL - signIn', () => {
         });
     });
 
+    describe('Invalid email format', () => {
+        test('return bad user input code', async () => {
+            const res = await testKit.gqlClient.send(
+                signIn({
+                    args: { email: 'invalid-email-format', password: testKit.userSeed.password },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+        });
+    });
+
     describe('Password not provided', () => {
         test('return bad user input code', async () => {
             const res = await testKit.gqlClient.send(
