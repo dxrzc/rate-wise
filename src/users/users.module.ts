@@ -8,10 +8,12 @@ import { PaginationModule } from 'src/pagination/pagination.module';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { ItemsModule } from 'src/items/items.module';
 import { Item } from 'src/items/entities/item.entity';
+import { VotesModule } from 'src/votes/votes.module';
 
 @Module({
     imports: [
         forwardRef(() => ItemsModule),
+        forwardRef(() => VotesModule),
         PaginationModule.register({
             createCacheKeyFunction: createUserCacheKey,
             repositoryToken: getRepositoryToken(User),
