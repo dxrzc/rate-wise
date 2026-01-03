@@ -2,11 +2,12 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Public } from 'src/common/decorators/public.decorator';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { ROLES_KEY } from 'src/common/decorators/roles.decorator';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { IGraphQLContext } from 'src/common/interfaces/graphql/graphql-context.interface';
 import { AUTH_MESSAGES } from '../messages/auth.messages';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -25,7 +26,7 @@ export class RolesGuard implements CanActivate {
         if (context.getType<GqlContextType>() !== 'graphql')
             throw new Error('Non-gql contexts in RolesGuard not implemented');
 
-        const requiredRoles = this.reflector.getAllAndOverride(Roles, [
+        const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
