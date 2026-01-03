@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsService } from 'src/items/items.service';
@@ -25,6 +25,7 @@ export class ReviewService {
         private readonly reviewRepository: Repository<Review>,
         private readonly paginationService: PaginationService<Review>,
         private readonly itemsService: ItemsService,
+        @Inject(forwardRef(() => UsersService))
         private readonly usersService: UsersService,
         private readonly logger: HttpLoggerService,
     ) {}
@@ -147,6 +148,17 @@ export class ReviewService {
         await manager
             .withRepository(this.reviewRepository)
             .decrement({ id: reviewId }, propPath, 1);
+    }
+
+    async deleteVoteInMultipleReviews(
+        reviewsIds: string[],
+        vote: VoteAction,
+        manager: EntityManager,
+    ): Promise<void> {
+        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
+        await manager
+            .withRepository(this.reviewRepository)
+            .decrement({ id: In(reviewsIds) }, propPath, 1);
     }
 
     async calculateItemAverageRating(itemId: string): Promise<number> {
