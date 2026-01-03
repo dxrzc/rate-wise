@@ -12,9 +12,9 @@ import {
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { RequireAccountStatus } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { CreateItemInput } from './dtos/create-item.input';
 import { ItemsService } from './items.service';
@@ -35,9 +35,9 @@ export class ItemsResolver {
         private readonly reviewsService: ReviewService,
     ) {}
 
-    @BalancedThrottle()
-    @Roles([UserRole.CREATOR])
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @RateLimit(RateLimitTier.BALANCED)
+    @Roles(UserRole.CREATOR)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
     @Mutation(() => ItemModel, createItemDocs)
     async createOne(
         @Args('item_data') item: CreateItemInput,
@@ -47,14 +47,14 @@ export class ItemsResolver {
     }
 
     @Public()
-    @RelaxedThrottle()
+    @RateLimit(RateLimitTier.RELAXED)
     @Query(() => ItemModel, findItemByIdDocs)
     async findOneById(@Args('item_id', { type: () => ID }) id: string) {
         return await this.itemsService.findOneByIdOrThrowCached(id);
     }
 
     @Public()
-    @BalancedThrottle()
+    @RateLimit(RateLimitTier.BALANCED)
     @Query(() => ItemPaginationModel, filterItemsDocs)
     async filterItems(@Args() filters: ItemFiltersArgs) {
         return await this.itemsService.filterItems(filters);

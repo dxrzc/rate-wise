@@ -1,5 +1,5 @@
 import { Args, ID, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
 import { UserModel } from './models/user.model';
 import { UsersService } from './users.service';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -18,7 +18,7 @@ export class UsersResolver {
     ) {}
 
     @Public()
-    @RelaxedThrottle()
+    @RateLimit(RateLimitTier.RELAXED)
     @Query(() => UserModel, findUserByIdDocs)
     async findOneById(@Args('user_id', { type: () => ID }) id: string) {
         return await this.userService.findOneByIdOrThrowCached(id);
@@ -36,7 +36,7 @@ export class UsersResolver {
     }
 
     @Public()
-    @BalancedThrottle()
+    @RateLimit(RateLimitTier.BALANCED)
     @Query(() => UserPaginationModel, findAllUsersDocs)
     async findAll(@Args() paginationArgs: PaginationArgs) {
         return await this.userService.findAll(paginationArgs);
