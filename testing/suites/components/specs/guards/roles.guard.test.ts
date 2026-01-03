@@ -7,9 +7,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { ALL_ROLES, Roles } from 'src/common/decorators/roles.decorator';
 import { Code } from 'src/common/enum/code.enum';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -24,19 +23,19 @@ export class TestResolver {
         return true;
     }
 
-    @Roles([UserRole.ADMIN])
+    @Roles(UserRole.ADMIN)
     @Query(() => Boolean)
     adminRoleApplied(): boolean {
         return true;
     }
 
-    @Roles([UserRole.REVIEWER])
+    @Roles(UserRole.REVIEWER)
     @Query(() => Boolean)
     userRoleApplied(): boolean {
         return true;
     }
 
-    @Roles([UserRole.REVIEWER, UserRole.ADMIN])
+    @Roles(UserRole.REVIEWER, UserRole.ADMIN)
     @Query(() => Boolean)
     userAndminRolesApplied(): boolean {
         return true;
@@ -48,7 +47,7 @@ export class TestResolver {
         return true;
     }
 
-    @AllRolesAllowed()
+    @Roles(...ALL_ROLES)
     @Query(() => Boolean)
     allRoles(): boolean {
         return true;
@@ -139,7 +138,7 @@ describe('Roles Guard', () => {
         });
     });
 
-    describe('Operation has the @AllRolesAllowed decorator applied', () => {
+    describe('Operation has the ALL_ROLES applied', () => {
         describe('User has all the roles', () => {
             test('guard grant access', async () => {
                 mockReqData.user.roles = [UserRole.ADMIN, UserRole.REVIEWER, UserRole.MODERATOR];

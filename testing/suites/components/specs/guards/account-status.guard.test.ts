@@ -7,8 +7,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AccountStatusGuard } from 'src/auth/guards/account-status.guard';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import {
+    ALL_ACCOUNT_STATUSES,
+    RequireAccountStatus,
+} from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { Code } from 'src/common/enum/code.enum';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
@@ -30,19 +32,19 @@ export class TestResolver {
         return true;
     }
 
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
     @Query(() => Boolean)
     activeOnly(): boolean {
         return true;
     }
 
-    @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
+    @RequireAccountStatus(AccountStatus.PENDING_VERIFICATION, AccountStatus.ACTIVE)
     @Query(() => Boolean)
-    pendingVerOnly(): boolean {
+    pendingVerOrActive(): boolean {
         return true;
     }
 
-    @AllAccountStatusesAllowed()
+    @RequireAccountStatus(ALL_ACCOUNT_STATUSES)
     @Query(() => Boolean)
     allAllowed(): boolean {
         return true;
@@ -110,10 +112,10 @@ describe('AccountStatus Guard', () => {
         });
     });
 
-    describe('Account status required is "PENDING_VERIFICATION"', () => {
+    describe('Account status required is "PENDING_VERIFICATION" or "ACTIVE"', () => {
         describe('User account status is "SUSPENDED"', () => {
             test('return forbidden code and account is suspended error message', async () => {
-                const query = generateGqlQuery(resolver.pendingVerOnly.name);
+                const query = generateGqlQuery(resolver.pendingVerOrActive.name);
                 mockReqData.user.status = AccountStatus.SUSPENDED;
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
                 expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
@@ -121,7 +123,7 @@ describe('AccountStatus Guard', () => {
         });
     });
 
-    describe('Graphql operation contains the @AllStatusesAllowed decorator', () => {
+    describe('Graphql operation contains ALL_ACCOUNT_STATUSES', () => {
         describe('User account status is "SUSPENDED"', () => {
             test('guard grant access', async () => {
                 const query = generateGqlQuery(resolver.allAllowed.name);
