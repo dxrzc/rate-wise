@@ -158,7 +158,7 @@ export class UsersService {
         });
         await this.deleteUserFromCache(id);
         this.logger.info(`User with id ${id} deleted from database`);
-        this.logger.info(`All votes for user ${id} subtracted from reviews`);
+        this.logger.info(`Vote counts decremented in reviews for deleted user ${id}`);
     }
 
     async createOne(user: SignUpInput): Promise<User> {
