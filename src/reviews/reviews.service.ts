@@ -46,12 +46,13 @@ export class ReviewService {
     async refreshReviewVotes() {
         await this.reviewRepository.query(`
             WITH actual AS (
-              SELECT
-                review_id,
-                COUNT(*) FILTER (WHERE vote = 'up')   AS up,
-                COUNT(*) FILTER (WHERE vote = 'down') AS down
-              FROM vote
-              GROUP BY review_id
+                SELECT
+                  r.id AS review_id,
+                  COUNT(v.id) FILTER (WHERE v.vote = 'up')   AS up,
+                  COUNT(v.id) FILTER (WHERE v.vote = 'down') AS down
+                FROM review r
+                LEFT JOIN vote v ON v.review_id = r.id
+                GROUP BY r.id
             )
             UPDATE review r
             SET
