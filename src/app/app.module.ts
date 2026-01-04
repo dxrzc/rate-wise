@@ -74,7 +74,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         ThrottlerModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: ({ redisAuthUri }: DbConfigService) => ({
-                // default policy, overrode with decorators
+                // default policy, overridden by decorators
                 throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
                 storage: new ThrottlerStorageRedisService(redisAuthUri),
             }),
