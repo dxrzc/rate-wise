@@ -155,6 +155,7 @@ export class ReviewService {
         vote: VoteAction,
         manager: EntityManager,
     ): Promise<void> {
+        if (reviewsIds.length === 0) return;
         const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
         await manager
             .withRepository(this.reviewRepository)
