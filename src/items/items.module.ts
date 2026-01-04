@@ -6,20 +6,19 @@ import { ItemsResolver } from './items.resolver';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { PaginationModule } from 'src/pagination/pagination.module';
 import { createItemCacheKey } from './cache/create-cache-key';
-import { ReviewsModule } from 'src/reviews/reviews.module';
-import { UsersModule } from 'src/users/users.module';
 import { UserItemsResolver } from './user-items.resolver';
+import { User } from 'src/users/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
     imports: [
-        forwardRef(() => ReviewsModule),
         forwardRef(() => UsersModule),
         PaginationModule.register({
             createCacheKeyFunction: createItemCacheKey,
             repositoryToken: getRepositoryToken(Item),
         }),
         HttpLoggerModule.forFeature({ context: 'Items' }),
-        TypeOrmModule.forFeature([Item]),
+        TypeOrmModule.forFeature([Item, User]),
     ],
     providers: [ItemsService, ItemsResolver, UserItemsResolver],
     exports: [ItemsService],
