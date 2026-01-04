@@ -13,7 +13,7 @@ import { VotesModule } from 'src/votes/votes.module';
 @Module({
     imports: [
         forwardRef(() => ItemsModule),
-        forwardRef(() => VotesModule),
+        VotesModule,
         PaginationModule.register({
             createCacheKeyFunction: createUserCacheKey,
             repositoryToken: getRepositoryToken(User),
