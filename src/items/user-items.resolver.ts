@@ -8,7 +8,7 @@ import { UserModel } from 'src/users/models/user.model';
 export class UserItemsResolver {
     constructor(private readonly itemsService: ItemsService) {}
 
-    @ResolveField(() => ItemPaginationModel)
+    @ResolveField(() => ItemPaginationModel, { description: 'Paginated list of items created by this user.' })
     async items(@Parent() user: UserModel, @Args() paginationArgs: PaginationArgs) {
         return this.itemsService.filterItems({
             ...paginationArgs,
