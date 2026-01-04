@@ -7,11 +7,9 @@ import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { PaginationModule } from 'src/pagination/pagination.module';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { Item } from 'src/items/entities/item.entity';
-import { VotesModule } from 'src/votes/votes.module';
 
 @Module({
     imports: [
-        VotesModule,
         PaginationModule.register({
             createCacheKeyFunction: createUserCacheKey,
             repositoryToken: getRepositoryToken(User),

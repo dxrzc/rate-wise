@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { EntityManager, In, Repository } from 'typeorm';
@@ -25,7 +25,6 @@ export class ReviewService {
         private readonly reviewRepository: Repository<Review>,
         private readonly paginationService: PaginationService<Review>,
         private readonly itemsService: ItemsService,
-        @Inject(forwardRef(() => UsersService))
         private readonly usersService: UsersService,
         private readonly logger: HttpLoggerService,
     ) {}

@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { Item } from './entities/item.entity';
 import { ItemsService } from './items.service';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
@@ -12,7 +12,7 @@ import { UsersModule } from 'src/users/users.module';
 
 @Module({
     imports: [
-        forwardRef(() => UsersModule),
+        UsersModule,
         PaginationModule.register({
             createCacheKeyFunction: createItemCacheKey,
             repositoryToken: getRepositoryToken(Item),

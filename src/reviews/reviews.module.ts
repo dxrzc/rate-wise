@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ReviewService as ReviewsService } from './reviews.service';
 import { ReviewResolver as ReviewsResolver } from './reviews.resolver';
 import { Review } from './entities/review.entity';
@@ -16,7 +16,7 @@ import { UsersModule } from 'src/users/users.module';
     imports: [
         TypeOrmModule.forFeature([Review, Item, User]),
         ItemsModule,
-        forwardRef(() => UsersModule),
+        UsersModule,
         HttpLoggerModule.forFeature({ context: 'Reviews' }),
         PaginationModule.register({
             createCacheKeyFunction: createReviewCacheKey,
