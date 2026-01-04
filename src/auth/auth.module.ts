@@ -16,10 +16,12 @@ import {
     SIGN_OUT_ALL_TOKEN,
 } from './constants/tokens.provider.constant';
 import { AuthNotifications } from './notifications/auth.notifications';
+import { UserDeletionModule } from 'src/orchestrators/user-deletion/user-deletion.module';
 
 @Module({
     imports: [
         UsersModule,
+        UserDeletionModule,
         CommonModule,
         HttpLoggerModule.forFeature({ context: AuthService.name }),
         EmailsModule.forFeatureAsync({

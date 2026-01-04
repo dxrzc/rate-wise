@@ -1,20 +1,19 @@
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { forwardRef, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { USER_MESSAGES } from './messages/user.messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
-import { VotesService } from 'src/votes/votes.service';
 
 @Injectable()
 export class UsersService {
@@ -25,9 +24,6 @@ export class UsersService {
         private cacheManager: Cache,
         private readonly paginationService: PaginationService<User>,
         private readonly logger: HttpLoggerService,
-        private readonly dataSource: DataSource,
-        @Inject(forwardRef(() => VotesService))
-        private readonly votesService: VotesService,
     ) {}
 
     private handleNonExistingUser(id: string): never {
@@ -35,7 +31,7 @@ export class UsersService {
         throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
     }
 
-    private async deleteUserFromCache(id: string): Promise<void> {
+    async deleteUserFromCache(id: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
@@ -150,15 +146,8 @@ export class UsersService {
         }
     }
 
-    async deleteOne(id: string): Promise<void> {
-        await this.dataSource.transaction(async (manager: EntityManager) => {
-            const user = await this.findOneByIdOrThrowTx(id, manager);
-            await this.votesService.subtractUserVotesFromReviews(id, manager);
-            await manager.withRepository(this.userRepository).remove(user);
-        });
-        await this.deleteUserFromCache(id);
-        this.logger.info(`User with id ${id} deleted from database`);
-        this.logger.info(`Vote counts decremented in reviews for deleted user ${id}`);
+    async deleteOneTx(user: User, manager: EntityManager): Promise<void> {
+        await manager.withRepository(this.userRepository).remove(user);
     }
 
     async createOne(user: SignUpInput): Promise<User> {

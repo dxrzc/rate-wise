@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,7 +27,6 @@ export class ItemsService {
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
         private readonly paginationService: PaginationService<ItemModel>,
-        @Inject(forwardRef(() => UsersService))
         private readonly usersService: UsersService,
     ) {}
 

@@ -24,6 +24,7 @@ import { AuthNotifications } from './notifications/auth.notifications';
 import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
 import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
+import { UserDeletionService } from 'src/orchestrators/user-deletion/user-deletion.service';
 
 @Injectable()
 export class AuthService {
@@ -38,6 +39,7 @@ export class AuthService {
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionsService,
         private readonly userService: UsersService,
+        private readonly userDeletionService: UserDeletionService,
         private readonly logger: HttpLoggerService,
         private readonly authNotifs: AuthNotifications,
     ) {}
@@ -91,7 +93,7 @@ export class AuthService {
             tokenInUrl,
         );
         await runSettledOrThrow([
-            this.userService.deleteOne(id),
+            this.userDeletionService.deleteOne(id),
             this.accountDeletionToken.blacklist(jti, exp),
             this.sessionService.deleteAll(id),
         ]);
