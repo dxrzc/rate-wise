@@ -8,6 +8,7 @@ import { PaginationModule } from 'src/pagination/pagination.module';
 import { createItemCacheKey } from './cache/create-cache-key';
 import { ReviewsModule } from 'src/reviews/reviews.module';
 import { UsersModule } from 'src/users/users.module';
+import { UserItemsResolver } from './user-items.resolver';
 
 @Module({
     imports: [
@@ -20,7 +21,7 @@ import { UsersModule } from 'src/users/users.module';
         HttpLoggerModule.forFeature({ context: 'Items' }),
         TypeOrmModule.forFeature([Item]),
     ],
-    providers: [ItemsService, ItemsResolver],
+    providers: [ItemsService, ItemsResolver, UserItemsResolver],
     exports: [ItemsService],
 })
 export class ItemsModule {}

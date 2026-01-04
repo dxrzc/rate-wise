@@ -2,17 +2,15 @@ import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { UsersResolver } from './users.resolver';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { PaginationModule } from 'src/pagination/pagination.module';
 import { createUserCacheKey } from './cache/create-cache-key';
-import { ItemsModule } from 'src/items/items.module';
 import { Item } from 'src/items/entities/item.entity';
 import { VotesModule } from 'src/votes/votes.module';
 
 @Module({
     imports: [
-        forwardRef(() => ItemsModule),
         VotesModule,
         PaginationModule.register({
             createCacheKeyFunction: createUserCacheKey,
