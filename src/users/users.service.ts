@@ -1,19 +1,20 @@
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { USER_MESSAGES } from './messages/user.messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
+import { VotesService } from 'src/votes/votes.service';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,9 @@ export class UsersService {
         private cacheManager: Cache,
         private readonly paginationService: PaginationService<User>,
         private readonly logger: HttpLoggerService,
+        private readonly dataSource: DataSource,
+        @Inject(forwardRef(() => VotesService))
+        private readonly votesService: VotesService,
     ) {}
 
     private handleNonExistingUser(id: string): never {
@@ -60,6 +64,13 @@ export class UsersService {
      */
     async findOneByIdOrThrow(id: string) {
         const userFound = await this.findOneById(id);
+        if (!userFound) this.handleNonExistingUser(id);
+        return userFound;
+    }
+
+    async findOneByIdOrThrowTx(id: string, manager: EntityManager): Promise<User> {
+        this.validUuidOrThrow(id);
+        const userFound = await manager.withRepository(this.userRepository).findOneBy({ id });
         if (!userFound) this.handleNonExistingUser(id);
         return userFound;
     }
@@ -140,10 +151,14 @@ export class UsersService {
     }
 
     async deleteOne(id: string): Promise<void> {
-        const userToDelete = await this.findOneByIdOrThrow(id);
-        await this.userRepository.remove(userToDelete);
-        this.logger.info(`User with id ${id} deleted from database`);
+        await this.dataSource.transaction(async (manager: EntityManager) => {
+            const user = await this.findOneByIdOrThrowTx(id, manager);
+            await this.votesService.subtractUserVotesFromReviews(id, manager);
+            await manager.withRepository(this.userRepository).remove(user);
+        });
         await this.deleteUserFromCache(id);
+        this.logger.info(`User with id ${id} deleted from database`);
+        this.logger.info(`Vote counts decremented in reviews for deleted user ${id}`);
     }
 
     async createOne(user: SignUpInput): Promise<User> {

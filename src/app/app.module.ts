@@ -39,6 +39,7 @@ import { appValidationPipe } from './providers/pipes/app-validation.pipe.provide
 import { ReviewsModule } from 'src/reviews/reviews.module';
 import { ModerationModule } from 'src/moderation/moderation.module';
 import { VotesModule } from 'src/votes/votes.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -73,7 +74,7 @@ import { VotesModule } from 'src/votes/votes.module';
         ThrottlerModule.forRootAsync({
             inject: [DbConfigService],
             useFactory: ({ redisAuthUri }: DbConfigService) => ({
-                // default policy, overrided with decorators
+                // default policy, overridden by decorators
                 throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
                 storage: new ThrottlerStorageRedisService(redisAuthUri),
             }),
@@ -147,6 +148,7 @@ import { VotesModule } from 'src/votes/votes.module';
         VotesModule,
         ModerationModule,
         AuthModule,
+        ScheduleModule.forRoot(),
     ],
 })
 export class AppModule implements NestModule {

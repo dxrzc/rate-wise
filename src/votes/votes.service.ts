@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { User } from 'src/users/entities/user.entity';
@@ -18,6 +18,7 @@ export class VotesService {
         @InjectRepository(Vote)
         private readonly voteRepository: Repository<Vote>,
         private readonly loggerService: HttpLoggerService,
+        @Inject(forwardRef(() => ReviewService))
         private readonly reviewService: ReviewService,
         private readonly dataSource: DataSource,
     ) {}
@@ -98,5 +99,24 @@ export class VotesService {
                 sqbAlias,
             },
         });
+    }
+
+    async subtractUserVotesFromReviews(userId: string, manager: EntityManager): Promise<void> {
+        const votes = await manager.withRepository(this.voteRepository).find({
+            where: { createdBy: userId },
+            select: ['relatedReview', 'vote'],
+        });
+        const upVotes = votes.filter((v) => v.vote === VoteAction.UP);
+        const downVotes = votes.filter((v) => v.vote === VoteAction.DOWN);
+        await this.reviewService.deleteVoteInMultipleReviews(
+            upVotes.map((v) => v.relatedReview),
+            VoteAction.UP,
+            manager,
+        );
+        await this.reviewService.deleteVoteInMultipleReviews(
+            downVotes.map((v) => v.relatedReview),
+            VoteAction.DOWN,
+            manager,
+        );
     }
 }

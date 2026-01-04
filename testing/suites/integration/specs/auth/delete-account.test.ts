@@ -233,6 +233,61 @@ describe('GET delete account endpoint with token', () => {
             });
             expect(votesAfterDeletion).toHaveLength(0);
         });
+
+        test('decrement the votes made by the user in all voted reviews (up or down)', async () => {
+            const { id: upvotedReviewId } = await createReview();
+            const { id: downvotedReviewId } = await createReview();
+            const { sessionCookie, id: userId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.REVIEWER],
+            });
+            // vote reviews
+            await testKit.gqlClient
+                .send(
+                    voteReview({
+                        args: { reviewId: upvotedReviewId, vote: VoteAction.UP.toUpperCase() },
+                    }),
+                )
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            await testKit.gqlClient
+                .send(
+                    voteReview({
+                        args: { reviewId: downvotedReviewId, vote: VoteAction.DOWN.toUpperCase() },
+                    }),
+                )
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            // verify votes counted in each review
+            const upvotedReviewBeforeDeletion = await testKit.reviewRepos.findOneBy({
+                id: upvotedReviewId,
+            });
+            const downvotedReviewBeforeDeletion = await testKit.reviewRepos.findOneBy({
+                id: downvotedReviewId,
+            });
+            expect(upvotedReviewBeforeDeletion).not.toBeNull();
+            expect(downvotedReviewBeforeDeletion).not.toBeNull();
+            expect(upvotedReviewBeforeDeletion!.upVotes).toBe(1);
+            expect(upvotedReviewBeforeDeletion!.downVotes).toBe(0);
+            expect(downvotedReviewBeforeDeletion!.downVotes).toBe(1);
+            expect(downvotedReviewBeforeDeletion!.upVotes).toBe(0);
+            // delete account
+            const token = await testKit.accDeletionToken.generate({ id: userId });
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
+            // fetch reviews and verify counts reset
+            const upvotedReviewAfterDeletion = await testKit.reviewRepos.findOneBy({
+                id: upvotedReviewId,
+            });
+            const downvotedReviewAfterDeletion = await testKit.reviewRepos.findOneBy({
+                id: downvotedReviewId,
+            });
+            expect(upvotedReviewAfterDeletion).not.toBeNull();
+            expect(downvotedReviewAfterDeletion).not.toBeNull();
+            expect(upvotedReviewAfterDeletion!.upVotes).toBe(0);
+            expect(upvotedReviewAfterDeletion!.downVotes).toBe(0);
+            expect(downvotedReviewAfterDeletion!.upVotes).toBe(0);
+            expect(downvotedReviewAfterDeletion!.downVotes).toBe(0);
+        });
     });
 
     describe('Account does not exist', () => {

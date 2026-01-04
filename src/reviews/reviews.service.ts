@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateReviewInput } from './dtos/create-review.input';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsService } from 'src/items/items.service';
@@ -15,6 +15,8 @@ import { VoteAction } from 'src/votes/enum/vote.enum';
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class ReviewService {
@@ -23,6 +25,7 @@ export class ReviewService {
         private readonly reviewRepository: Repository<Review>,
         private readonly paginationService: PaginationService<Review>,
         private readonly itemsService: ItemsService,
+        @Inject(forwardRef(() => UsersService))
         private readonly usersService: UsersService,
         private readonly logger: HttpLoggerService,
     ) {}
@@ -37,6 +40,29 @@ export class ReviewService {
             this.logger.error('Invalid UUID');
             throw GqlHttpError.NotFound(REVIEW_MESSAGES.NOT_FOUND);
         }
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    async refreshReviewVotes() {
+        await this.reviewRepository.query(`
+            WITH actual AS (
+                SELECT
+                  r.id AS review_id,
+                  COUNT(v.id) FILTER (WHERE v.vote = 'up')   AS up,
+                  COUNT(v.id) FILTER (WHERE v.vote = 'down') AS down
+                FROM review r
+                LEFT JOIN vote v ON v.review_id = r.id
+                GROUP BY r.id
+            )
+            UPDATE review r
+            SET
+              upvotes = a.up,
+              downvotes = a.down
+            FROM actual a
+            WHERE r.id = a.review_id
+              AND (r.upvotes != a.up OR r.downvotes != a.down);
+        `);
+        SystemLogger.getInstance().log('Review votes refreshed via cron job');
     }
 
     async existsOrThrow(reviewId: string): Promise<void> | never {
@@ -123,6 +149,18 @@ export class ReviewService {
         await manager
             .withRepository(this.reviewRepository)
             .decrement({ id: reviewId }, propPath, 1);
+    }
+
+    async deleteVoteInMultipleReviews(
+        reviewsIds: string[],
+        vote: VoteAction,
+        manager: EntityManager,
+    ): Promise<void> {
+        if (reviewsIds.length === 0) return;
+        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
+        await manager
+            .withRepository(this.reviewRepository)
+            .decrement({ id: In(reviewsIds) }, propPath, 1);
     }
 
     async calculateItemAverageRating(itemId: string): Promise<number> {
