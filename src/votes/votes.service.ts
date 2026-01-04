@@ -102,16 +102,12 @@ export class VotesService {
     }
 
     async subtractUserVotesFromReviews(userId: string, manager: EntityManager): Promise<void> {
-        const [upVotes, downVotes] = await Promise.all([
-            manager.withRepository(this.voteRepository).find({
-                where: { createdBy: userId, vote: VoteAction.UP },
-                select: ['relatedReview', 'vote'],
-            }),
-            manager.withRepository(this.voteRepository).find({
-                where: { createdBy: userId, vote: VoteAction.DOWN },
-                select: ['relatedReview', 'vote'],
-            }),
-        ]);
+        const votes = await manager.withRepository(this.voteRepository).find({
+            where: { createdBy: userId },
+            select: ['relatedReview', 'vote'],
+        });
+        const upVotes = votes.filter((v) => v.vote === VoteAction.UP);
+        const downVotes = votes.filter((v) => v.vote === VoteAction.DOWN);
         await this.reviewService.deleteVoteInMultipleReviews(
             upVotes.map((v) => v.relatedReview),
             VoteAction.UP,
