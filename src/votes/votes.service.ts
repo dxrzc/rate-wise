@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { User } from 'src/users/entities/user.entity';
@@ -18,6 +18,7 @@ export class VotesService {
         @InjectRepository(Vote)
         private readonly voteRepository: Repository<Vote>,
         private readonly loggerService: HttpLoggerService,
+        @Inject(forwardRef(() => ReviewService))
         private readonly reviewService: ReviewService,
         private readonly dataSource: DataSource,
     ) {}
