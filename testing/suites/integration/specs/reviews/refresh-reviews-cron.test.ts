@@ -14,80 +14,113 @@ describe('Refresh Reviews CronJob', () => {
         jest.spyOn(SystemLogger.getInstance(), 'log').mockImplementation(() => {});
     });
 
-    test('should refresh review votes correctly when votes are missing', async () => {
-        const { id: reviewId } = await createReview();
-        const numberOfVotes = 3;
-        // add 3 upvotes for the review
-        for (let i = 0; i < numberOfVotes; i++) {
-            const voteAction = VoteAction.UP.toUpperCase();
-            const { sessionCookie } = await createAccount({
-                status: AccountStatus.ACTIVE,
+    describe('Review has zero votes count', () => {
+        describe('Vote records exist in database', () => {
+            test('should update review votes based on vote records', async () => {
+                const { id: reviewId } = await createReview();
+                const numberOfVotes = 3;
+                // add 3 upvotes for the review
+                for (let i = 0; i < numberOfVotes; i++) {
+                    const voteAction = VoteAction.UP.toUpperCase();
+                    const { sessionCookie } = await createAccount({
+                        status: AccountStatus.ACTIVE,
+                    });
+                    await testKit.gqlClient
+                        .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                        .set('Cookie', sessionCookie)
+                        .expect(success);
+                }
+                // add 3 downvotes for the review
+                for (let i = 0; i < numberOfVotes; i++) {
+                    const voteAction = VoteAction.DOWN.toUpperCase();
+                    const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                    await testKit.gqlClient
+                        .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                        .set('Cookie', sessionCookie)
+                        .expect(success);
+                }
+                // check votes exist for review
+                const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
+                expect(reviewBeforeRefresh!.upVotes).toBe(numberOfVotes);
+                expect(reviewBeforeRefresh!.downVotes).toBe(numberOfVotes);
+                // votes are zeroed out
+                await testKit.reviewRepos.update(reviewId, {
+                    upVotes: 0,
+                    downVotes: 0,
+                });
+                // update the review votes using the cron job
+                const reviewSvc = testKit.app.get(ReviewService);
+                await reviewSvc.refreshReviewVotes();
+                // fetch review
+                const updatedReview = await testKit.reviewRepos.findOneBy({ id: reviewId });
+                // validate votes
+                expect(updatedReview!.upVotes).toBe(numberOfVotes);
+                expect(updatedReview!.downVotes).toBe(numberOfVotes);
             });
-            await testKit.gqlClient
-                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
-                .set('Cookie', sessionCookie)
-                .expect(success);
-        }
-        // add 3 downvotes for the review
-        for (let i = 0; i < numberOfVotes; i++) {
-            const voteAction = VoteAction.DOWN.toUpperCase();
-            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
-            await testKit.gqlClient
-                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
-                .set('Cookie', sessionCookie)
-                .expect(success);
-        }
-        // check votes exist for review
-        const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
-        expect(reviewBeforeRefresh!.upVotes).toBe(numberOfVotes);
-        expect(reviewBeforeRefresh!.downVotes).toBe(numberOfVotes);
-        // remove votes
-        await testKit.reviewRepos.update(reviewId, {
-            upVotes: 0,
-            downVotes: 0,
         });
-        // execute job
-        const reviewSvc = testKit.app.get(ReviewService);
-        await reviewSvc.refreshReviewVotes();
-        // fetch review
-        const updatedReview = await testKit.reviewRepos.findOneBy({ id: reviewId });
-        // validate votes
-        expect(updatedReview!.upVotes).toBe(numberOfVotes);
-        expect(updatedReview!.downVotes).toBe(numberOfVotes);
     });
 
-    test('should not modify reviews with a correct votes state', async () => {
-        const { id: reviewId } = await createReview();
-        const numberOfVotes = 2;
-        // add 2 upvotes for the review
-        for (let i = 0; i < numberOfVotes; i++) {
-            const voteAction = VoteAction.UP.toUpperCase();
-            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
-            await testKit.gqlClient
-                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
-                .set('Cookie', sessionCookie)
-                .expect(success);
-        }
-        // add 2 downvotes for the review
-        for (let i = 0; i < numberOfVotes; i++) {
-            const voteAction = VoteAction.DOWN.toUpperCase();
-            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
-            await testKit.gqlClient
-                .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
-                .set('Cookie', sessionCookie)
-                .expect(success);
-        }
-        // check votes exist for review
-        const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
-        expect(reviewBeforeRefresh!.upVotes).toBe(numberOfVotes);
-        expect(reviewBeforeRefresh!.downVotes).toBe(numberOfVotes);
-        // execute job
-        const reviewSvc = testKit.app.get(ReviewService);
-        await reviewSvc.refreshReviewVotes();
-        // fetch review
-        const updatedReview = await testKit.reviewRepos.findOneBy({ id: reviewId });
-        // validate votes
-        expect(updatedReview!.upVotes).toBe(numberOfVotes);
-        expect(updatedReview!.downVotes).toBe(numberOfVotes);
+    describe('Review has non-zero vote counts', () => {
+        describe('No records exist in database', () => {
+            test('should reset review votes to zero', async () => {
+                const { id: reviewId } = await createReview();
+                // manually set non-zero votes
+                const initialUpVotes = 5;
+                const initialDownVotes = 3;
+                await testKit.reviewRepos.update(reviewId, {
+                    upVotes: initialUpVotes,
+                    downVotes: initialDownVotes,
+                });
+                // validate votes are set
+                const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
+                expect(reviewBeforeRefresh!.upVotes).toBe(initialUpVotes);
+                expect(reviewBeforeRefresh!.downVotes).toBe(initialDownVotes);
+                // execute job
+                const reviewSvc = testKit.app.get(ReviewService);
+                await reviewSvc.refreshReviewVotes();
+                // fetch review
+                const updatedReview = await testKit.reviewRepos.findOneBy({ id: reviewId });
+                // validate votes reset to zero
+                expect(updatedReview!.upVotes).toBe(0);
+                expect(updatedReview!.downVotes).toBe(0);
+            });
+        });
+    });
+
+    describe('Review votes are in a correct state', () => {
+        test('should not modify review', async () => {
+            const { id: reviewId } = await createReview();
+            const numberOfVotes = 2;
+            // add 2 upvotes for the review
+            for (let i = 0; i < numberOfVotes; i++) {
+                const voteAction = VoteAction.UP.toUpperCase();
+                const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+            }
+            // add 2 downvotes for the review
+            for (let i = 0; i < numberOfVotes; i++) {
+                const voteAction = VoteAction.DOWN.toUpperCase();
+                const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+                await testKit.gqlClient
+                    .send(voteReview({ args: { reviewId: reviewId, vote: voteAction } }))
+                    .set('Cookie', sessionCookie)
+                    .expect(success);
+            }
+            // check votes exist for review
+            const reviewBeforeRefresh = await testKit.reviewRepos.findOneBy({ id: reviewId });
+            expect(reviewBeforeRefresh!.upVotes).toBe(numberOfVotes);
+            expect(reviewBeforeRefresh!.downVotes).toBe(numberOfVotes);
+            // execute job
+            const reviewSvc = testKit.app.get(ReviewService);
+            await reviewSvc.refreshReviewVotes();
+            // fetch review
+            const updatedReview = await testKit.reviewRepos.findOneBy({ id: reviewId });
+            // votes remain unchanged
+            expect(updatedReview!.upVotes).toBe(numberOfVotes);
+            expect(updatedReview!.downVotes).toBe(numberOfVotes);
+        });
     });
 });
