@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { UsersService } from 'src/users/users.service';
 import { VotesService } from 'src/votes/votes.service';
 import { DataSource, EntityManager } from 'typeorm';
@@ -9,6 +10,7 @@ export class UserDeletionService {
         private readonly userService: UsersService,
         private readonly votesService: VotesService,
         private readonly dataSource: DataSource,
+        private readonly loggerService: HttpLoggerService,
     ) {}
 
     async deleteOne(id: string): Promise<void> {
@@ -18,5 +20,7 @@ export class UserDeletionService {
             await this.userService.deleteOneTx(user, manager);
         });
         await this.userService.deleteUserFromCache(id);
+        this.loggerService.info(`User ${id} has been deleted from database and cache.`);
+        this.loggerService.info(`User ${id} votes have been subtracted from reviews.`);
     }
 }
