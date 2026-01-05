@@ -1,13 +1,23 @@
 name: 'rate-wise-e2e'
 
 services:
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - "443:443"
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.websecure.address=:443"    
+    volumes:
+      # In order to avoid mounting the docker socket
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+
   app:        
     build:
       context: ..
       target: production      
-    image: ratewise:prod
-    ports:
-      - ${SERVER_PORT_E2E:-3005}:3000    
+    image: ratewise:prod  
     env_file:
       - path: ../.env.defaults
         required: true 

@@ -14,7 +14,7 @@
     "test:unit": "jest --config testing/jest-configs/jest.unit.config.ts",
     "test:components": "jest --config testing/jest-configs/jest.components.config.ts",
     "test:integration": "jest --config testing/jest-configs/jest.integration.config.ts",
-    "test:e2e": "jest --config testing/jest-configs/jest.e2e.config.ts",
+    "test:e2e": "NODE_TLS_REJECT_UNAUTHORIZED=0 jest --config testing/jest-configs/jest.e2e.config.ts",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "NODE_ENV=development nest start --watch",

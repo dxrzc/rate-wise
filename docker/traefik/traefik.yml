@@ -1,0 +1,9 @@
+# reference: https://doc.traefik.io/traefik/getting-started/configuration-overview/#configuration-file
+
+entryPoints:
+  websecure:
+    address: ":443"
+
+providers:
+  file:
+    filename: /etc/traefik/dynamic.yml
