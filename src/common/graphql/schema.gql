@@ -173,6 +173,60 @@ type UserPaginationModel {
   hasNextPage: Boolean!
 }
 
+"\n        Vote model representing a user's vote for a review.\n    "
+type VoteModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  """The action of the vote (UP or DOWN)."""
+  vote: VoteAction!
+
+  """The ID of the user who created this vote."""
+  createdBy: String!
+
+  """The ID of the review this vote is for."""
+  relatedReview: String!
+}
+
+"""Possible actions for voting on a review."""
+enum VoteAction {
+  """An upvote indicating approval of the review."""
+  UP
+
+  """A downvote indicating disapproval of the review."""
+  DOWN
+}
+
+"""Edge type for VoteModel in a paginated list."""
+type VoteModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type VoteModel contained in this edge.\n            "
+  node: VoteModel!
+}
+
+"\n        Paginated model for VoteModel representing a paginated list of votes.\n    "
+type VotePaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type VoteModel.\n            "
+  edges: [VoteModelEdge!]
+
+  "\n                List of VoteModel nodes in the current page.\n            "
+  nodes: [VoteModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
 "\n        Review model representing a user's review of an item.\n    "
 type ReviewModel {
   "\n            Unique identifier for the model instance\n        "
@@ -222,60 +276,6 @@ type ReviewPaginationModel {
 
   "\n                List of ReviewModel nodes in the current page.\n            "
   nodes: [ReviewModel!]
-
-  "\n                The total number of items available across all pages.\n            "
-  totalCount: Int!
-
-  "\n                Indicates if there are more items available after the current page.\n            "
-  hasNextPage: Boolean!
-}
-
-"\n        Vote model representing a user's vote for a review.\n    "
-type VoteModel {
-  "\n            Unique identifier for the model instance\n        "
-  id: ID!
-
-  "\n            The date and time when the model instance was created\n        "
-  createdAt: Date!
-
-  "\n            The date and time when the model instance was last updated\n        "
-  updatedAt: Date!
-
-  """The action of the vote (UP or DOWN)."""
-  vote: VoteAction!
-
-  """The ID of the user who created this vote."""
-  createdBy: String!
-
-  """The ID of the review this vote is for."""
-  relatedReview: String!
-}
-
-"""Possible actions for voting on a review."""
-enum VoteAction {
-  """An upvote indicating approval of the review."""
-  UP
-
-  """A downvote indicating disapproval of the review."""
-  DOWN
-}
-
-"""Edge type for VoteModel in a paginated list."""
-type VoteModelEdge {
-  "\n                A cursor for pagination pointing to this specific node.\n            "
-  cursor: String!
-
-  "\n                The node of type VoteModel contained in this edge.\n            "
-  node: VoteModel!
-}
-
-"\n        Paginated model for VoteModel representing a paginated list of votes.\n    "
-type VotePaginationModel {
-  "\n                List of edges in the current page, each containing a cursor and a node of type VoteModel.\n            "
-  edges: [VoteModelEdge!]
-
-  "\n                List of VoteModel nodes in the current page.\n            "
-  nodes: [VoteModel!]
 
   "\n                The total number of items available across all pages.\n            "
   totalCount: Int!
