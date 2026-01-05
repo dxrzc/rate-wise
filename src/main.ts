@@ -47,7 +47,7 @@ async function bootstrap() {
     app = await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
     });
-
+    app.set('trust proxy', 1);
     app.useLogger(SystemLogger.getInstance());
     app.enableShutdownHooks();
 
