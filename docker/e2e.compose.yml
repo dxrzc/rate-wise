@@ -1,0 +1,44 @@
+name: 'rate-wise-e2e'
+
+services:
+  app:        
+    build:
+      context: ..
+      target: production      
+    image: ratewise:prod
+    ports:
+      - ${SERVER_PORT_E2E:-3005}:3000    
+    env_file:
+      - path: ../.env.defaults
+        required: true 
+      - path: ../.env.e2e
+        required: false            
+
+  postgres:
+    volumes:
+      - postgres-e2e:/var/lib/postgresql/data
+
+  redis_queues:    
+    volumes:
+      - redis-queues-e2e:/data
+
+  redis_auth:    
+    volumes:
+      - redis-auth-e2e:/data
+
+  redis_cache:    
+    volumes:
+      - redis-cache-e2e:/data
+
+  mailpit:
+    ports:
+    - "${MAILHOG_SMTP_PORT_E2E:-1026}:1025"
+    volumes:
+      - mailpit-e2e:/data
+
+volumes:
+  postgres-e2e:
+  redis-auth-e2e:
+  redis-queues-e2e:
+  redis-cache-e2e:
+  mailpit-e2e:
