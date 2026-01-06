@@ -18,6 +18,9 @@ services:
       context: ..
       target: production      
     image: ratewise:prod  
+    environment: 
+      # Axios -> Docker network (2) -> Traefik (1) -> Express
+      TRUST_PROXY: 2      
     env_file:
       - path: ../.env.defaults
         required: true 
@@ -42,7 +45,7 @@ services:
 
   mailpit:
     ports:
-    - "${MAILHOG_SMTP_PORT_E2E:-1026}:1025"
+    - "8026:8025"
     volumes:
       - mailpit-e2e:/data
 

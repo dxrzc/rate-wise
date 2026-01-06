@@ -23,4 +23,5 @@ export interface IConfigs {
     ACCOUNT_DELETION_TOKEN_SECRET: string;
     SIGN_OUT_ALL_TOKEN_EXP: string;
     SIGN_OUT_ALL_TOKEN_SECRET: string;
+    TRUST_PROXY: number;
 }
