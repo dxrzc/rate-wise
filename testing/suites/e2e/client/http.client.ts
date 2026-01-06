@@ -20,7 +20,6 @@ export class HttpClient {
     private readonly ip = faker.internet.ip();
 
     constructor() {
-        console.log({ ip: this.ip });
         const jar = new CookieJar();
         this.client = wrapper(
             axios.create({
