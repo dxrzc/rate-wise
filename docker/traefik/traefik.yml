@@ -1,8 +1,10 @@
+# This is a e2e config only
 # reference: https://doc.traefik.io/traefik/getting-started/configuration-overview/#configuration-file
-
 entryPoints:
   websecure:
     address: ":443"
+    forwardedHeaders:
+      insecure: true
 
 providers:
   file:
