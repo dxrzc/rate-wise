@@ -20,7 +20,8 @@ services:
     image: ratewise:prod  
     environment: 
       # Axios -> Docker network (2) -> Traefik (1) -> Express
-      TRUST_PROXY: 2      
+      TRUST_PROXY: 2  
+      API_BASE_URL: "https://localhost"  
     env_file:
       - path: ../.env.defaults
         required: true 
