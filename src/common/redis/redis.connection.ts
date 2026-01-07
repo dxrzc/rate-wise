@@ -26,20 +26,12 @@ export class RedisConnection {
             url: redisUri,
             socket: {
                 reconnectStrategy: (retries) => {
-                    // Kubernetes-friendly reconnection strategy:
-                    // - No maximum retry limit (infinite retries)
-                    // - Exponential backoff with jitter to prevent thundering herd
-                    // - Capped at MAX_RECONNECT_DELAY to avoid excessive waits
-
                     // Calculate delay with exponential backoff: 2^retries * 50ms
                     const exponentialDelay = Math.pow(2, retries) * 50;
-
                     // Cap the delay at MAX_RECONNECT_DELAY
                     const cappedDelay = Math.min(exponentialDelay, MAX_RECONNECT_DELAY);
-
                     // Add jitter (random value between 0-1000ms) to prevent thundering herd
                     const jitter = Math.floor(Math.random() * 1000);
-
                     return cappedDelay + jitter;
                 },
             },
