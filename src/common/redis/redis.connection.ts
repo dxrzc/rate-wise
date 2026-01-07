@@ -11,7 +11,6 @@ import { SystemLogger } from 'src/common/logging/system.logger';
 import { createClient } from '@redis/client';
 
 // Maximum reconnection delay in milliseconds (30 seconds)
-// This prevents indefinite exponential growth while still allowing for recovery
 const MAX_RECONNECT_DELAY = 30000;
 
 export class RedisConnection {
