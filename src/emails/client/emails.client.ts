@@ -1,12 +1,12 @@
 import * as nodemailer from 'nodemailer';
 import { IEmailInfo } from '../interface/email-info.interface';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { EMAILS_ROOT_OPTIONS } from '../constants/emails.constants';
 import { IEmailsRootOptions } from '../interface/emails.root.options.interface';
 
 @Injectable()
-export class EmailsClient implements OnModuleInit {
+export class EmailsClient {
     private transporter: nodemailer.Transporter;
 
     constructor(
@@ -24,12 +24,8 @@ export class EmailsClient implements OnModuleInit {
         });
     }
 
-    async onModuleInit() {
-        try {
-            await this.transporter.verify();
-        } catch (error) {
-            SystemLogger.getInstance().error(error, 'Email client');
-        }
+    verifyOrThrow() {
+        return this.transporter.verify();
     }
 
     async sendMail(options: IEmailInfo) {
