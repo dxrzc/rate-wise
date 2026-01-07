@@ -14,6 +14,9 @@ services:
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
 
   app:        
+    depends_on:
+      traefik:
+        condition: service_started  
     build:
       context: ..
       target: production      
