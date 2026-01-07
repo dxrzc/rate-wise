@@ -1,4 +1,3 @@
-import KeyvRedis from '@keyv/redis';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { BullModule } from '@nestjs/bullmq';
@@ -40,6 +39,15 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
 import { ModerationModule } from 'src/moderation/moderation.module';
 import { VotesModule } from 'src/votes/votes.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HealthModule } from 'src/health/health.module';
+import { RedisMonitoringModule } from 'src/redis-monitoring/redis-monitoring.module';
+import {
+    CACHE_REDIS_STORE,
+    QUEUE_REDIS_CONNECTION,
+    THROTTLER_REDIS_CONNECTION,
+} from 'src/redis-monitoring/constants/redis.connections';
+import KeyvRedis from '@keyv/redis';
+import Redis from 'ioredis';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -61,22 +69,25 @@ import { ScheduleModule } from '@nestjs/schedule';
         appRolesGuard,
     ],
     imports: [
+        HealthModule,
         ConfigModule,
         EmailsModule,
         CacheModule.registerAsync({
             isGlobal: true,
-            inject: [DbConfigService, ServerConfigService],
-            useFactory: (dbConfig: DbConfigService, serverConfig: ServerConfigService) => ({
+            imports: [RedisMonitoringModule],
+            inject: [ServerConfigService, CACHE_REDIS_STORE],
+            useFactory: (serverConfig: ServerConfigService, cacheStore: KeyvRedis<any>) => ({
                 ttl: serverConfig.cacheTtlSeconds * 1000, // milliseconds
-                stores: [new KeyvRedis(dbConfig.redisCacheUri)],
+                stores: [cacheStore],
             }),
         }),
         ThrottlerModule.forRootAsync({
-            inject: [DbConfigService],
-            useFactory: ({ redisAuthUri }: DbConfigService) => ({
+            imports: [RedisMonitoringModule],
+            inject: [THROTTLER_REDIS_CONNECTION],
+            useFactory: (ioredisClient: Redis) => ({
                 // default policy, overridden by decorators
                 throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
-                storage: new ThrottlerStorageRedisService(redisAuthUri),
+                storage: new ThrottlerStorageRedisService(ioredisClient),
             }),
         }),
         EmailsModule.forRootAsync({
@@ -91,12 +102,9 @@ import { ScheduleModule } from '@nestjs/schedule';
             }),
         }),
         BullModule.forRootAsync({
-            inject: [DbConfigService],
-            useFactory: (dbConfig: DbConfigService) => ({
-                connection: {
-                    url: dbConfig.redisQueuesUri,
-                },
-            }),
+            imports: [RedisMonitoringModule],
+            inject: [QUEUE_REDIS_CONNECTION],
+            useFactory: (connection: Redis) => ({ connection }),
         }),
         HttpLoggerModule.forRootAsync({
             useClass: HttpLoggerConfigService,
