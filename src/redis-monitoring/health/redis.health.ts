@@ -34,10 +34,19 @@ export class RedisHealthIndicator {
 
     private async checkClient(client: RedisClientAdapter | Redis) {
         try {
-            await client.ping();
+            await this.withTimeout(client.ping(), 3000);
             return { status: 'up' };
         } catch (e) {
             return { status: 'down', message: String(e) };
         }
+    }
+
+    private async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+        return Promise.race([
+            promise,
+            new Promise<T>((_, reject) =>
+                setTimeout(() => reject(new Error('Health check timeout')), timeoutMs),
+            ),
+        ]);
     }
 }
