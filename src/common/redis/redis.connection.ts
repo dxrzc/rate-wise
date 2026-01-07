@@ -7,8 +7,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { SystemLogger } from 'src/common/logging/system.logger';
 import { createClient } from '@redis/client';
+import { logRedisClientError } from './log-redis.client-error';
 
 // Maximum reconnection delay in milliseconds (30 seconds)
 const MAX_RECONNECT_DELAY = 30000;
@@ -42,22 +42,16 @@ export class RedisConnection {
         return this._client;
     }
 
-    private onError = (err: string) => {
-        SystemLogger.getInstance().error(`${err}`, this.context);
-    };
-
-    private onReconnecting = () => {
-        SystemLogger.getInstance().warn(`Reconnecting...`, this.context);
-    };
-
-    configEvents() {
-        this._client.on('error', this.onError);
-        this._client.on('reconnecting', this.onReconnecting);
+    configEvents(client = this._client) {
+        client.on('error', (err: Error) => {
+            logRedisClientError(err, this.context);
+        });
     }
 
     async addSubscriber(channel: string, listener: (payload: string) => Promise<void>) {
         const subscriber = this._client.duplicate();
         subscriber.subscribe(channel, listener);
+        this.configEvents(subscriber);
         await subscriber.connect();
         this.subscribers.push(subscriber);
     }
