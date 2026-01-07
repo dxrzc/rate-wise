@@ -7,11 +7,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { SystemLogger } from 'src/common/logging/system.logger';
 import { createClient } from '@redis/client';
+import { logRedisClientError } from './log-redis.client-error';
 
 // Maximum reconnection delay in milliseconds (30 seconds)
-// This prevents indefinite exponential growth while still allowing for recovery
 const MAX_RECONNECT_DELAY = 30000;
 
 export class RedisConnection {
@@ -26,20 +25,12 @@ export class RedisConnection {
             url: redisUri,
             socket: {
                 reconnectStrategy: (retries) => {
-                    // Kubernetes-friendly reconnection strategy:
-                    // - No maximum retry limit (infinite retries)
-                    // - Exponential backoff with jitter to prevent thundering herd
-                    // - Capped at MAX_RECONNECT_DELAY to avoid excessive waits
-
                     // Calculate delay with exponential backoff: 2^retries * 50ms
                     const exponentialDelay = Math.pow(2, retries) * 50;
-
                     // Cap the delay at MAX_RECONNECT_DELAY
                     const cappedDelay = Math.min(exponentialDelay, MAX_RECONNECT_DELAY);
-
                     // Add jitter (random value between 0-1000ms) to prevent thundering herd
                     const jitter = Math.floor(Math.random() * 1000);
-
                     return cappedDelay + jitter;
                 },
             },
@@ -51,22 +42,16 @@ export class RedisConnection {
         return this._client;
     }
 
-    private onError = (err: string) => {
-        SystemLogger.getInstance().error(`${err}`, this.context);
-    };
-
-    private onReconnecting = () => {
-        SystemLogger.getInstance().warn(`Reconnecting...`, this.context);
-    };
-
-    configEvents() {
-        this._client.on('error', this.onError);
-        this._client.on('reconnecting', this.onReconnecting);
+    configEvents(client = this._client) {
+        client.on('error', (err: Error) => {
+            logRedisClientError(err, this.context);
+        });
     }
 
     async addSubscriber(channel: string, listener: (payload: string) => Promise<void>) {
         const subscriber = this._client.duplicate();
         subscriber.subscribe(channel, listener);
+        this.configEvents(subscriber);
         await subscriber.connect();
         this.subscribers.push(subscriber);
     }
