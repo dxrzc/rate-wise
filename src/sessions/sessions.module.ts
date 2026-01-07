@@ -46,7 +46,7 @@ export class SessionsModule implements OnApplicationShutdown {
                 SessionMiddlewareFactory,
                 SessionsEvents,
             ],
-            exports: [SessionsService, SessionMiddlewareFactory],
+            exports: [SessionsService, SessionMiddlewareFactory, SESSIONS_REDIS_CONNECTION],
         };
     }
 }
