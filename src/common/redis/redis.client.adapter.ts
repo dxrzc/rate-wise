@@ -135,4 +135,11 @@ export class RedisClientAdapter {
 
         return wrapper;
     }
+
+    /**
+     *  Pings the Redis server to check connectivity.
+     */
+    async ping(): Promise<string> {
+        return await this.client.ping();
+    }
 }
