@@ -1,0 +1,58 @@
+name: 'rate-wise-e2e'
+
+services:
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - "443:443"
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.websecure.address=:443"    
+    volumes:
+      # In order to avoid mounting the docker socket
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+
+  app:        
+    build:
+      context: ..
+      target: production      
+    image: ratewise:prod  
+    environment: 
+      # Axios -> Docker network (2) -> Traefik (1) -> Express
+      TRUST_PROXY: 2  
+      API_BASE_URL: "https://localhost"  
+    env_file:
+      - path: ../.env.defaults
+        required: true 
+      - path: ../.env.e2e
+        required: false            
+
+  postgres:
+    volumes:
+      - postgres-e2e:/var/lib/postgresql/data
+
+  redis_queues:    
+    volumes:
+      - redis-queues-e2e:/data
+
+  redis_auth:    
+    volumes:
+      - redis-auth-e2e:/data
+
+  redis_cache:    
+    volumes:
+      - redis-cache-e2e:/data
+
+  mailpit:
+    ports:
+    - "8026:8025"
+    volumes:
+      - mailpit-e2e:/data
+
+volumes:
+  postgres-e2e:
+  redis-auth-e2e:
+  redis-queues-e2e:
+  redis-cache-e2e:
+  mailpit-e2e:

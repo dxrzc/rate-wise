@@ -47,20 +47,23 @@ async function bootstrap() {
     app = await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
     });
+    const serverConfig = app.get(ServerConfigService);
 
+    app.set('trust proxy', serverConfig.trustProxy);
     app.useLogger(SystemLogger.getInstance());
     app.enableShutdownHooks();
 
-    const serverConfig = app.get(ServerConfigService);
     await app.listen(serverConfig.port);
     SystemLogger.getInstance().log(
         `Running in ${serverConfig.env} mode on port ${serverConfig.port}`,
         'NestApplication',
     );
-    SystemLogger.getInstance().verbose(
-        `Try it! http://localhost:${process.env.SERVER_PORT}/graphql`,
-        'NestApplication',
-    );
+    if (serverConfig.isDevelopment) {
+        SystemLogger.getInstance().verbose(
+            `Try it! http://localhost:${process.env.SERVER_PORT}/graphql`,
+            'NestApplication',
+        );
+    }
 }
 
 bootstrap().catch((error) => {

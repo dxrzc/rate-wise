@@ -31,4 +31,5 @@ export const envSchema = Joi.object<IConfigs, true>({
         .required(),
     API_BASE_URL: Joi.string().uri().required(),
     CACHE_TTL_SECONDS: Joi.number().positive().required(),
+    TRUST_PROXY: Joi.number().positive().less(3).default(1),
 });

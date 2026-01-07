@@ -26,8 +26,8 @@ COPY tsconfig.json ./
 ENV NODE_ENV=development
 CMD ["npx", "nest", "start", "-w"] 
 
-FROM base AS e2e
+FROM base AS production
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
-ENV NODE_ENV=e2e
+ENV NODE_ENV=production
 CMD ["node", "dist/main.js"] 
