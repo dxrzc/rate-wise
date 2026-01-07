@@ -1,5 +1,5 @@
 import KeyvRedis from '@keyv/redis';
-import { Module } from '@nestjs/common';
+import { Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import Redis from 'ioredis';
 import { DbConfigService } from 'src/config/services/db.config.service';
@@ -57,4 +57,18 @@ import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
         RedisHealthIndicator,
     ],
 })
-export class RedisMonitoringModule {}
+export class RedisMonitoringModule implements OnModuleDestroy {
+    constructor(
+        @Inject(CACHE_REDIS_STORE) private readonly cacheRedisStore: KeyvRedis<string>,
+        @Inject(THROTTLER_REDIS_CONNECTION) private readonly throttlerRedis: Redis,
+        @Inject(QUEUE_REDIS_CONNECTION) private readonly queueRedis: Redis,
+    ) {}
+
+    async onModuleDestroy() {
+        await Promise.all([
+            this.cacheRedisStore.disconnect(),
+            this.throttlerRedis.quit(),
+            this.queueRedis.quit(),
+        ]);
+    }
+}
