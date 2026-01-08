@@ -38,6 +38,6 @@ Authenticates a user with email and password credentials.
 - **Possible Errors:**
   - \`UNAUTHORIZED\`: Invalid credentials — email not found or password incorrect (same response prevents user enumeration).
   - \`FORBIDDEN\`: Maximum concurrent sessions reached. User must sign out from another session or sign out all sessions.
-  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.   
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

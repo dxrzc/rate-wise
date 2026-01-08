@@ -27,7 +27,7 @@ Retrieves all users with efficient **cursor-based pagination**.
   - Uncached users are fetched from PostgreSQL and then queued for caching via **BullMQ**.
   - Batch cache operations (\`mget\`) minimize Redis round-trips.
 
-- **Rate Limiting:** 100 requests per minute per user per IP address.
+- **Rate Limiting:** 100 requests per minute per user or IP address.
 
 - **Authentication:** Not required.
 

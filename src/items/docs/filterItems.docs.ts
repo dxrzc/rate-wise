@@ -43,10 +43,10 @@ Retrieves items with **cursor-based pagination** and optional filtering by creat
 
 - **Performance:**
   - Indexed columns: \`createdBy\`, \`category\`, \`createdAt\`, \`id\`.
-  - GIN index on \`tags\` array for efficient tag filtering.  
+  - GIN index on \`tags\` array for efficient tag filtering.
 
 - **Possible Errors:**
-  - \`NOT_FOUND\`: \`createdBy\` user ID does not exist OR invalid UUID format.  
+  - \`NOT_FOUND\`: \`createdBy\` user ID does not exist OR invalid UUID format.
   - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

@@ -43,8 +43,7 @@ Sends an account deletion confirmation email to the authenticated user.
   - Suspended accounts can also request deletion.
 
 - **Possible Errors:**
-  - \`UNAUTHORIZED\`: Not authenticated (no valid session).   
-  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded. 
-
+  - \`UNAUTHORIZED\`: Not authenticated (no valid session).
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

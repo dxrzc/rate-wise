@@ -37,10 +37,10 @@ Retrieves all votes for a specific review with **cursor-based pagination**.
 - **Account Status Required:** N/A.
 
 - **Performance:**
-  - Indexed on \`relatedReview\` for efficient filtering.  
+  - Indexed on \`relatedReview\` for efficient filtering.
 
 - **Possible Errors:**
-  - \`NOT_FOUND\` - Review with the provided \`reviewId\` does not exist OR invalid UUID format.
-  - \`TOO_MANY_REQUESTS\` - Rate limit exceeded.
+  - \`NOT_FOUND\`: Review with the provided \`reviewId\` does not exist OR invalid UUID format.
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

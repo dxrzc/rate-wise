@@ -44,7 +44,7 @@ Creates a new review for an item with a rating and text content.
   - Reviews use denormalized vote counters (\`upvotes\`, \`downvotes\`) for query performance.
   - Vote counts are periodically synchronized via a **scheduled cron job**.
 
-- **Additional Notes:**  
+- **Additional Notes:**
   - Item's average rating is computed in real-time from all reviews when queried.
     `,
 };

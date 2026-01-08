@@ -28,7 +28,7 @@ Retrieves reviews with **cursor-based pagination** and optional filtering by cre
 - **Filtering:**
   - Filters are combined with AND logic.
   - \`createdBy\`: Filters reviews by author's user ID.
-  - \`relatedItem\`: Filters reviews for a specific item.  
+  - \`relatedItem\`: Filters reviews for a specific item.
 
 - **Caching Strategy:**
   - Individual review records leverage the **Redis** cache layer.
@@ -44,12 +44,11 @@ Retrieves reviews with **cursor-based pagination** and optional filtering by cre
 - **Account Status Required:** N/A.
 
 - **Performance:**
-  - Indexed columns: \`createdBy\`, \`relatedItem\`, \`createdAt\`, \`id\`.  
+  - Indexed columns: \`createdBy\`, \`relatedItem\`, \`createdAt\`, \`id\`.
   - Vote counts (\`upvotes\`, \`downvotes\`) are denormalized for fast reads.
 
 - **Possible Errors:**
-  - \`NOT_FOUND\`: \`createdBy\` user or \`relatedItem\` item does not exist OR invalid UUID format. 
-  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded. 
-  
+  - \`NOT_FOUND\`: \`createdBy\` user or \`relatedItem\` item does not exist OR invalid UUID format.
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

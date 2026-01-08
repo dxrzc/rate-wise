@@ -19,7 +19,7 @@ Creates a new item (product/business/entity) to be rated and reviewed.
   - Description is trimmed.
   - Category is normalized: trimmed and converted to lowercase.
   - Tags array is normalized: each tag trimmed and lowercased, duplicates preserved.
-  - Item is associated with the authenticated user as \`createdBy\`.  
+  - Item is associated with the authenticated user as \`createdBy\`.
 
 - **Rate Limiting:** 100 requests per minute per user or IP address.
 

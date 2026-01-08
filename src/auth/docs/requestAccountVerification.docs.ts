@@ -24,7 +24,7 @@ Sends an account verification email to the authenticated user's email address.
 
 - **Roles Required:** Any role (\`REVIEWER\`, \`CREATOR\`, \`MODERATOR\`, \`ADMIN\`).
 
-- **Account Status Required:** \`PENDING_VERIFICATION\` or \`ACTIVE\` (but \`ACTIVE\` will result in \`CONFLICT\` error).
+- **Account Status Required:** \`PENDING_VERIFICATION\` only.
 
 - **Possible Errors:**
   - \`UNAUTHORIZED\`: Not authenticated (no valid session).

@@ -26,7 +26,7 @@ Signs out the authenticated user from **all active sessions** across all devices
 
 - **Possible Errors:**
   - \`UNAUTHORIZED\`: Not authenticated or re-authentication password is incorrect.
-  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.  
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
 
 - **Additional Notes:**
   - For remote sign-out without being logged in, use \`requestSignOutAll\` instead.

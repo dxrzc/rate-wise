@@ -33,13 +33,13 @@ Suspends a user account, restricting their access to protected operations.
 
 - **Security:**
   - Role hierarchy enforced: moderators cannot suspend equal or higher roles.
-  - All suspension attempts are logged with moderator ID and target ID.  
+  - All suspension attempts are logged with moderator ID and target ID.
 
 - **Possible Errors:**
-  - \`UNAUTHORIZED\`: Not authenticated (no valid session). 
+  - \`UNAUTHORIZED\`: Not authenticated (no valid session).
   - \`FORBIDDEN\`: Caller lacks \`MODERATOR\` role or caller's account is not \`ACTIVE\` or target is \`ADMIN\`/\`MODERATOR\`.
   - \`NOT_FOUND\`: User with the provided ID does not exist or invalid UUID format.
   - \`CONFLICT\`: Target user is already suspended.
-  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.  
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

@@ -28,7 +28,7 @@ Sends a sign-out-all confirmation email to the provided address for **remote ses
 
 - **Roles Required:** None.
 
-- **Account Status Required:** \`ACTIVE\` or \`PENDING_VERIFICATION\` for email to be sent. \`SUSPENDED\` accounts are silently ignored for security.
+- **Account Status Required:** \`ACTIVE\` or \`PENDING_VERIFICATION\` (for email to be sent). \`SUSPENDED\` accounts are silently ignored for security.
 
 - **Security Features:**
   - **User enumeration prevention:** Same response for existing/non-existing emails.
@@ -38,10 +38,10 @@ Sends a sign-out-all confirmation email to the provided address for **remote ses
 - **Additional Notes:**
   - This is the unauthenticated alternative to \`signOutAll\`.
   - Sign-out link expires after a configurable time period.
-  - Each token can only be used once (JTI blacklisting).  
+  - Each token can only be used once (JTI blacklisting).
 
 - **Possible Errors:**
   - \`BAD_REQUEST\`: Invalid email format provided.
-  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.  
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };

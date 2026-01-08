@@ -40,10 +40,10 @@ Casts an upvote or downvote on a review.
   - Use \`deleteVote\` to remove a vote entirely.
 
 - **Possible Errors:**
-  - \`UNAUTHORIZED\` - Not authenticated (no valid session).
-  - \`FORBIDDEN\` - Account status is not \`ACTIVE\` OR user lacks \`REVIEWER\` role.
-  - \`NOT_FOUND\` - Review with the provided \`reviewId\` does not exist or invalid UUID format.  
-  - \`TOO_MANY_REQUESTS\` - Rate limit exceeded.
+  - \`UNAUTHORIZED\`: Not authenticated (no valid session).
+  - \`FORBIDDEN\`: Account status is not \`ACTIVE\` OR user lacks \`REVIEWER\` role.
+  - \`NOT_FOUND\`: Review with the provided \`reviewId\` does not exist or invalid UUID format.
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
     `,
 };
 
