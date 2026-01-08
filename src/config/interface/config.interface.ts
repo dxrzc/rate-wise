@@ -24,4 +24,7 @@ export interface IConfigs {
     SIGN_OUT_ALL_TOKEN_EXP: string;
     SIGN_OUT_ALL_TOKEN_SECRET: string;
     TRUST_PROXY: number;
+    ADMIN_USERNAME: string;
+    ADMIN_EMAIL: string;
+    ADMIN_PASSWORD: string;
 }

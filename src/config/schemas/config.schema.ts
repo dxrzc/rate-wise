@@ -32,4 +32,8 @@ export const envSchema = Joi.object<IConfigs, true>({
     API_BASE_URL: Joi.string().uri().required(),
     CACHE_TTL_SECONDS: Joi.number().positive().required(),
     TRUST_PROXY: Joi.number().positive().less(3).default(1),
+    // Admin
+    ADMIN_USERNAME: Joi.string().required(),
+    ADMIN_EMAIL: Joi.string().email().required(),
+    ADMIN_PASSWORD: Joi.string().required(),
 });

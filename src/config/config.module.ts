@@ -4,9 +4,16 @@ import { ServerConfigService } from './services/server.config.service';
 import { SmtpConfigService } from './services/smtp.config.service';
 import { AuthConfigService } from './services/auth.config.service';
 import { DbConfigService } from './services/db.config.service';
+import { AdminConfigService } from './services/admin.config.service';
 import { Global, Module } from '@nestjs/common';
 
-const services = [AuthConfigService, DbConfigService, ServerConfigService, SmtpConfigService];
+const services = [
+    AuthConfigService,
+    DbConfigService,
+    ServerConfigService,
+    SmtpConfigService,
+    AdminConfigService,
+];
 
 @Global()
 @Module({

@@ -26,6 +26,7 @@ import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middl
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { TokensModule } from 'src/tokens/tokens.module';
 import { UsersModule } from 'src/users/users.module';
+import { AdminModule } from 'src/admin/admin.module';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
@@ -150,6 +151,7 @@ import Redis from 'ioredis';
             SeedModule,
             (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.PRODUCTION,
         ),
+        AdminModule,
         UsersModule,
         ItemsModule,
         ReviewsModule,
