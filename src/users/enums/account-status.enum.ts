@@ -11,13 +11,16 @@ registerEnumType(AccountStatus, {
     description: 'Available statuses for an account.',
     valuesMap: {
         ACTIVE: {
-            description: 'Account is active and user can log in.',
+            description:
+                'Account is active and fully verified. User has access to all platform features.',
         },
         PENDING_VERIFICATION: {
-            description: 'Account has been registered but not yet verified their email.',
+            description:
+                'Account has been registered but has not yet verified their email address.',
         },
         SUSPENDED: {
-            description: 'Account has been suspended.',
+            description:
+                'Account has been suspended by a moderator and has restricted access to platform features.',
         },
     },
 });

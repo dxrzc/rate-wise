@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UserSeedService } from './services/user-seed.service';
@@ -13,6 +13,7 @@ import { ReviewSeedService } from './services/reviews-seed.service';
 import { Vote } from 'src/votes/entities/vote.entity';
 import { VoteAction } from 'src/votes/enum/vote.enum';
 import { SeedInput } from './dtos/seed.input';
+import { AdminConfigService } from 'src/config/services/admin.config.service';
 
 @Injectable()
 export class SeedService {
@@ -29,10 +30,14 @@ export class SeedService {
         private readonly itemsSeed: ItemsSeedService,
         private readonly reviewsSeed: ReviewSeedService,
         private readonly logger: HttpLoggerService,
+        private readonly adminConfigService: AdminConfigService,
     ) {}
 
     private async getUserIdsOrThrow(): Promise<string[]> {
-        const selectedUserIds = await this.userRepository.find({ select: { id: true } });
+        const selectedUserIds = await this.userRepository.find({
+            select: { id: true },
+            where: { email: Not(this.adminConfigService.email) },
+        });
         if (selectedUserIds.length === 0) {
             throw new Error('No users found. Seed users first');
         }
@@ -56,7 +61,9 @@ export class SeedService {
     }
 
     private async cleanDb(): Promise<void> {
-        await this.userRepository.deleteAll(); // deletes on cascade all related entities
+        await this.userRepository.delete({
+            email: Not(this.adminConfigService.email),
+        }); // deletes on cascade all related entities
         this.logger.debug('Database cleaned');
     }
 
