@@ -5,6 +5,7 @@ import { SystemLogger } from './common/logging/system.logger';
 import { ServerConfigService } from './config/services/server.config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import hpp from 'hpp';
 
 let app: NestExpressApplication | undefined;
 
@@ -64,6 +65,7 @@ async function bootstrap() {
             },
         }),
     );
+    app.use(hpp());
     app.set('trust proxy', serverConfig.trustProxy);
     app.useLogger(SystemLogger.getInstance());
     app.enableShutdownHooks();
