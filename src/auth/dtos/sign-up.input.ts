@@ -12,9 +12,10 @@ export class SignUpInput {
     @MaxLength(AUTH_LIMITS.USERNAME.MAX)
     @Transform(({ value }: { value: string }) => value.trim())
     @Field(() => String, {
-        description: `              
-        - **Maximum length:** ${AUTH_LIMITS.USERNAME.MAX} characters.
-        - **Minimum length:** ${AUTH_LIMITS.USERNAME.MIN} characters.        
+        description: `
+            The username for the account.
+            - **Minimum length:** ${AUTH_LIMITS.USERNAME.MIN} characters.
+            - **Maximum length:** ${AUTH_LIMITS.USERNAME.MAX} characters.
         `,
     })
     username!: string;
@@ -22,8 +23,9 @@ export class SignUpInput {
     @IsString()
     @IsEmail()
     @Field(() => String, {
-        description: `        
-        - **Valid email format.**        
+        description: `
+            The email address for the account.
+            - **Must be a valid email format.**
         `,
     })
     email!: string;
@@ -32,9 +34,10 @@ export class SignUpInput {
     @MinLength(AUTH_LIMITS.PASSWORD.MIN)
     @MaxLength(AUTH_LIMITS.PASSWORD.MAX)
     @Field(() => String, {
-        description: `        
-        - **Minimum length:** ${AUTH_LIMITS.PASSWORD.MIN} characters.
-        - **Maximum length:** ${AUTH_LIMITS.PASSWORD.MAX} characters.        
+        description: `
+            The password for the account.
+            - **Minimum length:** ${AUTH_LIMITS.PASSWORD.MIN} characters.
+            - **Maximum length:** ${AUTH_LIMITS.PASSWORD.MAX} characters.
         `,
     })
     password!: string;
