@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM base AS prod-deps
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts
 
 FROM base AS builder
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
