@@ -10,6 +10,7 @@ const config: Config = {
     setupFilesAfterEnv: [
         '<rootDir>/testing/suites/e2e/setup/after-env/set-kit.ts',
         '<rootDir>/testing/suites/e2e/setup/after-env/set-jest.ts',
+        '<rootDir>/testing/suites/e2e/setup/after-env/set-environment.ts',
     ],
     moduleNameMapper: {
         ...baseJestConfig.moduleNameMapper,
