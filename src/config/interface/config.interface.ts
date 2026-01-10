@@ -4,7 +4,6 @@ export interface IConfigs {
     NODE_ENV: Environment;
     PORT: number;
     CACHE_TTL_SECONDS: number;
-    PASSWORD_SALT_ROUNDS: number;
     POSTGRES_URI: string;
     REDIS_AUTH_URI: string;
     REDIS_QUEUES_URI: string;
@@ -22,4 +21,10 @@ export interface IConfigs {
     ACCOUNT_VERIFICATION_TOKEN_SECRET: string;
     ACCOUNT_DELETION_TOKEN_EXP: string;
     ACCOUNT_DELETION_TOKEN_SECRET: string;
+    SIGN_OUT_ALL_TOKEN_EXP: string;
+    SIGN_OUT_ALL_TOKEN_SECRET: string;
+    TRUST_PROXY: number;
+    ADMIN_USERNAME: string;
+    ADMIN_EMAIL: string;
+    ADMIN_PASSWORD: string;
 }

@@ -13,12 +13,15 @@ import { AuthService } from './auth.service';
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
+    SIGN_OUT_ALL_TOKEN,
 } from './constants/tokens.provider.constant';
 import { AuthNotifications } from './notifications/auth.notifications';
+import { UserDeletionModule } from 'src/orchestrators/user-deletion/user-deletion.module';
 
 @Module({
     imports: [
         UsersModule,
+        UserDeletionModule,
         CommonModule,
         HttpLoggerModule.forFeature({ context: AuthService.name }),
         EmailsModule.forFeatureAsync({
@@ -42,6 +45,16 @@ import { AuthNotifications } from './notifications/auth.notifications';
                 secret: authConfigService.accountDeletionTokenSecret,
                 expiresIn: authConfigService.accountDeletionTokenExp,
                 purpose: JwtPurpose.ACCOUNT_DELETION,
+                dataInToken: ['id'],
+            }),
+            inject: [AuthConfigService],
+        }),
+        TokensModule.forFeatureAsync({
+            provide: SIGN_OUT_ALL_TOKEN,
+            useFactory: (authConfigService: AuthConfigService) => ({
+                secret: authConfigService.signOutAllTokenSecret,
+                expiresIn: authConfigService.signOutAllTokenExp,
+                purpose: JwtPurpose.SIGN_OUT_ALL,
                 dataInToken: ['id'],
             }),
             inject: [AuthConfigService],

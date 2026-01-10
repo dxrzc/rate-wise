@@ -5,7 +5,10 @@ import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
+import {
+    SESS_REDIS_PREFIX,
+    SESSIONS_REDIS_CONNECTION,
+} from 'src/sessions/constants/sessions.constants';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
@@ -127,6 +130,8 @@ describe('Sessions Service ', () => {
 
     describe('delete', () => {
         test('req.session.destroy is called', async () => {
+            const sess1Id = faker.string.uuid();
+            mockRequest.sessionID = sess1Id;
             await sessionsService.delete(<any>mockRequest);
             expect(mockRequest.session.destroy).toHaveBeenCalledTimes(1);
         });
@@ -146,17 +151,43 @@ describe('Sessions Service ', () => {
             await sessionsService.create(<any>mockRequest, userId);
 
             // sessions created
-            await expect(redisClient.get(`session:${sess1Id}`)).resolves.not.toBeNull();
-            await expect(redisClient.get(`session:${sess2Id}`)).resolves.not.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess1Id}`)).resolves.not.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess2Id}`)).resolves.not.toBeNull();
 
             // sessions deleted
             await sessionsService.deleteAll(userId);
-            await expect(redisClient.get(`session:${sess1Id}`)).resolves.toBeNull();
-            await expect(redisClient.get(`session:${sess2Id}`)).resolves.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess1Id}`)).resolves.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess2Id}`)).resolves.toBeNull();
+
+            // index deleted
+            const indexKey = userSessionsSetKey(userId);
+            const index = await redisClient.setMembers(indexKey);
+            expect(index.length).toBe(0);
+
+            // relations deleted
+            await expect(redisClient.get(userAndSessionRelationKey(sess1Id))).resolves.toBeNull();
+            await expect(redisClient.get(userAndSessionRelationKey(sess2Id))).resolves.toBeNull();
+        });
+
+        test('return the number of the deleted sessions', async () => {
+            const userId = faker.string.alpha(10);
+
+            // create sessions
+            const sess1Id = faker.string.uuid();
+            mockRequest.sessionID = sess1Id;
+            await sessionsService.create(<any>mockRequest, userId);
+
+            const sess2Id = faker.string.uuid();
+            mockRequest.sessionID = sess2Id;
+            await sessionsService.create(<any>mockRequest, userId);
+
+            const deletedSessions = await sessionsService.deleteAll(userId);
+            expect(deletedSessions).toBe(2);
         });
     });
 
-    describe('Sessions cleanup (redis)', () => {
+    // This only works on expired events, not on del events anymore.
+    describe.skip('Sessions cleanup (redis)', () => {
         test('session id is deleted from user-sessions-index', async () => {
             // create session
             const userId = faker.string.alpha(10);

@@ -18,21 +18,12 @@ export class UserSeedService {
     }
 
     get email(): string {
-        // Regenerate email until we get one that fits within the max length
-        let email = faker.internet.email();
-        while (email.length > AUTH_LIMITS.EMAIL.MAX) {
-            email = faker.internet.email();
-        }
-        return email;
+        return faker.internet.email();
     }
 
     get role(): UserRole {
         const roles = Object.values(UserRole);
         return roles[faker.number.int({ min: 0, max: roles.length - 1 })] as UserRole;
-    }
-
-    get reputationScore(): number {
-        return faker.number.int({ min: 0, max: 10000 });
     }
 
     get password(): string {
@@ -54,7 +45,6 @@ export class UserSeedService {
         return {
             ...this.signUpInput,
             role: this.role,
-            reputationScore: this.reputationScore,
         };
     }
 }

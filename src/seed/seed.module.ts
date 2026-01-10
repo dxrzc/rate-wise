@@ -9,10 +9,11 @@ import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from './services/items-seed.service';
 import { ReviewSeedService } from './services/reviews-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Item, Review]),
+        TypeOrmModule.forFeature([User, Item, Review, Vote]),
         HttpLoggerModule.forFeature({ context: SeedService.name }),
     ],
     providers: [SeedResolver, SeedService, UserSeedService, ItemsSeedService, ReviewSeedService],

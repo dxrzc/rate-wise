@@ -3,20 +3,31 @@ import { MutationOptions } from '@nestjs/graphql';
 export const signOutDocs: MutationOptions = {
     name: 'signOut',
     description: `
-        Sign out the authenticated user from the current session.
-        
-        **Authentication:** Required - user must be authenticated
-        
-        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)
-        
-        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)
-        
-        **Session:** Destroys the current user session on the server and clears the session cookie (connect.sid) from the client. The user will need to sign in again to access protected endpoints.
-        
-        **Effect:** Only signs out from the current session. Other active sessions on different devices/browsers remain active. Use signOutAll to terminate all sessions.
-        
-        **Rate Limiting:** Critical throttle applied
-        
-        **Returns:** Boolean indicating success (true)
+Signs out the authenticated user from the current session.
+
+- **Returns:** Boolean \`true\` indicating successful sign-out.
+
+- **Constraints:**
+  - User must be authenticated with a valid session.
+
+- **Side Effects:**
+  - Current session is destroyed from the **Redis** session store.
+  - Session cookie is cleared from the client.
+  - Sign-out event is logged for audit purposes.
+
+- **Rate Limiting:** 3 requests per minute per user or IP address.
+
+- **Authentication:** Required.
+
+- **Roles Required:** Any role (\`REVIEWER\`, \`CREATOR\`, \`MODERATOR\`, \`ADMIN\`).
+
+- **Account Status Required:** Any status (\`ACTIVE\`, \`PENDING_VERIFICATION\`, \`SUSPENDED\`).
+
+- **Possible Errors:**
+  - \`UNAUTHORIZED\`: Not authenticated (no valid session).
+  - \`TOO_MANY_REQUESTS\`: Rate limit exceeded.
+
+- **Additional Notes:**
+  - Use \`signOutAll\` to terminate all sessions.
     `,
 };

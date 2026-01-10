@@ -13,15 +13,10 @@ export class ReviewSeedService {
         return faker.string.uuid();
     }
 
-    get votes(): number {
-        return faker.number.int({ min: 0, max: 10000 });
-    }
-
     get review() {
         return {
             content: this.content,
             rating: this.rating,
-            votes: this.votes,
         };
     }
 

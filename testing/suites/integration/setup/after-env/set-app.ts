@@ -16,6 +16,7 @@ beforeAll(async () => {
     try {
         // Disable debug logs
         jest.spyOn(SystemLogger.getInstance(), 'debug').mockImplementation();
+        jest.spyOn(SystemLogger.getInstance(), 'log').mockImplementation();
 
         // Application
         const testingModule: TestingModule = await Test.createTestingModule({

@@ -8,7 +8,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { UltraCriticalThrottle } from 'src/common/decorators/throttling.decorator';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
 import { Code } from 'src/common/enum/code.enum';
 import { RateLimiterGuard } from 'src/common/guards/rate-limiter.guard';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -17,7 +17,7 @@ import request from 'supertest';
 @Resolver()
 class TestResolver {
     @Query(() => Boolean)
-    @UltraCriticalThrottle()
+    @RateLimit(RateLimitTier.ULTRA_CRITICAL)
     ultraCriticalQuery() {
         return true;
     }

@@ -4,7 +4,7 @@ import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/functions/utils/promisify.util';
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
+import { SESS_REDIS_PREFIX, SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 
 @Injectable()
@@ -15,12 +15,29 @@ export class SessionsService {
         private readonly logger: HttpLoggerService,
     ) {}
 
+    private async deleteAllUserSessions(sessIDs: string[]) {
+        await Promise.all(
+            sessIDs.map((id) => this.redisClient.delete(`${SESS_REDIS_PREFIX}${id}`)),
+        );
+    }
+
+    private async deleteAllSessionRelations(sessIDs: string[]) {
+        await Promise.all(
+            sessIDs.map((id) => this.redisClient.delete(userAndSessionRelationKey(id))),
+        );
+    }
+
+    private async deleteUserSessionsIndex(userID: string) {
+        const key = userSessionsSetKey(userID);
+        await this.redisClient.delete(key);
+    }
+
     private async regenerate(req: RequestContext): Promise<void> {
         await promisify<void>((cb) => req.session.regenerate(cb));
         this.logger.debug(`Session regenerated`);
     }
 
-    private async linkToUser(sessionId: string, userId: string) {
+    private async bindUserToSession(sessionId: string, userId: string) {
         await this.redisClient
             .transaction()
             .store(userAndSessionRelationKey(sessionId), userId)
@@ -28,12 +45,15 @@ export class SessionsService {
             .exec();
     }
 
-    async deleteAll(userId: string): Promise<void> {
-        const indexKey = userSessionsSetKey(userId);
-        const sessionsIds = await this.redisClient.setMembers(indexKey);
-        const deletions = sessionsIds.map((sId) => this.redisClient.delete(`session:${sId}`));
-        await Promise.all(deletions);
-        this.logger.debug(`All user ${userId} sessions deleted`);
+    async deleteAll(userId: string): Promise<number> {
+        const sessIDs = await this.redisClient.setMembers(userSessionsSetKey(userId));
+        await Promise.all([
+            this.deleteAllUserSessions(sessIDs),
+            this.deleteAllSessionRelations(sessIDs),
+            this.deleteUserSessionsIndex(userId),
+        ]);
+        this.logger.debug(`${sessIDs.length} sessions deleted for user ${userId}`);
+        return sessIDs.length;
     }
 
     async count(userId: string): Promise<number> {
@@ -42,14 +62,20 @@ export class SessionsService {
     }
 
     async delete(req: RequestContext) {
+        const userId = req.session.userId;
+        const sessionId = req.sessionID;
         await promisify<void>((cb) => req.session.destroy(cb));
-        this.logger.debug(`Session ${req.sessionID} deleted`);
+        if (userId) {
+            await this.redisClient.setRem(userSessionsSetKey(userId), sessionId);
+        }
+        await this.redisClient.delete(userAndSessionRelationKey(sessionId));
+        this.logger.debug(`Session ${sessionId} deleted`);
     }
 
     async create(req: RequestContext, userId: string) {
         await this.regenerate(req);
         req.session.userId = userId;
-        await this.linkToUser(req.sessionID, userId);
+        await this.bindUserToSession(req.sessionID, userId);
         this.logger.debug(`Session ${req.sessionID} created`);
     }
 }

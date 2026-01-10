@@ -15,13 +15,15 @@ import { EmailsService } from './emails.service';
 import { IEmailsFeatureOptions } from './interface/emails.feature.options.interface';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { IEmailsRootOptions } from './interface/emails.root.options.interface';
+import { EmailHealthIndicator } from './health/email.health';
+import { TerminusModule } from '@nestjs/terminus';
 
 @Module({})
 export class EmailsModule {
     static forRootAsync(options: FactoryConfigModule<IEmailsRootOptions>): DynamicModule {
         return {
             module: EmailsModule,
-            imports: options.imports || [],
+            imports: [...(options.imports || []), TerminusModule],
             global: true,
             providers: [
                 {
@@ -30,8 +32,9 @@ export class EmailsModule {
                     inject: options.inject,
                 },
                 EmailsClient,
+                EmailHealthIndicator,
             ],
-            exports: [EmailsClient],
+            exports: [EmailsClient, EmailHealthIndicator],
         };
     }
 
