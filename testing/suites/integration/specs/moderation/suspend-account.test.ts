@@ -1,7 +1,7 @@
 import { createAccount } from '@integration/utils/create-account.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
-import { suspendAccount } from '@testing/tools/gql-operations/auth/suspend-account.operation';
+import { suspendAccount } from '@testing/tools/gql-operations/moderation/suspend-account.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
