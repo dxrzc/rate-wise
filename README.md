@@ -21,13 +21,13 @@ The project focuses on GraphQL API design, cursor-based pagination, background j
 - Review system with user voting.
 - Background jobs using BullMQ for asynchronous tasks (e.g. emails).
 - Redis-based caching for frequently accessed data.
-- Account management features.
+- Account management and moderation features (e.g. global sign-out, account suspension).
 - Authentication and role-based authorization
 
 ## API Documentation
 This project exposes its GraphQL schema using Apollo Sandbox, providing an interactive playground to explore queries and mutations.
 
-While this setup would typically be restricted or disabled in production environments, it is intentionally exposed here for evaluation and exploration purposes.
+Although interactive GraphQL playgrounds are often restricted in production, Apollo Sandbox is intentionally exposed here to facilitate API exploration and evaluation without requiring a dedicated client.
 
 The GraphQL endpoint is available at: `/graphql`.
 
