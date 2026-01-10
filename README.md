@@ -62,4 +62,8 @@ Unit, component and integration tests are executed automatically on every pull r
 
 End-to-end tests are executed as part of the release workflow and act as a quality gate before publishing Docker images.
 
+## What I’d improve next
+- Explore soft deletes to support historical data retention and moderation workflows.
+- Introduce normalized categories or tags to enhance querying and content organization.
+- Perform load testing (e.g. with Artillery) to better understand performance limits under increased traffic.
 
