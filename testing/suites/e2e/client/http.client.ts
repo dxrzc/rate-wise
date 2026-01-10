@@ -32,7 +32,7 @@ export class HttpClient {
         );
     }
 
-    async graphQL(data: GraphQlParams): Promise<{ body: unknown }> {
+    async graphQL(data: GraphQlParams): Promise<{ body: any }> {
         const response = await this.gqlClient.post('', data, {
             headers: { 'X-Forwarded-For': this.ip },
         });
@@ -42,5 +42,9 @@ export class HttpClient {
     async get(endpointUrl: string) {
         const response = await axios.get(endpointUrl);
         return response.data;
+    }
+
+    getNewClient(): HttpClient {
+        return new HttpClient();
     }
 }
