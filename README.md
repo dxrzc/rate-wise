@@ -39,6 +39,7 @@ The GraphQL endpoint is available at: `/graphql`.
 - Redis is used as a shared infrastructure component for multiple concerns, including caching, background jobs, authentication-related data and rate limiting, while keeping responsibilities isolated at the module level.
 - Caching is implemented at the record level and populated asynchronously using background jobs to avoid adding latency to user requests.
 - BullMQ is used to offload non-blocking tasks such as email processing and cache population.
+- Structured logging is implemented across the system, covering HTTP request lifecycles, GraphQL operations and infrastructure-level errors, enabling traceability and easier debugging.
 - Docker is used to provide a consistent and reproducible development environment.
 
 ## How to run locally
