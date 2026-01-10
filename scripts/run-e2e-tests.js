@@ -12,7 +12,10 @@ const { execa } = require('execa');
             'jest',
             ['--config', 'testing/jest-configs/jest.e2e.config.ts'],
             {
-                env: { NODE_TLS_REJECT_UNAUTHORIZED: '0' }, // Disables TLS certificate validation
+                env: {
+                    NODE_TLS_REJECT_UNAUTHORIZED: '0',
+                    NODE_OPTIONS: '--no-warnings',
+                }, // Disables TLS certificate validation
                 stdio: 'inherit'
             }
         );
