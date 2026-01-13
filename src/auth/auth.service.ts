@@ -126,7 +126,7 @@ export class AuthService {
             this.logger.error('User with provided email does not exist');
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
-        await this.passwordsMatchOrThrow(user.password, credentials.password);
+        await this.passwordsMatchOrThrow(user.passwordHash, credentials.password);
         const sessions = await this.sessionService.count(user.id);
         if (sessions >= this.authConfig.maxUserSessions) {
             this.logger.error(`Maximum sessions reached for user ${user.id}`);
@@ -146,7 +146,7 @@ export class AuthService {
     async signOutAll(auth: ReAuthenticationInput, userId: string): Promise<void> {
         this.validatePasswordConstraintsOrThrow(auth.password);
         const user = await this.userService.findOneByIdOrThrow(userId);
-        await this.passwordsMatchOrThrow(user.password, auth.password);
+        await this.passwordsMatchOrThrow(user.passwordHash, auth.password);
         await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
     }

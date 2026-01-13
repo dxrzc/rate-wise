@@ -36,7 +36,7 @@ export class AdminInitService implements OnModuleInit {
             const adminUser = this.userRepository.create({
                 username: this.adminConfig.username,
                 email: adminEmail,
-                password: await this.hashingService.hash(this.adminConfig.password),
+                passwordHash: await this.hashingService.hash(this.adminConfig.password),
                 roles: [UserRole.ADMIN, UserRole.MODERATOR, UserRole.CREATOR, UserRole.REVIEWER],
                 status: AccountStatus.ACTIVE,
             });
