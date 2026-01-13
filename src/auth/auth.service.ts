@@ -112,8 +112,11 @@ export class AuthService {
     }
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
-        signUpInput.password = await this.hashingService.hash(signUpInput.password);
-        const user = await this.userService.createOne(signUpInput);
+        const passwordHash = await this.hashingService.hash(signUpInput.password);
+        const user = await this.userService.createOne({
+            ...signUpInput,
+            passwordHash,
+        });
         await this.sessionService.create(req, user.id);
         this.logger.info(`Account ${user.id} created`);
         return user;

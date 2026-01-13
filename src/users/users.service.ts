@@ -2,7 +2,6 @@ import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-dupl
 import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { USER_MESSAGES } from './messages/user.messages';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +13,7 @@ import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
+import { ICreateUserData } from './interfaces/create-user-data.interface';
 
 @Injectable()
 export class UsersService {
@@ -150,7 +150,7 @@ export class UsersService {
         await manager.withRepository(this.userRepository).remove(user);
     }
 
-    async createOne(user: SignUpInput): Promise<User> {
+    async createOne(user: ICreateUserData): Promise<User> {
         try {
             const created = await this.userRepository.save(user);
             this.logger.info(`User created in database`);
