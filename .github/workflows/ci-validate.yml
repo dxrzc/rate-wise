@@ -3,6 +3,7 @@ name: CI Validate
 on:
   pull_request:
     branches:
+      - main
       - development
 
 concurrency:
@@ -87,4 +88,22 @@ jobs:
         run: npm ci
       - name: Run components tests
         run: npm run test:components -- --maxWorkers=100% --coverage=false
-    
+        
+  run-e2e-tests:
+    name: E2E Tests
+    if: github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run e2e tests
+        run: npm run test:e2e -- --maxWorkers=100%          
