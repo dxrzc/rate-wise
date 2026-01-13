@@ -112,9 +112,9 @@ describe('GraphQL - signUp', () => {
                 .send(signUp({ args: user, fields: ['id'] }))
                 .expect(success);
             const userId = res.body.data.signUp.id;
-            const { password } = await testKit.userRepos.findOneByOrFail({ id: userId });
+            const { passwordHash } = await testKit.userRepos.findOneByOrFail({ id: userId });
             const hashingSvc = testKit.app.get(HashingService);
-            const match = await hashingSvc.compare(user.password, password);
+            const match = await hashingSvc.compare(user.password, passwordHash);
             expect(match).toBe(true);
         });
 
