@@ -16,4 +16,4 @@ export const ITEMS_LIMITS = {
         TAG_MIN_LENGTH: 2,
         TAG_MAX_LENGTH: 20,
     },
-};
+} as const;
