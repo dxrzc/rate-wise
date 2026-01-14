@@ -18,7 +18,7 @@ export class SignUpInput {
             - **Maximum length:** ${AUTH_LIMITS.USERNAME.MAX} characters.
         `,
     })
-    username!: string;
+    readonly username!: string;
 
     @IsString()
     @IsEmail()
@@ -28,7 +28,7 @@ export class SignUpInput {
             - **Must be a valid email format.**
         `,
     })
-    email!: string;
+    readonly email!: string;
 
     @IsString()
     @MinLength(AUTH_LIMITS.PASSWORD.MIN)
@@ -40,5 +40,5 @@ export class SignUpInput {
             - **Maximum length:** ${AUTH_LIMITS.PASSWORD.MAX} characters.
         `,
     })
-    password!: string;
+    readonly password!: string;
 }
