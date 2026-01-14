@@ -1,4 +1,4 @@
 export interface PaginatedRecord {
-    id: string;
-    cursor: string; // createdAt value used for pagination cursor
+    readonly id: string;
+    readonly cursor: string; // createdAt value used for pagination cursor
 }

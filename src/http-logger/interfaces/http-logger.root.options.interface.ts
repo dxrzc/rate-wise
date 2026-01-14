@@ -5,10 +5,10 @@ import {
 } from '../types/log.type';
 
 export interface IHttpLoggerRootOptions {
-    silentAll?: boolean;
-    requests: HttpRequestLogOptions;
+    readonly silentAll?: boolean;
+    readonly requests: HttpRequestLogOptions;
     messages: {
-        filesystem: HttpFileSystemLogOptions;
-        console: HttpConsoleLogOptions;
+        readonly filesystem: HttpFileSystemLogOptions;
+        readonly console: HttpConsoleLogOptions;
     };
 }

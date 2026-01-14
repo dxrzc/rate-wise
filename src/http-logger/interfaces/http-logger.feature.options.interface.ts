@@ -1,3 +1,3 @@
 export interface IHttpLoggerFeatureOptions {
-    context: string;
+    readonly context: string;
 }
