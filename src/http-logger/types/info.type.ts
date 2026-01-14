@@ -1,5 +1,9 @@
 import * as winston from 'winston';
 
-export type InfoType = winston.Logform.TransformableInfo & {
-    readonly [prop: string]: any;
+type CustomInfo = {
+    readonly context: string;
 };
+
+export type InfoType<T = Record<string, unknown>> = winston.Logform.TransformableInfo & {
+    [prop in keyof T]: T[prop];
+} & Partial<CustomInfo>;

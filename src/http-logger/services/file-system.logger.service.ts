@@ -5,6 +5,7 @@ import { ClsServiceManager } from 'nestjs-cls';
 import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
 import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
 import { createDummyTransport } from '../functions/create-dummy-transport';
+import { InfoType } from '../types/info.type';
 
 // Messages in filesystem
 @Injectable()
@@ -25,8 +26,8 @@ export class FileSystemLoggerService {
                       filename: `${fsOptions.dir}/${fsOptions.filename}`,
                       format: winston.format.combine(
                           winston.format.timestamp(),
-                          winston.format.printf((info: winston.Logform.TransformableInfo) => {
-                              const context = <string>info.context;
+                          winston.format.printf((info: InfoType) => {
+                              const context = info.context;
                               const cls = ClsServiceManager.getClsService();
                               const reqId = cls.get<string>('requestId');
                               const ip = cls.get<string>('ip');
