@@ -61,7 +61,10 @@ The project follows a layered testing strategy to validate behavior at different
 
 Unit, component and integration tests are executed automatically on every pull request as part of the CI pipeline.
 
-End-to-end tests are executed as part of the release workflow and act as a quality gate before publishing Docker images.
+End-to-end (e2e) tests are executed on pull requests targeting the main branch to validate critical user flows before changes are merged.
+
+## CI / Delivery
+Docker images are built and published automatically on version tags through the CI pipeline.
 
 ## What I’d improve next
 - Explore soft deletes to support historical data retention and moderation workflows.
