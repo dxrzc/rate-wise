@@ -30,7 +30,7 @@ export class SessionMiddlewareFactory {
                 httpOnly: true,
                 maxAge: this.sessionOptions.cookieMaxAgeMs,
                 secure: this.sessionOptions.secure,
-                sameSite: 'lax', // blocks cross-site state-changing requests
+                sameSite: 'strict',
             },
             store: new RedisStore({
                 client: <unknown>this.redisClient.connection.client,
