@@ -1,6 +1,5 @@
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { SilentHttpLogger } from '@components/utils/silent-http-logger.util';
-import { sleep } from '@components/utils/sleep.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
@@ -183,49 +182,6 @@ describe('Sessions Service ', () => {
 
             const deletedSessions = await sessionsService.deleteAll(userId);
             expect(deletedSessions).toBe(2);
-        });
-    });
-
-    // This only works on expired events, not on del events anymore.
-    describe.skip('Sessions cleanup (redis)', () => {
-        test('session id is deleted from user-sessions-index', async () => {
-            // create session
-            const userId = faker.string.alpha(10);
-            const sid = faker.string.uuid();
-            mockRequest.sessionID = sid;
-            await sessionsService.create(<any>mockRequest, userId);
-
-            // sid in index
-            const indexKey = userSessionsSetKey(userId);
-            expect(await redisClient.setSize(indexKey)).toBe(1);
-
-            // delete session from redis, this will trigger the cleanup
-            await redisClient.delete(`session:${sid}`);
-            await sleep(1000); // redis subscriber works async
-
-            // session should not exist in sessions-index anymore
-            const index = await redisClient.setMembers(indexKey);
-            expect(index.length).toBe(0);
-        });
-
-        test('session-user relation is deleted', async () => {
-            // create session
-            const userId = faker.string.alpha(10);
-            const sid = faker.string.uuid();
-            mockRequest.sessionID = sid;
-            await sessionsService.create(<any>mockRequest, userId);
-
-            // sid-user relation exists
-            const relationKey = userAndSessionRelationKey(sid);
-            await expect(redisClient.get(relationKey)).resolves.not.toBeNull();
-
-            // delete session from redis, this will trigger the cleanup
-            await redisClient.delete(`session:${sid}`);
-            await sleep(1000); // redis subscriber works async
-
-            // sid-user relation should not exists anymore
-            const relation = await redisClient.get(relationKey);
-            expect(relation).toBeNull();
         });
     });
 });
