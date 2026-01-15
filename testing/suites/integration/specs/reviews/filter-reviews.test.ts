@@ -3,11 +3,14 @@ import { createItem } from '@integration/utils/create-item.util';
 import { createReview } from '@integration/utils/create-review.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
+import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { Code } from 'src/common/enum/code.enum';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { Review } from 'src/reviews/entities/review.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
+import { VoteAction } from 'src/votes/enum/vote.enum';
 
 describe('Gql - filterReviews', () => {
     beforeAll(async () => {
@@ -203,6 +206,81 @@ describe('Gql - filterReviews', () => {
                 },
             });
             expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe('Votes field', () => {
+        test('returns votes when filtering by createdBy and relatedItem', async () => {
+            const inputVotes = {
+                UP: VoteAction.UP.toUpperCase(),
+                DOWN: VoteAction.DOWN.toUpperCase(),
+            };
+            const { id: creatorId } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: itemId } = await createItem(creatorId);
+            const { id: reviewerId } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: reviewId } = await createReview(itemId, reviewerId);
+            const reviewItemId = itemId;
+            const { sessionCookie: upvoterCookie, id: upvoterId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.REVIEWER],
+            });
+            const { sessionCookie: downvoterCookie, id: downvoterId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.REVIEWER],
+            });
+            // create votes
+            await testKit.gqlClient
+                .send(voteReview({ args: { reviewId, vote: inputVotes.UP } }))
+                .set('Cookie', upvoterCookie)
+                .expect(success);
+            await testKit.gqlClient
+                .send(voteReview({ args: { reviewId, vote: inputVotes.DOWN } }))
+                .set('Cookie', downvoterCookie)
+                .expect(success);
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query FilterReviewsWithVotes($limit: Int!, $votesLimit: Int!, $createdBy: ID, $relatedItem: ID) {
+                          filterReviews(limit: $limit, createdBy: $createdBy, relatedItem: $relatedItem) {
+                            totalCount
+                            nodes {
+                              id
+                              votes(limit: $votesLimit) {
+                                totalCount
+                                hasNextPage
+                                nodes {
+                                  vote
+                                  createdBy
+                                  relatedReview
+                                }
+                              }
+                            }
+                          }
+                        }`,
+                variables: {
+                    limit: 5,
+                    votesLimit: 10,
+                    createdBy: reviewerId,
+                    relatedItem: reviewItemId,
+                },
+            });
+            const review = response.body.data.filterReviews.nodes[0];
+            expect(response.body.data.filterReviews.totalCount).toBe(1);
+            expect(review.id).toBe(reviewId);
+            expect(review.votes.totalCount).toBe(2);
+            expect(review.votes.hasNextPage).toBe(false);
+            expect(review.votes.nodes).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        createdBy: upvoterId,
+                        vote: inputVotes.UP,
+                        relatedReview: reviewId,
+                    }),
+                    expect.objectContaining({
+                        createdBy: downvoterId,
+                        vote: inputVotes.DOWN,
+                        relatedReview: reviewId,
+                    }),
+                ]),
+            );
         });
     });
 });
