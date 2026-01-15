@@ -27,7 +27,6 @@ export class VotesService {
      * This prevents race conditions if a user votes/downvotes/delete-votes multiple times in a short period.
      */
     private async lockUserTx(userId: string, manager: EntityManager) {
-        // similar to std::lock_guard in C++
         await manager
             .getRepository(User)
             .createQueryBuilder('user')
