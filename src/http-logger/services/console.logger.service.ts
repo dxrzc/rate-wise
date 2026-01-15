@@ -22,7 +22,7 @@ export class ConsoleLoggerService {
             format: winston.format.combine(
                 winston.format.timestamp(),
                 winston.format.ms(),
-                winston.format.printf((info: winston.Logform.TransformableInfo) => {
+                winston.format.printf((info: InfoType) => {
                     const colorizer = winston.format.colorize().colorize;
                     const cls = ClsServiceManager.getClsService();
                     const requestId = cls.get<string>('requestId');
