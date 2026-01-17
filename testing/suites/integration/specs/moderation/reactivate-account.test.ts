@@ -1,7 +1,7 @@
 import { createAccount } from '@integration/utils/create-account.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
-import { suspendAccount } from '@testing/tools/gql-operations/moderation/suspend-account.operation';
+import { reactivateAccount } from '@testing/tools/gql-operations/moderation/reactivate-account.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
@@ -13,10 +13,10 @@ import { faker } from '@faker-js/faker';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 
-describe('GraphQL - suspendAccount', () => {
+describe('GraphQL - reactivateAccount', () => {
     describe('Session cookie not provided', () => {
         test('return unauthorized code and unauthorized error message', async () => {
-            const response = await testKit.gqlClient.send(suspendAccount({ args: '123' }));
+            const response = await testKit.gqlClient.send(reactivateAccount({ args: '123' }));
             expect(response).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
         });
     });
@@ -29,7 +29,7 @@ describe('GraphQL - suspendAccount', () => {
             });
             const response = await testKit.gqlClient
                 .set('Cookie', reviewerSess)
-                .send(suspendAccount({ args: '123' }));
+                .send(reactivateAccount({ args: '123' }));
             expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
         });
     });
@@ -42,7 +42,7 @@ describe('GraphQL - suspendAccount', () => {
             });
             const response = await testKit.gqlClient
                 .set('Cookie', creatorSess)
-                .send(suspendAccount({ args: '123' }));
+                .send(reactivateAccount({ args: '123' }));
             expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
         });
     });
@@ -55,7 +55,7 @@ describe('GraphQL - suspendAccount', () => {
             });
             const response = await testKit.gqlClient
                 .set('Cookie', adminSess)
-                .send(suspendAccount({ args: '123' }));
+                .send(reactivateAccount({ args: '123' }));
             expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
         });
     });
@@ -67,12 +67,12 @@ describe('GraphQL - suspendAccount', () => {
                 roles: [UserRole.MODERATOR],
             });
             const { id: targetUserId } = await createAccount({
-                status: AccountStatus.ACTIVE,
+                status: AccountStatus.SUSPENDED,
                 roles: [UserRole.REVIEWER],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
-                .send(suspendAccount({ args: targetUserId }));
+                .send(reactivateAccount({ args: targetUserId }));
             expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_NOT_ACTIVE);
         });
     });
@@ -84,81 +84,51 @@ describe('GraphQL - suspendAccount', () => {
                 roles: [UserRole.MODERATOR],
             });
             const { id: targetUserId } = await createAccount({
-                status: AccountStatus.ACTIVE,
+                status: AccountStatus.SUSPENDED,
                 roles: [UserRole.REVIEWER],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', sessionCookie)
-                .send(suspendAccount({ args: targetUserId }));
+                .send(reactivateAccount({ args: targetUserId }));
             expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
         });
     });
 
     describe('User role is moderator and account status is active', () => {
-        test('can suspend reviewers', async () => {
+        test('can reactivate reviewers', async () => {
             const { sessionCookie: moderatorSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.MODERATOR],
             });
             const { id: reviewerId } = await createAccount({
-                status: AccountStatus.ACTIVE,
+                status: AccountStatus.SUSPENDED,
                 roles: [UserRole.REVIEWER],
             });
             await testKit.gqlClient
                 .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: reviewerId }))
+                .send(reactivateAccount({ args: reviewerId }))
                 .expect(success);
 
             const userInDb = await testKit.userRepos.findOneByOrFail({ id: reviewerId });
-            expect(userInDb.status).toBe(AccountStatus.SUSPENDED);
+            expect(userInDb.status).toBe(AccountStatus.ACTIVE);
         });
 
-        test('can suspend creators', async () => {
+        test('can reactivate creators', async () => {
             const { sessionCookie: moderatorSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.MODERATOR],
             });
             const { id: creatorId } = await createAccount({
-                status: AccountStatus.ACTIVE,
+                status: AccountStatus.SUSPENDED,
                 roles: [UserRole.CREATOR],
             });
             await testKit.gqlClient
                 .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: creatorId }))
+                .send(reactivateAccount({ args: creatorId }))
                 .expect(success);
 
             const userInDb = await testKit.userRepos.findOneByOrFail({ id: creatorId });
-            expect(userInDb.status).toBe(AccountStatus.SUSPENDED);
-        });
-
-        test('can not suspend admin (forbidden code and error)', async () => {
-            const { sessionCookie: moderatorSess } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.MODERATOR],
-            });
-            const { id: adminId } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.ADMIN],
-            });
-            const response = await testKit.gqlClient
-                .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: adminId }));
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-        });
-
-        test('can not suspend another moderator (forbidden code and error)', async () => {
-            const { sessionCookie: moderatorSess } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.MODERATOR],
-            });
-            const { id: otherModeratorId } = await createAccount({
-                status: AccountStatus.ACTIVE,
-                roles: [UserRole.MODERATOR],
-            });
-            const response = await testKit.gqlClient
-                .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: otherModeratorId }));
-            expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
+            expect(userInDb.status).toBe(AccountStatus.ACTIVE);
         });
 
         test('user is deleted from redis cache', async () => {
@@ -167,40 +137,39 @@ describe('GraphQL - suspendAccount', () => {
                 roles: [UserRole.MODERATOR],
             });
             const { id: targetUserId } = await createAccount({
-                status: AccountStatus.ACTIVE,
+                status: AccountStatus.SUSPENDED,
                 roles: [UserRole.REVIEWER],
             });
-            // trigger caching
             const cacheKey = createUserCacheKey(targetUserId);
             await testKit.gqlClient
                 .send(findUserById({ fields: ['id'], args: targetUserId }))
                 .expect(success);
             await expect(testKit.cacheManager.get(cacheKey)).resolves.toBeDefined();
-            // suspend account
+
             await testKit.gqlClient
                 .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: targetUserId }))
+                .send(reactivateAccount({ args: targetUserId }))
                 .expect(success);
-            // user should have been removed from cache
+
             const userInCache = await testKit.cacheManager.get(cacheKey);
             expect(userInCache).toBeUndefined();
         });
     });
 
-    describe('Target account is already suspended', () => {
-        test('return conflict code and account already suspended error message', async () => {
+    describe('Target account is not suspended', () => {
+        test('return conflict code and account not suspended error message', async () => {
             const { sessionCookie: moderatorSess } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.MODERATOR],
             });
             const { id: targetUserId } = await createAccount({
-                status: AccountStatus.SUSPENDED,
+                status: AccountStatus.ACTIVE,
                 roles: [UserRole.REVIEWER],
             });
             const response = await testKit.gqlClient
                 .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: targetUserId }));
-            expect(response).toFailWith(Code.CONFLICT, AUTH_MESSAGES.ACCOUNT_ALREADY_SUSPENDED);
+                .send(reactivateAccount({ args: targetUserId }));
+            expect(response).toFailWith(Code.CONFLICT, AUTH_MESSAGES.ACCOUNT_NOT_SUSPENDED);
         });
     });
 
@@ -212,7 +181,7 @@ describe('GraphQL - suspendAccount', () => {
             });
             const response = await testKit.gqlClient
                 .set('Cookie', moderatorSess)
-                .send(suspendAccount({ args: '550e8400-e29b-41d4-a716-446655440000' }));
+                .send(reactivateAccount({ args: '550e8400-e29b-41d4-a716-446655440000' }));
             expect(response).toFailWith(Code.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
         });
     });
@@ -225,7 +194,7 @@ describe('GraphQL - suspendAccount', () => {
                 roles: [UserRole.MODERATOR],
             });
             const { id: targetUserId } = await createAccount({
-                status: AccountStatus.ACTIVE,
+                status: AccountStatus.SUSPENDED,
                 roles: [UserRole.REVIEWER],
             });
             await Promise.all(
@@ -233,13 +202,13 @@ describe('GraphQL - suspendAccount', () => {
                     testKit.gqlClient
                         .set('Cookie', moderatorSess)
                         .set('X-Forwarded-For', ip)
-                        .send(suspendAccount({ args: targetUserId })),
+                        .send(reactivateAccount({ args: targetUserId })),
                 ),
             );
             const response = await testKit.gqlClient
                 .set('Cookie', moderatorSess)
                 .set('X-Forwarded-For', ip)
-                .send(suspendAccount({ args: targetUserId }));
+                .send(reactivateAccount({ args: targetUserId }));
             expect(response).toFailWith(Code.TOO_MANY_REQUESTS, COMMON_MESSAGES.TOO_MANY_REQUESTS);
         });
     });

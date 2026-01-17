@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Writable } from '@testing/tools/types/writable.type';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -57,7 +58,7 @@ export class TestResolver {
 describe('Roles Guard', () => {
     let testingModule: TestingModule;
     let app: NestExpressApplication;
-    let mockReqData: { user: Partial<AuthenticatedUser> };
+    let mockReqData: { user: Partial<Writable<AuthenticatedUser>> };
     const resolver = TestResolver.prototype;
 
     beforeEach(() => {

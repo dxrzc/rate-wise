@@ -6,7 +6,7 @@ import { TestingModule } from '@nestjs/testing';
 import { EmailsClient } from 'src/emails/client/emails.client';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { ClsService } from 'nestjs-cls';
-import { IAls } from 'src/common/interfaces/others/async-local-storage.interface';
+import { IAls } from 'src/common/types/others/async-local-storage.type';
 
 @Injectable()
 export class EmailsQueueMock {

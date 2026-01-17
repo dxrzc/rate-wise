@@ -1,5 +1,5 @@
 export interface IEmailsFeatureOptions {
-    queues: {
-        retryAttempts: number;
+    readonly queues: {
+        readonly retryAttempts: number;
     };
 }

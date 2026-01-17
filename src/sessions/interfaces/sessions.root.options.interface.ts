@@ -1,9 +1,9 @@
 export interface ISessionsRootOptions {
-    cookieName: string;
-    cookieSecret: string;
-    cookieMaxAgeMs: number;
-    secure: boolean;
-    connection: {
-        redisUri: string;
+    readonly cookieName: string;
+    readonly cookieSecret: string;
+    readonly cookieMaxAgeMs: number;
+    readonly secure: boolean;
+    readonly connection: {
+        readonly redisUri: string;
     };
 }

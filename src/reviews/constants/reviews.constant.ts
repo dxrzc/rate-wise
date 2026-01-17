@@ -7,4 +7,4 @@ export const REVIEWS_LIMITS = {
         MIN: 0,
         MAX: 10,
     },
-};
+} as const;

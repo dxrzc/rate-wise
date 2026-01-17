@@ -11,12 +11,12 @@ export class CreateVoteInput {
     @Field(() => VoteAction, {
         description: 'The action of the vote, either UP or DOWN.',
     })
-    vote!: VoteAction;
+    readonly vote!: VoteAction;
 
     @IsDefined()
     @IsString()
     @Field(() => String, {
         description: 'The unique ID of the review being voted on.',
     })
-    reviewId!: string;
+    readonly reviewId!: string;
 }

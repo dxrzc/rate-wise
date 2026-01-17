@@ -5,6 +5,6 @@ import { QueryFields } from '../types/query-fields.type';
  * @param ModelType The model type class (e.g UserModel)
  */
 export interface IOperation<InputType = unknown, ModelType = any> {
-    args: InputType;
-    fields?: QueryFields<ModelType>[] | 'ALL';
+    readonly args: InputType;
+    readonly fields?: QueryFields<ModelType>[] | 'ALL';
 }

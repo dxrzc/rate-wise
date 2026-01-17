@@ -77,7 +77,7 @@ import Redis from 'ioredis';
             isGlobal: true,
             imports: [RedisMonitoringModule],
             inject: [ServerConfigService, CACHE_REDIS_STORE],
-            useFactory: (serverConfig: ServerConfigService, cacheStore: KeyvRedis<any>) => ({
+            useFactory: (serverConfig: ServerConfigService, cacheStore: KeyvRedis<unknown>) => ({
                 ttl: serverConfig.cacheTtlSeconds * 1000, // milliseconds
                 stores: [cacheStore],
             }),

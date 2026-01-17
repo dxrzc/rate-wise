@@ -15,8 +15,8 @@ export class User extends BaseEntity {
     @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.EMAIL.MAX })
     email!: string;
 
-    @Column({ type: 'text' })
-    password!: string;
+    @Column({ type: 'text', name: 'password_hash' })
+    passwordHash!: string;
 
     @Column({
         type: 'enum',

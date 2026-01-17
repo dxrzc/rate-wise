@@ -1,4 +1,4 @@
 export interface IEdgeType<T> {
-    cursor: string;
-    node: T;
+    readonly cursor: string;
+    readonly node: T;
 }

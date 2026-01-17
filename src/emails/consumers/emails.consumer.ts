@@ -1,12 +1,12 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { ClsService } from 'nestjs-cls';
-import { IAls } from 'src/common/interfaces/others/async-local-storage.interface';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { EmailsClient } from '../client/emails.client';
 import { EMAILS_QUEUE } from '../constants/emails.constants';
 import { IEmailInfo } from '../interface/email-info.interface';
+import { IAls } from 'src/common/types/others/async-local-storage.type';
 
 // requestId + email info
 type JobData = IAls & IEmailInfo;

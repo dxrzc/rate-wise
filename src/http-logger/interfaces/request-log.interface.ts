@@ -1,15 +1,15 @@
 export interface IGqlRequestLog {
-    requestId: string;
-    responseTime: string;
-    ip: string;
-    query: string;
-    variables?: { [name: string]: any };
-    error?: string;
+    readonly requestId: string;
+    readonly responseTime: string;
+    readonly ip: string;
+    readonly query: string;
+    readonly variables?: { [name: string]: unknown };
+    readonly error?: string;
 }
 
 export interface IRestRequestLog {
-    requestId: string;
-    responseTime: string;
-    endpoint: string;
-    ip: string;
+    readonly requestId: string;
+    readonly responseTime: string;
+    readonly endpoint: string;
+    readonly ip: string;
 }

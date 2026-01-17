@@ -1,4 +1,4 @@
 export interface IDecodedCursor {
-    id: string;
-    createdAt: string;
+    readonly id: string;
+    readonly createdAt: string;
 }

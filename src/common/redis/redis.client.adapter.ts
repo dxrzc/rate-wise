@@ -14,7 +14,7 @@ export class RedisClientAdapter {
     private readonly _connection: RedisConnection;
 
     constructor(
-        private readonly redisUri: any,
+        private readonly redisUri: string,
         private readonly context: string,
     ) {
         this._connection = new RedisConnection(redisUri, context);

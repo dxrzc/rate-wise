@@ -1,5 +1,5 @@
 export interface ITokensRootOptions {
-    connection: {
-        redisUri: string;
+    readonly connection: {
+        readonly redisUri: string;
     };
 }
