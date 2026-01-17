@@ -20,4 +20,6 @@ export const reviewData = [
     'rating',
     'createdBy',
     'relatedItem',
+    'upVotes',
+    'downVotes',
 ];
