@@ -21,7 +21,11 @@ const config: Config = {
     collectCoverage: true,
     coverageDirectory: '<rootDir>/coverage/integration',
     coverageProvider: 'v8',
-    collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!<rootDir>/testing/suites/integration/**'],
+    collectCoverageFrom: [
+        '<rootDir>/src/**/*.ts',
+        '!<rootDir>/testing/suites/integration/**',
+        '!<rootDir>/src/seed/**',
+    ],
 
     moduleNameMapper: {
         ...baseJestConfig.moduleNameMapper,

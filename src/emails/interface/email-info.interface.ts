@@ -1,7 +1,7 @@
 export interface IEmailInfo {
-    to: string;
-    from: string;
-    subject: string;
-    text?: string;
-    html: string;
+    readonly to: string;
+    readonly from: string;
+    readonly subject: string;
+    readonly text?: string;
+    readonly html: string;
 }

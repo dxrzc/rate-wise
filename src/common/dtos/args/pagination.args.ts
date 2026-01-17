@@ -23,6 +23,8 @@ export class PaginationArgs {
         - **Minimum value:** 1.
         - **Maximum value:** 100.
         `,
+        nullable: true,
+        defaultValue: PAG_LIMITS.DEFAULT,
     })
     limit!: number;
 }

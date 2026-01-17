@@ -1,7 +1,4 @@
 import { signOutAll } from '@testing/tools/gql-operations/auth/sign-out-all.operation';
-import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
-import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createAccount } from '@integration/utils/create-account.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
@@ -10,7 +7,15 @@ import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 import { success } from '@integration/utils/no-errors.util';
+import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
+import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
+import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
+import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
+import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 
 describe('GraphQL - signOutAll', () => {
     describe('Session Cookie not provided', () => {
@@ -22,28 +27,96 @@ describe('GraphQL - signOutAll', () => {
         });
     });
 
+    describe.each(Object.values(AccountStatus))('User account status is %s', (status) => {
+        test('user can perform this action', async () => {
+            const { sessionCookie, password } = await createAccount({ status });
+            await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(signOutAll({ args: { password } }))
+                .expect(success);
+        });
+    });
+
+    describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
+        test('user can perform this action', async () => {
+            const { sessionCookie, password } = await createAccount({
+                roles: [role],
+            });
+            await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(signOutAll({ args: { password } }))
+                .expect(success);
+        });
+    });
+
     describe('Successful', () => {
-        test('all user sessions in redis are deleted', async () => {
-            const { email, password, sessionCookie } = await createAccount();
-            const sid1 = getSidFromCookie(sessionCookie);
-            // sign in
-            const signInRes = await testKit.gqlClient
+        test('delete all user sessions from redis', async () => {
+            // get session-cookie 1
+            const { sessionCookie: sess1Cookie, password, email } = await createAccount();
+            // get session-cookie 2
+            const signInRes = await testKit.gqlClient // sess2
                 .send(signIn({ args: { email, password }, fields: ['id'] }))
                 .expect(success);
-            const sid2 = getSidFromCookie(getSessionCookie(signInRes));
-            // check both sids exist in redis
-            const session1 = testKit.sessionsRedisClient.get(`session:${sid1}`);
-            const session2 = testKit.sessionsRedisClient.get(`session:${sid2}`);
-            await expect(session1).resolves.not.toBeNull();
-            await expect(session2).resolves.not.toBeNull();
+            const sid1RedisKey = `${SESS_REDIS_PREFIX}${getSidFromCookie(sess1Cookie)}`;
+            const sid2RedisKey = `${SESS_REDIS_PREFIX}${getSidFromCookie(getSessionCookie(signInRes))}`;
+            // sessions exist in redis
+            await expect(testKit.sessionsRedisClient.get(sid1RedisKey)).resolves.not.toBeNull();
+            await expect(testKit.sessionsRedisClient.get(sid2RedisKey)).resolves.not.toBeNull();
+            // sign out all
+            await testKit.gqlClient
+                .set('Cookie', sess1Cookie)
+                .send(signOutAll({ args: { password } }))
+                .expect(success);
+            // sessions do not exist anymore
+            await expect(testKit.sessionsRedisClient.get(sid1RedisKey)).resolves.toBeNull();
+            await expect(testKit.sessionsRedisClient.get(sid2RedisKey)).resolves.toBeNull();
+        });
+
+        test('delete user-sessions redis set', async () => {
+            const { sessionCookie, password, id } = await createAccount();
+            // set exists
+            const redisKey = userSessionsSetKey(id);
+            await expect(testKit.sessionsRedisClient.exists(redisKey)).resolves.toBeTruthy();
             // sign out all
             await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(signOutAll({ args: { password } }))
                 .expect(success);
-            // sids don't exist anymore
-            await expect(testKit.sessionsRedisClient.get(`session:${sid1}`)).resolves.toBeNull();
-            await expect(testKit.sessionsRedisClient.get(`session:${sid2}`)).resolves.toBeNull();
+            // set does not exist anymore
+            await expect(testKit.sessionsRedisClient.exists(redisKey)).resolves.toBeFalsy();
+        });
+
+        test('delete all user-session relation records from redis', async () => {
+            const { sessionCookie: sess1Cookie, password, email } = await createAccount();
+            // get session-cookie 2
+            const signInRes = await testKit.gqlClient // sess2
+                .send(signIn({ args: { email, password }, fields: ['id'] }))
+                .expect(success);
+            const sess1ID = getSidFromCookie(sess1Cookie);
+            const sess2ID = getSidFromCookie(getSessionCookie(signInRes));
+            const relation1Key = userAndSessionRelationKey(sess1ID);
+            const relation2Key = userAndSessionRelationKey(sess2ID);
+            // relations exist in redis
+            await expect(testKit.sessionsRedisClient.get(relation1Key)).resolves.not.toBeNull();
+            await expect(testKit.sessionsRedisClient.get(relation2Key)).resolves.not.toBeNull();
+            // sign out all
+            await testKit.gqlClient
+                .set('Cookie', sess1Cookie)
+                .send(signOutAll({ args: { password } }))
+                .expect(success);
+            // relations do not exist anymore
+            await expect(testKit.sessionsRedisClient.get(relation1Key)).resolves.toBeNull();
+            await expect(testKit.sessionsRedisClient.get(relation2Key)).resolves.toBeNull();
+        });
+    });
+
+    describe('Password not provided', () => {
+        test('return bad user input code', async () => {
+            const { sessionCookie } = await createAccount();
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(signOutAll({ args: { password: undefined as any } }));
+            expect(res).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining('password'));
         });
     });
 

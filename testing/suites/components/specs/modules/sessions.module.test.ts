@@ -1,11 +1,13 @@
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { SilentHttpLogger } from '@components/utils/silent-http-logger.util';
-import { sleep } from '@components/utils/sleep.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
+import {
+    SESS_REDIS_PREFIX,
+    SESSIONS_REDIS_CONNECTION,
+} from 'src/sessions/constants/sessions.constants';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
@@ -127,6 +129,8 @@ describe('Sessions Service ', () => {
 
     describe('delete', () => {
         test('req.session.destroy is called', async () => {
+            const sess1Id = faker.string.uuid();
+            mockRequest.sessionID = sess1Id;
             await sessionsService.delete(<any>mockRequest);
             expect(mockRequest.session.destroy).toHaveBeenCalledTimes(1);
         });
@@ -146,55 +150,38 @@ describe('Sessions Service ', () => {
             await sessionsService.create(<any>mockRequest, userId);
 
             // sessions created
-            await expect(redisClient.get(`session:${sess1Id}`)).resolves.not.toBeNull();
-            await expect(redisClient.get(`session:${sess2Id}`)).resolves.not.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess1Id}`)).resolves.not.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess2Id}`)).resolves.not.toBeNull();
 
             // sessions deleted
             await sessionsService.deleteAll(userId);
-            await expect(redisClient.get(`session:${sess1Id}`)).resolves.toBeNull();
-            await expect(redisClient.get(`session:${sess2Id}`)).resolves.toBeNull();
-        });
-    });
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess1Id}`)).resolves.toBeNull();
+            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess2Id}`)).resolves.toBeNull();
 
-    describe('Sessions cleanup (redis)', () => {
-        test('session id is deleted from user-sessions-index', async () => {
-            // create session
-            const userId = faker.string.alpha(10);
-            const sid = faker.string.uuid();
-            mockRequest.sessionID = sid;
-            await sessionsService.create(<any>mockRequest, userId);
-
-            // sid in index
+            // index deleted
             const indexKey = userSessionsSetKey(userId);
-            expect(await redisClient.setSize(indexKey)).toBe(1);
-
-            // delete session from redis, this will trigger the cleanup
-            await redisClient.delete(`session:${sid}`);
-            await sleep(1000); // redis subscriber works async
-
-            // session should not exist in sessions-index anymore
             const index = await redisClient.setMembers(indexKey);
             expect(index.length).toBe(0);
+
+            // relations deleted
+            await expect(redisClient.get(userAndSessionRelationKey(sess1Id))).resolves.toBeNull();
+            await expect(redisClient.get(userAndSessionRelationKey(sess2Id))).resolves.toBeNull();
         });
 
-        test('session-user relation is deleted', async () => {
-            // create session
+        test('return the number of the deleted sessions', async () => {
             const userId = faker.string.alpha(10);
-            const sid = faker.string.uuid();
-            mockRequest.sessionID = sid;
+
+            // create sessions
+            const sess1Id = faker.string.uuid();
+            mockRequest.sessionID = sess1Id;
             await sessionsService.create(<any>mockRequest, userId);
 
-            // sid-user relation exists
-            const relationKey = userAndSessionRelationKey(sid);
-            await expect(redisClient.get(relationKey)).resolves.not.toBeNull();
+            const sess2Id = faker.string.uuid();
+            mockRequest.sessionID = sess2Id;
+            await sessionsService.create(<any>mockRequest, userId);
 
-            // delete session from redis, this will trigger the cleanup
-            await redisClient.delete(`session:${sid}`);
-            await sleep(1000); // redis subscriber works async
-
-            // sid-user relation should not exists anymore
-            const relation = await redisClient.get(relationKey);
-            expect(relation).toBeNull();
+            const deletedSessions = await sessionsService.deleteAll(userId);
+            expect(deletedSessions).toBe(2);
         });
     });
 });

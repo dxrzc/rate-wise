@@ -1,4 +1,4 @@
 export interface ICacheJobData<T> {
-    key: string;
-    value: T;
+    readonly key: string;
+    readonly value: T;
 }

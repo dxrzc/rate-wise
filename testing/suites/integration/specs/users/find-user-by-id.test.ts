@@ -80,14 +80,14 @@ describe('Gql - findUserById', () => {
             const cacheKey = createUserCacheKey(id);
             // trigger cache
             await testKit.gqlClient.send(findUserById({ fields: ['id'], args: id }));
-            const userInCache = await testKit.cacheManager.get<{ password: string }>(cacheKey);
-            expect(userInCache!.password).toBeUndefined();
+            const userInCache = await testKit.cacheManager.get<{ passwordHash: string }>(cacheKey);
+            expect(userInCache!.passwordHash).toBeUndefined();
         });
 
         test('return user in database without password', async () => {
             const { id } = await createAccount();
             const userInDb = (await testKit.userRepos.findOneBy({ id })) as any;
-            delete userInDb.password;
+            delete userInDb.passwordHash;
             delete userInDb.items;
             const res = await testKit.gqlClient
                 .send(findUserById({ fields: 'ALL', args: id }))
@@ -118,7 +118,7 @@ describe('Gql - findUserById', () => {
         test('return user in database without password', async () => {
             const { id } = await createAccount();
             const userInDb = (await testKit.userRepos.findOneBy({ id })) as any;
-            delete userInDb.password;
+            delete userInDb.passwordHash;
             delete userInDb.items;
             // trigger cache
             const cacheKey = createUserCacheKey(id);

@@ -19,10 +19,13 @@ export class GqlConfigService implements GqlOptionsFactory {
     createGqlOptions(): ApolloDriverConfig {
         return {
             playground: false,
-            introspection: this.serverConfig.isDevelopment,
-            plugins: this.serverConfig.isDevelopment
-                ? [ApolloServerPluginLandingPageLocalDefault()]
-                : [],
+            introspection: true,
+            csrfPrevention: true,
+            plugins: [
+                ApolloServerPluginLandingPageLocalDefault({
+                    footer: false,
+                }),
+            ],
             formatError: (error) => {
                 const handledError = handleGqlError(error, {
                     stackTrace: this.serverConfig.isDevelopment,

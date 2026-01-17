@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM base AS prod-deps
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts
 
 FROM base AS builder
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
@@ -26,8 +26,8 @@ COPY tsconfig.json ./
 ENV NODE_ENV=development
 CMD ["npx", "nest", "start", "-w"] 
 
-FROM base AS e2e
-COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
+FROM base AS production
+COPY --from=prod-deps /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
-ENV NODE_ENV=e2e
+ENV NODE_ENV=production
 CMD ["node", "dist/main.js"] 

@@ -1,14 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import {
-    IsDefined,
-    IsInt,
-    IsString,
-    IsUUID,
-    Max,
-    MaxLength,
-    Min,
-    MinLength,
-} from 'class-validator';
+import { IsDefined, IsInt, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { REVIEWS_LIMITS } from '../constants/reviews.constant';
 import { Transform } from 'class-transformer';
 import { trim } from 'src/common/functions/utils/trim.util';
@@ -25,7 +16,7 @@ export class CreateReviewInput {
     @Field(() => String, {
         description: `The text content of the review. Minimum length: ${REVIEWS_LIMITS.CONTENT.MIN}, Maximum length: ${REVIEWS_LIMITS.CONTENT.MAX}.`,
     })
-    content!: string;
+    readonly content!: string;
 
     @IsDefined()
     @IsInt()
@@ -34,13 +25,12 @@ export class CreateReviewInput {
     @Field(() => Int, {
         description: `The rating score. Minimum: ${REVIEWS_LIMITS.RATING.MIN}, Maximum: ${REVIEWS_LIMITS.RATING.MAX}.`,
     })
-    rating!: number;
+    readonly rating!: number;
 
     @IsDefined()
-    @IsUUID()
     @IsString()
     @Field(() => String, {
         description: 'The unique ID of the item being reviewed.',
     })
-    itemId!: string;
+    readonly itemId!: string;
 }

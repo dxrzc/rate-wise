@@ -1,13 +1,4 @@
-export const accountData = [
-    'id',
-    'createdAt',
-    'updatedAt',
-    'username',
-    'email',
-    'status',
-    'roles',
-    'reputationScore',
-];
+export const accountData = ['id', 'createdAt', 'updatedAt', 'username', 'email', 'status', 'roles'];
 
 export const itemData = [
     'id',
@@ -27,7 +18,8 @@ export const reviewData = [
     'updatedAt',
     'content',
     'rating',
-    'votes',
     'createdBy',
     'relatedItem',
+    'upVotes',
+    'downVotes',
 ];

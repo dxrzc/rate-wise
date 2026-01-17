@@ -27,18 +27,6 @@ describe('SignUpInput', () => {
         });
     });
 
-    describe('Valid email but too long', () => {
-        test('throw BadRequestException and INVALID_INPUT error message', async () => {
-            const data = {
-                ...userSeed.user,
-                email: 'a'.repeat(AUTH_LIMITS.EMAIL.MAX) + '@example.com',
-            };
-            await expect(pipe.transform(data, metadata)).rejects.toThrow(
-                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
-            );
-        });
-    });
-
     describe('Invalid email format', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {

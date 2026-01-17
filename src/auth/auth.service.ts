@@ -1,10 +1,10 @@
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
+    SIGN_OUT_ALL_TOKEN,
 } from './constants/tokens.provider.constant';
 import { Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
-import { matchesConstraints } from 'src/common/functions/input/input-matches-constraints';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { HashingService } from 'src/common/services/hashing.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
@@ -12,7 +12,6 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
-import { UserRole } from 'src/users/enums/user-role.enum';
 import { UsersService } from 'src/users/users.service';
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { AUTH_LIMITS } from './constants/auth.constants';
@@ -24,6 +23,8 @@ import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
+import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
+import { UserDeletionService } from 'src/orchestrators/user-deletion/user-deletion.service';
 
 @Injectable()
 export class AuthService {
@@ -32,10 +33,13 @@ export class AuthService {
         private readonly accountVerificationToken: AuthTokenService,
         @Inject(ACCOUNT_DELETION_TOKEN)
         private readonly accountDeletionToken: AuthTokenService,
+        @Inject(SIGN_OUT_ALL_TOKEN)
+        private readonly signOutAllToken: AuthTokenService,
         private readonly authConfig: AuthConfigService,
         private readonly hashingService: HashingService,
         private readonly sessionService: SessionsService,
         private readonly userService: UsersService,
+        private readonly userDeletionService: UserDeletionService,
         private readonly logger: HttpLoggerService,
         private readonly authNotifs: AuthNotifications,
     ) {}
@@ -48,24 +52,9 @@ export class AuthService {
         }
     }
 
-    private async userDoesNotExceedMaxSessionsOrThrow(userId: string) {
-        const sessions = await this.sessionService.count(userId);
-        if (sessions >= this.authConfig.maxUserSessions) {
-            this.logger.error(`Maximum sessions reached for user ${userId}`);
-            throw GqlHttpError.Forbidden(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
-        }
-    }
-
     private validatePasswordConstraintsOrThrow(password: string) {
-        if (!matchesConstraints(password, AUTH_LIMITS.PASSWORD)) {
+        if (!matchesLengthConstraints(password, AUTH_LIMITS.PASSWORD)) {
             this.logger.error('Invalid password length');
-            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-    }
-
-    private validateEmailConstraintsOrThrow(email: string) {
-        if (!matchesConstraints(email, AUTH_LIMITS.EMAIL)) {
-            this.logger.error('Invalid email length');
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }
     }
@@ -75,20 +64,6 @@ export class AuthService {
             this.logger.error(`Account ${user.id} already verified`);
             throw GqlHttpError.Conflict(AUTH_MESSAGES.ACCOUNT_ALREADY_VERIFIED);
         }
-    }
-
-    private async hashPassword(password: string): Promise<string> {
-        const hash = await this.hashingService.hash(password, this.authConfig.passwordSaltRounds);
-        return hash;
-    }
-
-    private async getUserInEmailOrThrow(email: string): Promise<User> {
-        const user = await this.userService.findOneByEmail(email);
-        if (!user) {
-            this.logger.error(`Email not found`);
-            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
-        }
-        return user;
     }
 
     async verifyAccount(tokenInUrl: string) {
@@ -118,7 +93,7 @@ export class AuthService {
             tokenInUrl,
         );
         await runSettledOrThrow([
-            this.userService.deleteOne(id),
+            this.userDeletionService.deleteOne(id),
             this.accountDeletionToken.blacklist(jti, exp),
             this.sessionService.deleteAll(id),
         ]);
@@ -137,19 +112,29 @@ export class AuthService {
     }
 
     async signUp(signUpInput: SignUpInput, req: RequestContext): Promise<User> {
-        signUpInput.password = await this.hashPassword(signUpInput.password);
-        const user = await this.userService.createOne(signUpInput);
+        const passwordHash = await this.hashingService.hash(signUpInput.password);
+        const user = await this.userService.createOne({
+            ...signUpInput,
+            passwordHash,
+        });
         await this.sessionService.create(req, user.id);
         this.logger.info(`Account ${user.id} created`);
         return user;
     }
 
     async signIn(credentials: SignInInput, req: RequestContext): Promise<User> {
-        this.validateEmailConstraintsOrThrow(credentials.email);
         this.validatePasswordConstraintsOrThrow(credentials.password);
-        const user = await this.getUserInEmailOrThrow(credentials.email);
-        await this.passwordsMatchOrThrow(user.password, credentials.password);
-        await this.userDoesNotExceedMaxSessionsOrThrow(user.id);
+        const user = await this.userService.findOneByEmail(credentials.email);
+        if (!user) {
+            this.logger.error('User with provided email does not exist');
+            throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
+        }
+        await this.passwordsMatchOrThrow(user.passwordHash, credentials.password);
+        const sessions = await this.sessionService.count(user.id);
+        if (sessions >= this.authConfig.maxUserSessions) {
+            this.logger.error(`Maximum sessions reached for user ${user.id}`);
+            throw GqlHttpError.Forbidden(AUTH_MESSAGES.MAX_SESSIONS_REACHED);
+        }
         await this.sessionService.create(req, user.id);
         this.logger.info(`User ${user.id} signed in`);
         return user;
@@ -164,23 +149,36 @@ export class AuthService {
     async signOutAll(auth: ReAuthenticationInput, userId: string): Promise<void> {
         this.validatePasswordConstraintsOrThrow(auth.password);
         const user = await this.userService.findOneByIdOrThrow(userId);
-        await this.passwordsMatchOrThrow(user.password, auth.password);
+        await this.passwordsMatchOrThrow(user.passwordHash, auth.password);
         await this.sessionService.deleteAll(userId);
         this.logger.info(`All sessions closed for userId: ${userId}`);
     }
 
-    async suspendAccount(userId: string): Promise<void> {
-        const targetUser = await this.userService.findOneByIdOrThrow(userId);
-        if (targetUser.roles.includes(UserRole.ADMIN)) {
-            this.logger.warn(`Admin user ${targetUser.id} cannot be suspended`);
-            throw GqlHttpError.Forbidden(AUTH_MESSAGES.FORBIDDEN);
+    async requestSignOutAll(email: string): Promise<void> {
+        const user = await this.userService.findOneByEmail(email);
+        if (!user) {
+            this.logger.error('User in email does not exist, skipping email sending');
+            return;
         }
-        if (targetUser.status === AccountStatus.SUSPENDED) {
-            this.logger.warn(`User ${targetUser.id} is already suspended`);
-            throw GqlHttpError.Conflict(AUTH_MESSAGES.ACCOUNT_ALREADY_SUSPENDED);
+        if (user.status === AccountStatus.SUSPENDED) {
+            this.logger.error('Account suspended, skipping email sending');
+            return;
         }
-        targetUser.status = AccountStatus.SUSPENDED;
-        await this.userService.saveOne(targetUser);
-        this.logger.info(`User ${targetUser.id} account suspended`);
+        await this.authNotifs.sendSignOutAllEmail(user);
+        this.logger.info(`Queued sign-out-all email for user ${user.id}`);
+    }
+
+    async signOutAllPublic(tokenInUrl: string) {
+        const { id, jti, exp } = await verifyTokenOrThrow(
+            this.signOutAllToken,
+            this.logger,
+            tokenInUrl,
+        );
+        await this.userService.existsOrThrow(id);
+        const [sessions] = await runSettledOrThrow<[number, void]>([
+            this.sessionService.deleteAll(id),
+            this.signOutAllToken.blacklist(jti, exp),
+        ]);
+        this.logger.info(`${sessions} sessions of user ${id} have been deleted successfully`);
     }
 }

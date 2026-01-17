@@ -10,9 +10,9 @@ export function operationFactory(
         operationType = 'mutation',
         modelDataFetched = 'account',
     }: IOperationInfo,
-    { args, fields }: IOperation,
+    { args, fields, append = '' }: IOperation,
 ) {
-    let dataFetched: string;
+    let dataFetched: string = '';
 
     if (fields === 'ALL') {
         switch (modelDataFetched) {
@@ -31,6 +31,8 @@ export function operationFactory(
     } else {
         dataFetched = fields ? fields.join() : '';
     }
+
+    dataFetched = dataFetched + `, ${append}`;
 
     return {
         query: `

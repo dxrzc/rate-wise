@@ -1,4 +1,7 @@
 import { QueryFailedError } from 'typeorm';
 
-export const isDuplicatedKeyError = (error: unknown) =>
-    error instanceof QueryFailedError && error.message.includes('duplicate key');
+export const isDuplicatedKeyError = (error: unknown): boolean => {
+    if (!(error instanceof QueryFailedError)) return false;
+    const driverError = error.driverError as { code?: string };
+    return driverError?.code === '23505';
+};

@@ -1,12 +1,11 @@
-import {
-    CriticalThrottle,
-    UltraCriticalThrottle,
-} from 'src/common/decorators/throttling.decorator';
-import { Args, Context, ID, Mutation, Resolver } from '@nestjs/graphql';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
-import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
-import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import {
+    ALL_ACCOUNT_STATUSES,
+    RequireAccountStatus,
+} from 'src/common/decorators/min-account-status.decorator';
+import { ALL_ROLES, Roles } from 'src/common/decorators/roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { AuthService } from './auth.service';
@@ -14,8 +13,6 @@ import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';
 import { RequestContext } from './types/request-context.type';
-import { UserRole } from 'src/users/enums/user-role.enum';
-import { Roles } from 'src/common/decorators/roles.decorator';
 import { AccountModel } from './models/account.model';
 import { signUpDocs } from './docs/signUp.docs';
 import { signInDocs } from './docs/signIn.docs';
@@ -23,7 +20,9 @@ import { requestAccountVerificationDocs } from './docs/requestAccountVerificatio
 import { requestAccountDeletionDocs } from './docs/requestAccountDeletion.docs';
 import { signOutDocs } from './docs/signOut.docs';
 import { signOutAllDocs } from './docs/signOutAll.docs';
-import { suspendAccountDocs } from './docs/suspendAccount.docs';
+import { AUTH_MESSAGES } from './messages/auth.messages';
+import { RequestSignOutAllInput } from './dtos/request-sign-out-all.input';
+import { requestSignOutAllDocs } from './docs/requestSignOutAll.docs';
 
 @Resolver()
 export class AuthResolver {
@@ -34,7 +33,7 @@ export class AuthResolver {
     }
 
     @Public()
-    @CriticalThrottle()
+    @RateLimit(RateLimitTier.CRITICAL)
     @Mutation(() => AccountModel, signUpDocs)
     async signUp(
         @Args('user_data') user: SignUpInput,
@@ -44,7 +43,7 @@ export class AuthResolver {
     }
 
     @Public()
-    @CriticalThrottle()
+    @RateLimit(RateLimitTier.CRITICAL)
     @Mutation(() => AccountModel, signInDocs)
     async signIn(
         @Args('credentials') credentials: SignInInput,
@@ -53,27 +52,35 @@ export class AuthResolver {
         return await this.authService.signIn(credentials, req);
     }
 
-    @AllRolesAllowed()
-    @UltraCriticalThrottle()
-    @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
+    @Roles(...ALL_ROLES)
+    @RateLimit(RateLimitTier.ULTRA_CRITICAL)
+    @RequireAccountStatus(AccountStatus.PENDING_VERIFICATION, AccountStatus.ACTIVE)
     @Mutation(() => Boolean, requestAccountVerificationDocs)
     async requestAccountVerification(@Context('req') req: RequestContext) {
         await this.authService.requestAccountVerification(req.user);
         return true;
     }
 
-    @AllRolesAllowed()
-    @CriticalThrottle()
-    @AllAccountStatusesAllowed()
+    @Roles(...ALL_ROLES)
+    @RateLimit(RateLimitTier.CRITICAL)
+    @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, requestAccountDeletionDocs)
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {
         await this.authService.requestAccountDeletion(req.user);
         return true;
     }
 
-    @AllRolesAllowed()
-    @CriticalThrottle()
-    @AllAccountStatusesAllowed()
+    @Public()
+    @RateLimit(RateLimitTier.ULTRA_CRITICAL)
+    @Mutation(() => String, requestSignOutAllDocs)
+    async requestSignOutAll(@Args('input') input: RequestSignOutAllInput) {
+        await this.authService.requestSignOutAll(input.email);
+        return AUTH_MESSAGES.EMAIL_SENT_IF_EXISTS;
+    }
+
+    @Roles(...ALL_ROLES)
+    @RateLimit(RateLimitTier.CRITICAL)
+    @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, signOutDocs)
     async signOut(
         @Context('req') req: RequestContext,
@@ -84,9 +91,9 @@ export class AuthResolver {
         return true;
     }
 
-    @AllRolesAllowed()
-    @UltraCriticalThrottle()
-    @AllAccountStatusesAllowed()
+    @Roles(...ALL_ROLES)
+    @RateLimit(RateLimitTier.ULTRA_CRITICAL)
+    @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, signOutAllDocs)
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,
@@ -95,15 +102,6 @@ export class AuthResolver {
     ): Promise<boolean> {
         await this.authService.signOutAll(input, req.session.userId);
         this.clearCookie(res);
-        return true;
-    }
-
-    @CriticalThrottle()
-    @Roles([UserRole.ADMIN, UserRole.MODERATOR])
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @Mutation(() => Boolean, suspendAccountDocs)
-    async suspendAccount(@Args('user_id', { type: () => ID }) userId: string): Promise<boolean> {
-        await this.authService.suspendAccount(userId);
         return true;
     }
 }

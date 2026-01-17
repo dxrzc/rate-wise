@@ -14,7 +14,7 @@ export class RedisClientAdapter {
     private readonly _connection: RedisConnection;
 
     constructor(
-        private readonly redisUri: any,
+        private readonly redisUri: string,
         private readonly context: string,
     ) {
         this._connection = new RedisConnection(redisUri, context);
@@ -54,6 +54,13 @@ export class RedisClientAdapter {
      */
     async setMembers(key: string): Promise<string[]> {
         return await this.client.sMembers(key);
+    }
+
+    /**
+     * Checks if a key exists in Redis.
+     */
+    async exists(key: string): Promise<boolean> {
+        return (await this.client.exists(key)) === 1;
     }
 
     /**
@@ -127,5 +134,12 @@ export class RedisClientAdapter {
         };
 
         return wrapper;
+    }
+
+    /**
+     *  Pings the Redis server to check connectivity.
+     */
+    async ping(): Promise<string> {
+        return await this.client.ping();
     }
 }

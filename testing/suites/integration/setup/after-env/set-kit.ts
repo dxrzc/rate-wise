@@ -1,6 +1,7 @@
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
+    SIGN_OUT_ALL_TOKEN,
 } from 'src/auth/constants/tokens.provider.constant';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -17,6 +18,7 @@ import { ItemsSeedService } from 'src/seed/services/items-seed.service';
 import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { SeedService } from 'src/seed/seed.service';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 beforeAll(() => {
     testKit.userSeed = testKit.app.get(UserSeedService);
@@ -26,10 +28,12 @@ beforeAll(() => {
     testKit.authConfig = testKit.app.get(AuthConfigService);
     testKit.userRepos = testKit.app.get(DataSource).getRepository(User);
     testKit.itemRepos = testKit.app.get(DataSource).getRepository(Item);
+    testKit.votesRepos = testKit.app.get(DataSource).getRepository(Vote);
     testKit.reviewRepos = testKit.app.get(DataSource).getRepository(Review);
     testKit.tokensRedisClient = testKit.app.get<RedisClientAdapter>(TOKENS_REDIS_CONNECTION);
     testKit.sessionsRedisClient = testKit.app.get<RedisClientAdapter>(SESSIONS_REDIS_CONNECTION);
     testKit.accDeletionToken = testKit.app.get<AuthTokenService>(ACCOUNT_DELETION_TOKEN);
     testKit.accVerifToken = testKit.app.get<AuthTokenService>(ACCOUNT_VERIFICATION_TOKEN);
+    testKit.signOutAllToken = testKit.app.get<AuthTokenService>(SIGN_OUT_ALL_TOKEN);
     testKit.cacheManager = testKit.app.get<Cache>(CACHE_MANAGER);
 });

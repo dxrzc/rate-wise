@@ -12,7 +12,7 @@ export type FactoryConfigModule<T> = Required<
  * Forces "useFactory" and optionally, "imports", "inject" and "extraProviders"
  */
 export type FactoryConfigModuleWithExtraProvider<T> = FactoryConfigModule<T> & {
-    extraProviders?: Provider[];
+    readonly extraProviders?: Provider[];
 };
 
 /**
@@ -20,5 +20,5 @@ export type FactoryConfigModuleWithExtraProvider<T> = FactoryConfigModule<T> & {
  * Optionally: "imports", "inject"
  */
 export type FactoryConfigModuleWithCustomToken<T> = FactoryConfigModule<T> & {
-    provide: string;
+    readonly provide: string;
 };

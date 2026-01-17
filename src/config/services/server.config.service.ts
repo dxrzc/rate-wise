@@ -34,4 +34,8 @@ export class ServerConfigService {
     get cacheTtlSeconds(): number {
         return this.configService.get('CACHE_TTL_SECONDS');
     }
+
+    get trustProxy(): number {
+        return this.configService.get('TRUST_PROXY');
+    }
 }

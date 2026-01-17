@@ -52,6 +52,7 @@ describe('Gql - findItemById', () => {
                 .expect(success);
             expect(res.body.data.findItemById).toEqual({
                 ...item,
+                averageRating: 0,
                 createdAt: item?.createdAt.toISOString(),
                 updatedAt: item?.updatedAt.toISOString(),
             });

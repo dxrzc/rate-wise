@@ -1,98 +1,50 @@
 name: 'rate-wise'
 
 services:
-  app:        
-    restart: always
-    pull_policy: never
-    init: true
+  app:
     build:
       context: ..
       target: development
     image: ratewise:dev
     ports:
       - ${SERVER_PORT:-3000}:3000
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-3000}
     volumes:
       - ../src:/usr/src/app/src
       - ../logs:/usr/src/app/logs
-      - ../tsconfig.json:/usr/src/app/tsconfig.json      
-      - ../db:/usr/src/app/db      
+      - ../tsconfig.json:/usr/src/app/tsconfig.json
+      - ../db:/usr/src/app/db
       - ../scripts:/usr/src/app/scripts
-    depends_on:      
-      migrate:
-        condition: service_completed_successfully          
-      redis_auth:
-        condition: service_started   
-      redis_queues: 
-        condition: service_started   
-      mailpit:
-        condition: service_started      
-    environment:      
-      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
-      REDIS_AUTH_URI: redis://redis_auth:6379
-      REDIS_QUEUES_URI: redis://redis_queues:6378
-      REDIS_CACHE_URI: redis://redis_cache:6380
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
-      SMTP_USER: dev
-      SMTP_PASS: devPass
-      SERVER_PORT: ${SERVER_PORT:-3000} # For printing the ApolloServer url
     env_file:
       - path: ../.env.defaults
-        required: true 
+        required: true
       - path: ../.env.dev
-        required: false            
+        required: false
 
-  migrate:    
+  revert-migrate:
     restart: "no"
     image: ratewise:migrate
     pull_policy: never
     build:
       context: ..
-      target: development   
-    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
+      target: development
+    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:revert"
     volumes:
       - ../db:/usr/src/app/db
     depends_on:
       postgres:
-        condition: service_healthy  
+        condition: service_healthy
     environment:
-      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
-
-  revert-migrate:    
-    restart: "no"
-    image: ratewise:migrate
-    pull_policy: never
-    build:
-      context: ..
-      target: development   
-    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:revert"    
-    volumes:
-      - ../db:/usr/src/app/db
-    depends_on:
-      postgres:
-        condition: service_healthy  
-    environment:
-      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
-    profiles: 
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise
+    profiles:
       - explicitly-enabled
 
-  postgres:        
-    image: postgres:17.5-alpine          
-    restart: always
+  postgres:
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
     volumes:
       - postgres:/var/lib/postgresql/data
-    ports:
-      - ${POSTGRES_PORT:-5432}:5432    
-    environment:      
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: secretpassword
-      POSTGRES_DB: ratewise      
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev -d ratewise"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s           
 
   redisinsight:
     image: redis/redisinsight:2.70
@@ -100,70 +52,40 @@ services:
     volumes:
       - redisinsight:/data
     ports:
-      - ${REDIS_INSIGHT-5540}:5540  
-  
-  redis_auth:        
-    image: redis:8.0-alpine    
-    restart: always
-    ports: 
-      - 6379
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-    volumes:    
+      - ${REDIS_INSIGHT-5540}:5540
+
+  redis_auth:
+    volumes:
       - redis_auth:/data
       - ../redis/redis-auth.conf:/usr/local/etc/redis/redis.conf
 
-  redis_queues:        
-    image: redis:8.0-alpine    
-    restart: always
-    ports: 
-      - 6378  
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6378"]
-    volumes:    
-      - redis_queues:/data
-      - ../redis/redis-queues.conf:/usr/local/etc/redis/redis.conf   
-
-  redis_cache:       
-    image: redis:8.0-alpine    
-    restart: always
-    ports: 
-      - 6380  
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6380"]
-    volumes:    
-      - redis_cache:/data
-      - ../redis/redis-cache.conf:/usr/local/etc/redis/redis.conf        
-
-  mailpit:        
-    image: axllent/mailpit:v1.27.6     
-    restart: always
-    ports:
-        - "${MAILHOG_SMTP_PORT:-1025}:1025"
-        - "${MAILHOG_UI_PORT:-8025}:8025"    
+  redis_queues:
     volumes:
-        - mailpit:/data    
-    environment:
-      # https://mailpit.axllent.org/docs/configuration/runtime-options/
-      MP_MAX_MESSAGES: 5000
-      MP_DATABASE: /data/mailpit.db
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1   
-      MP_SEND_API_AUTH_ACCEPT_ANY: 1    
+      - redis_queues:/data
+      - ../redis/redis-queues.conf:/usr/local/etc/redis/redis.conf
+
+  redis_cache:
+    volumes:
+      - redis_cache:/data
+      - ../redis/redis-cache.conf:/usr/local/etc/redis/redis.conf
+
+  mailpit:
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+    volumes:
+      - mailpit:/data
 
 volumes:
   redisinsight:
     name: rate-wise-redisinsight
-    external: false
-  redis_auth: 
+  redis_auth:
     name: rate-wise-redis-auth
-    external: false
-  redis_cache: 
+  redis_cache:
     name: rate-wise-redis-cache
-    external: false
-  redis_queues: 
+  redis_queues:
     name: rate-wise-redis-queues
-    external: false    
   postgres:
     name: rate-wise-postgres
-    external: false
   mailpit:
     name: rate-wise-mailpit
-    external: false

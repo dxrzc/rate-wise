@@ -15,7 +15,7 @@ export class CreateItemInput {
     @Field(() => String, {
         description: `The title of the item. Minimum length: ${ITEMS_LIMITS.TITLE.MIN}, Maximum length: ${ITEMS_LIMITS.TITLE.MAX}.`,
     })
-    title!: string;
+    readonly title!: string;
 
     @IsString()
     @MinLength(ITEMS_LIMITS.DESCRIPTION.MIN)
@@ -24,7 +24,7 @@ export class CreateItemInput {
     @Field(() => String, {
         description: `A detailed description of the item. Minimum length: ${ITEMS_LIMITS.DESCRIPTION.MIN}, Maximum length: ${ITEMS_LIMITS.DESCRIPTION.MAX}.`,
     })
-    description!: string;
+    readonly description!: string;
 
     @IsString()
     @MinLength(ITEMS_LIMITS.CATEGORY.MIN)
@@ -33,7 +33,7 @@ export class CreateItemInput {
     @Field(() => String, {
         description: `The category of the item. Minimum length: ${ITEMS_LIMITS.CATEGORY.MIN}, Maximum length: ${ITEMS_LIMITS.CATEGORY.MAX}.`,
     })
-    category!: string;
+    readonly category!: string;
 
     @IsArray()
     @IsOptional()
@@ -47,5 +47,5 @@ export class CreateItemInput {
         defaultValue: [],
         description: `Optional tags for the item. Maximum ${ITEMS_LIMITS.TAGS.MAX_ARRAY_SIZE} tags, each between ${ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH}-${ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH} characters.`,
     })
-    tags?: string[];
+    readonly tags?: string[];
 }
