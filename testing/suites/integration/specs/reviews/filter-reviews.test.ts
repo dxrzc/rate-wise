@@ -3,6 +3,7 @@ import { createItem } from '@integration/utils/create-item.util';
 import { createReview } from '@integration/utils/create-review.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
+import { reviewData } from '@testing/tools/gql-operations/factory/models.data';
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { Code } from 'src/common/enum/code.enum';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
@@ -206,6 +207,34 @@ describe('Gql - filterReviews', () => {
                 },
             });
             expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
+        });
+    });
+
+    describe('Any filter provided', () => {
+        test('return the same data as in the database', async () => {
+            // create review
+            const { createdBy, id: reviewId } = await createReview();
+            // filter
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query Nodes($limit: Int!, $createdBy: ID) {
+                          filterReviews(limit: $limit, createdBy: $createdBy) {
+                            nodes {
+                              ${reviewData.join()}
+                            }
+                          }
+                        }`,
+                variables: {
+                    limit: 1,
+                    createdBy,
+                },
+            });
+            const reviewInDb = await testKit.reviewRepos.findOneBy({ id: reviewId });
+            const fetchedReviewData = response.body.data.filterReviews.nodes.at(0)!;
+            expect(fetchedReviewData).toEqual({
+                ...reviewInDb,
+                createdAt: reviewInDb?.createdAt.toISOString(),
+                updatedAt: reviewInDb?.updatedAt.toISOString(),
+            });
         });
     });
 

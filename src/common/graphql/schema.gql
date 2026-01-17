@@ -250,6 +250,12 @@ type ReviewModel {
   """The rating score given in the review."""
   rating: Int!
 
+  """The number of upvotes for the review"""
+  upVotes: Int!
+
+  """The number of downvotes for the review."""
+  downVotes: Int!
+
   """The ID of the user who created this review."""
   createdBy: String!
 
