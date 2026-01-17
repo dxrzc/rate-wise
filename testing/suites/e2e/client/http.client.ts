@@ -40,7 +40,11 @@ export class HttpClient {
     }
 
     async get(endpointUrl: string) {
-        const response = await axios.get(endpointUrl);
+        const response = await axios.get(endpointUrl, {
+            headers: {
+                'X-Forwarded-For': this.ip,
+            },
+        });
         return response.data;
     }
 

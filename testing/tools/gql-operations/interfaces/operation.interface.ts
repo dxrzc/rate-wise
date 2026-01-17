@@ -7,4 +7,5 @@ import { QueryFields } from '../types/query-fields.type';
 export interface IOperation<InputType = unknown, ModelType = any> {
     readonly args: InputType;
     readonly fields?: QueryFields<ModelType>[] | 'ALL';
+    readonly append?: string;
 }
