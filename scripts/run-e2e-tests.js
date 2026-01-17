@@ -1,5 +1,7 @@
 const { execa } = require('execa');
 
+const userArgs = process.argv.slice(2);
+
 (async () => {
     try {
         await execa(
@@ -10,7 +12,7 @@ const { execa } = require('execa');
 
         await execa(
             'jest',
-            ['--config', 'testing/jest-configs/jest.e2e.config.ts'],
+            ['--config', 'testing/jest-configs/jest.e2e.config.ts', ...userArgs],
             {
                 env: {
                     NODE_TLS_REJECT_UNAUTHORIZED: '0',
