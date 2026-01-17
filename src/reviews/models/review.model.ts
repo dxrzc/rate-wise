@@ -17,6 +17,16 @@ export class ReviewModel extends BaseModel {
     })
     rating!: number;
 
+    @Field(() => Int, {
+        description: 'The number of upvotes for the review',
+    })
+    upVotes!: number;
+
+    @Field(() => Int, {
+        description: 'The number of downvotes for the review.',
+    })
+    downVotes!: number;
+
     @Field(() => String, {
         description: 'The ID of the user who created this review.',
     })
