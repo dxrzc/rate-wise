@@ -36,6 +36,7 @@ The GraphQL endpoint is available at: `/graphql`.
 - The application is structured using modular boundaries, with each domain area implemented as a dynamically configurable NestJS module using async factories.
 - Feature modules are designed to be environment-agnostic, making them easy to reuse, test and reconfigure across different deployments.
 - Cookie-based session authentication is used to simplify client interaction and leverage browser-native security mechanisms.
+- The API is designed around user-centric workflows, prioritizing ownership-based operations (e.g. “my resources”) over system-level actions.
 - Cursor-based pagination (using `createdAt` and `id`) is implemented to ensure stable and scalable access to large datasets.
 - Redis is used as a shared infrastructure component for multiple concerns, including caching, background jobs, authentication-related data and rate limiting, while keeping responsibilities isolated at the module level.
 - Caching is implemented at the record level and populated asynchronously using background jobs to avoid adding latency to user requests.
