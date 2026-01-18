@@ -22,7 +22,7 @@ The project focuses on GraphQL API design, cursor-based pagination, background j
 - Background jobs using BullMQ for asynchronous tasks (e.g. emails).
 - Redis-based caching for frequently accessed data.
 - Account management and moderation features (e.g. global sign-out, account suspension).
-- Authentication and role-based authorization
+- Authentication and role-based authorization.
 
 ## API Documentation
 This project exposes its GraphQL schema using Apollo Sandbox, providing an interactive playground to explore queries and mutations.
@@ -35,6 +35,7 @@ The GraphQL endpoint is available at: `/graphql`.
 - A code-first GraphQL approach is used with NestJS, allowing the schema to be generated automatically.
 - The application is structured using modular boundaries, with each domain area implemented as a dynamically configurable NestJS module using async factories.
 - Feature modules are designed to be environment-agnostic, making them easy to reuse, test and reconfigure across different deployments.
+- Cookie-based session authentication is used to simplify client interaction and leverage browser-native security mechanisms.
 - Cursor-based pagination (using `createdAt` and `id`) is implemented to ensure stable and scalable access to large datasets.
 - Redis is used as a shared infrastructure component for multiple concerns, including caching, background jobs, authentication-related data and rate limiting, while keeping responsibilities isolated at the module level.
 - Caching is implemented at the record level and populated asynchronously using background jobs to avoid adding latency to user requests.
