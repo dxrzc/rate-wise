@@ -8,6 +8,8 @@ import { handleGqlError } from 'src/common/functions/graphql/handle-gql-error';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import depthLimit from 'graphql-depth-limit';
+import { GRAPHQL_CONSTANTS } from 'src/common/graphql/constants/graphql.constants';
 
 @Injectable()
 export class GqlConfigService implements GqlOptionsFactory {
@@ -21,6 +23,7 @@ export class GqlConfigService implements GqlOptionsFactory {
             playground: false,
             introspection: true,
             csrfPrevention: true,
+            validationRules: [depthLimit(GRAPHQL_CONSTANTS.depthLimit)],
             plugins: [
                 ApolloServerPluginLandingPageLocalDefault({
                     footer: false,
