@@ -18,7 +18,7 @@ Populates the database with sample data for development and testing purposes.
 
 - **Authentication:** Required.
 
-- **Roles Required:** \`ADMIN\` role only.
+- **Roles Required:** None.
 
 - **Account Status Required:** \`ACTIVE\`.
 
