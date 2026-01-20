@@ -69,7 +69,9 @@ End-to-end (e2e) tests are executed on pull requests targeting the main branch t
 Docker images are built and published automatically on version tags through the CI pipeline.
 
 ## What I’d improve next
+- Separate list metadata from full pagination, replacing expensive per-parent pagination with lightweight queries that can be batched via DataLoader to reduce N+1 overhead.
 - Explore soft deletes to support historical data retention and moderation workflows.
 - Introduce normalized categories or tags to enhance querying and content organization.
-- Perform load testing (e.g. with Artillery) to better understand performance limits under increased traffic.
+- Perform load testing to better understand performance limits under increased traffic.
+- Extend account management capabilities.
 
