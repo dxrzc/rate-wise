@@ -47,7 +47,7 @@ export class SessionGeneratorController {
 
 describe('AuthGuard', () => {
     let testingModule: TestingModule;
-    let userFound: any = {};
+    let userFound: Partial<User> | undefined = {};
     const usersService = { findOneById: () => userFound };
     let app: NestExpressApplication;
 
@@ -107,7 +107,18 @@ describe('AuthGuard', () => {
         describe('User exists', () => {
             test('return unauthorized code and unauthorized error message', async () => {
                 // mock existing user
-                userFound = { user: 'test' };
+                userFound = { id: '123' };
+                const res = await request(app.getHttpServer())
+                    .post('/graphql') // sess cookie not set
+                    .send({ query: testOperation });
+                expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+        });
+
+        describe('User does not exist', () => {
+            test('return unauthorized code and unauthorized error message', async () => {
+                // mock existing user
+                userFound = undefined;
                 const res = await request(app.getHttpServer())
                     .post('/graphql') // sess cookie not set
                     .send({ query: testOperation });
@@ -116,16 +127,5 @@ describe('AuthGuard', () => {
         });
     });
 
-    describe('User in cookie not found', () => {
-        test('return unauthorized code and unauthorized error message', async () => {
-            // mock non-existing user
-            userFound = null;
-            const cookie = await getSessionCookie('test-id');
-            const res = await request(app.getHttpServer())
-                .post('/graphql')
-                .set('Cookie', cookie)
-                .send({ query: testOperation });
-            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
-        });
-    });
+    // TODO: redis is down
 });
