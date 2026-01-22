@@ -26,7 +26,6 @@ export class SessionsService {
             this.redisClient.delete(relationKey),
             this.redisClient.setRem(indexKey, sessId),
         ]);
-        this.logger.info('Orphaned session deleted completely');
     }
 
     /*
