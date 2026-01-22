@@ -81,13 +81,13 @@ export class SeedService {
     }
 
     private async createUsers(entries: number): Promise<void> {
-        const users = Array.from({ length: entries }, () => {
-            return this.userRepository.create({
+        const users = Array.from({ length: entries }, () =>
+            this.userRepository.create({
                 ...this.usersSeed.user,
                 roles: getRandomUserRoles(),
                 status: getRandomAccountStatus(),
-            });
-        });
+            }),
+        );
         await this.userRepository.insert(users);
         this.logger.debug(`${entries} users seeded`);
     }
