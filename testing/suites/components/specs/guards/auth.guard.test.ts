@@ -19,6 +19,7 @@ import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { Code } from 'src/common/enum/code.enum';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
+import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-cookie.util';
 
 // Used to test the guard
 @Resolver()
@@ -47,6 +48,7 @@ export class SessionGeneratorController {
 
 describe('AuthGuard', () => {
     let testingModule: TestingModule;
+    let sessionService: SessionsService;
     let userFound: Partial<User> | undefined = {};
     const usersService = { findOneById: () => userFound };
     let app: NestExpressApplication;
@@ -77,6 +79,7 @@ describe('AuthGuard', () => {
         app.useLogger(false);
         app.use(app.get(SessionMiddlewareFactory).create());
         await app.init();
+        sessionService = app.get(SessionsService);
     });
 
     afterAll(async () => {
@@ -127,5 +130,36 @@ describe('AuthGuard', () => {
         });
     });
 
-    // TODO: redis is down
+    describe('Valid session cookie', () => {
+        describe('User not found', () => {
+            test('return unauthorized code and unauthorized error message', async () => {
+                // mock non-existing user
+                userFound = undefined;
+                const cookie = await getSessionCookie('test-id');
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+
+            test('cleanup session', async () => {
+                // mock non-existing user
+                userFound = undefined;
+                const deletedUserId = 'test-id';
+                const cookie = await getSessionCookie(deletedUserId);
+                // authentication attemp
+                await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // guard should purgue zombie session completely
+                const isFullyCleaned = await sessionService.isFullyCleaned({
+                    userId: deletedUserId,
+                    sessId: extractSessionIdFromCookie(cookie),
+                });
+                expect(isFullyCleaned).toBeTruthy();
+            });
+        });
+    });
 });
