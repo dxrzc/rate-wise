@@ -121,7 +121,7 @@ describe('Sessions Service ', () => {
         });
     });
 
-    describe('isOrphaned', () => {
+    describe('isDangling', () => {
         describe('Session exists', () => {
             describe('User-session relation record exists', () => {
                 describe("Session not in user's sessions index", () => {
@@ -134,9 +134,9 @@ describe('Sessions Service ', () => {
                         // delete session from index
                         const indexKey = userSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
-                        // check if orphaned
-                        const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
-                        expect(isOrphaned).toBeTruthy();
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        expect(isDangling).toBeTruthy();
                     });
                 });
 
@@ -150,9 +150,9 @@ describe('Sessions Service ', () => {
                         // delete index
                         const indexKey = userSessionsSetKey(userId);
                         await redisClient.delete(indexKey);
-                        // check if orphaned
-                        const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
-                        expect(isOrphaned).toBeTruthy();
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        expect(isDangling).toBeTruthy();
                     });
                 });
             });
@@ -168,9 +168,9 @@ describe('Sessions Service ', () => {
                         // delete user-session relation
                         const relationKey = userAndSessionRelationKey(sessId);
                         await redisClient.delete(relationKey);
-                        // check if orphaned
-                        const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
-                        expect(isOrphaned).toBeTruthy();
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        expect(isDangling).toBeTruthy();
                     });
                 });
             });
@@ -189,9 +189,9 @@ describe('Sessions Service ', () => {
                         // delete session from index
                         const indexKey = userSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
-                        // check if orphaned
-                        const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
-                        expect(isOrphaned).toBeTruthy();
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        expect(isDangling).toBeTruthy();
                     });
                 });
             });
@@ -204,9 +204,9 @@ describe('Sessions Service ', () => {
                         const sessId = faker.string.uuid();
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
-                        // check if orphaned
-                        const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
-                        expect(isOrphaned).toBeFalsy();
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        expect(isDangling).toBeFalsy();
                     });
                 });
             });

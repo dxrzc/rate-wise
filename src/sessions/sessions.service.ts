@@ -28,13 +28,16 @@ export class SessionsService {
         ]);
     }
 
-    /*
-        Session exists in redis but not in the user's sessions redis set or the user-session relation is missing
-    */
-    async isOrphaned(userId: string, sessId: string): Promise<boolean> {
+    /**
+     * Check if the session state is inconsistent in Redis.
+     * @param userId
+     * @param sessId
+     * @returns boolean indicating if the session is a dangling session
+     */
+    async isDangling(userId: string, sessId: string): Promise<boolean> {
         const indexKey = userSessionsSetKey(userId);
         const relationKey = userAndSessionRelationKey(sessId);
-        let orphaned = false;
+        let dangling = false;
         const [sessInIndex, sessRelationExists] = await runSettledOrThrow([
             this.redisClient.setIsMember(indexKey, sessId),
             this.redisClient.get(relationKey),
@@ -42,14 +45,14 @@ export class SessionsService {
         // index
         if (!sessInIndex) {
             this.logger.warn("Orphaned session: not in user's sessions index");
-            orphaned = true;
+            dangling = true;
         }
         // relation
         if (!sessRelationExists) {
             this.logger.warn('Orphaned session: user-session relation does not exist');
-            orphaned = true;
+            dangling = true;
         }
-        return orphaned;
+        return dangling;
     }
 
     private async deleteAllUserSessions(sessIDs: string[]) {
