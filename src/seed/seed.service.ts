@@ -10,10 +10,10 @@ import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from './services/items-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { ReviewSeedService } from './services/reviews-seed.service';
-import { Vote } from 'src/votes/entities/vote.entity';
 import { VoteAction } from 'src/votes/enum/vote.enum';
-import { SeedInput } from './dtos/seed.input';
+import { SeedArgs } from './dtos/args/seed.args';
 import { AdminConfigService } from 'src/config/services/admin.config.service';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 @Injectable()
 export class SeedService {
@@ -67,10 +67,10 @@ export class SeedService {
         this.logger.debug('Database cleaned');
     }
 
-    async runSeed(seedOptions: SeedInput): Promise<void> {
+    async runSeed(seedArgs: SeedArgs): Promise<void> {
         await this.cleanDb();
-        await this.createUsers(seedOptions.users);
-        await this.createItems(seedOptions.itemsPerUser);
+        await this.createUsers(seedArgs.users);
+        await this.createItems(seedArgs.itemsPerUser);
         await this.createReviews();
         await this.createVotes();
         this.logger.debug('Database seeding completed');
@@ -126,20 +126,23 @@ export class SeedService {
     async createVotes() {
         const usersIds = await this.getUserIdsOrThrow();
         const reviewsIds = await this.getReviewsIdsOrThrow();
-        const promises = new Array<Promise<Vote>>();
+        const promises = new Array<Promise<unknown>>();
         for (const reviewId of reviewsIds) {
             for (const userId of usersIds) {
                 const randomVote = Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN;
+                const propPath = randomVote === VoteAction.UP ? 'upVotes' : 'downVotes';
                 promises.push(
                     this.voteRepository.save({
                         relatedReview: reviewId,
                         createdBy: userId,
                         vote: randomVote,
                     }),
+                    this.reviewRepository.increment({ id: reviewId }, propPath, 1),
                 );
             }
         }
         const { length } = await Promise.all(promises);
-        this.logger.debug(`${length} votes seeded`);
+        // half of the operations were review update
+        this.logger.debug(`${length / 2} votes seeded`);
     }
 }
