@@ -20,6 +20,8 @@ import { User } from 'src/users/entities/user.entity';
 import { Code } from 'src/common/enum/code.enum';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-cookie.util';
+import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
+import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 
 // Used to test the guard
 @Resolver()
@@ -126,6 +128,46 @@ describe('AuthGuard', () => {
                     .post('/graphql') // sess cookie not set
                     .send({ query: testOperation });
                 expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+        });
+    });
+
+    describe('Session is dangling', () => {
+        describe('User found', () => {
+            test('return unauthorized code and unauthorized error message', async () => {
+                // mock existing user
+                const userId = '123';
+                userFound = { id: userId };
+                const cookie = await getSessionCookie(userId);
+                // delete from user's index
+                await sessionService['redisClient'].setRem(
+                    userSessionsSetKey(userId),
+                    extractSessionIdFromCookie(cookie),
+                );
+                // authentication attemp
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+
+            test('cleanup session', async () => {
+                // mock existing user
+                const userId = '123';
+                userFound = { id: userId };
+                const cookie = await getSessionCookie(userId);
+                // delete user-session relation
+                const sessId = extractSessionIdFromCookie(cookie);
+                await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
+                // authentication attemp
+                await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // session should be fully cleaned
+                const isFullyCleaned = await sessionService.isFullyCleaned({ sessId, userId });
+                expect(isFullyCleaned).toBeTruthy();
             });
         });
     });
