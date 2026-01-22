@@ -6,6 +6,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SESS_REDIS_PREFIX, SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { sessionKey } from './functions/session-key';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 
 @Injectable()
 export class SessionsService {
@@ -14,6 +16,43 @@ export class SessionsService {
         private readonly redisClient: RedisClientAdapter,
         private readonly logger: HttpLoggerService,
     ) {}
+
+    private async sessionCleanup(userId: string, sessId: string) {
+        const indexKey = userSessionsSetKey(userId);
+        const relationKey = userAndSessionRelationKey(sessId);
+        const sessKey = sessionKey(sessId);
+        await runSettledOrThrow([
+            this.redisClient.delete(sessKey),
+            this.redisClient.delete(relationKey),
+            this.redisClient.setRem(indexKey, sessId),
+        ]);
+    }
+
+    /*
+        Session exists in redis but not in the user's sessions redis set or the user-session relation is missing
+    */
+    async isOrphaned(userId: string, sessId: string): Promise<boolean> {
+        const indexKey = userSessionsSetKey(userId);
+        const relationKey = userAndSessionRelationKey(sessId);
+        let orphaned = false;
+        const [sessInIndex, sessRelationExists] = await runSettledOrThrow([
+            this.redisClient.setIsMember(indexKey, sessId),
+            this.redisClient.get(relationKey),
+        ]);
+        // index
+        if (!sessInIndex) {
+            this.logger.warn("Orphaned session: not in user's sessions index");
+            orphaned = true;
+        }
+        // relation
+        if (!sessRelationExists) {
+            this.logger.warn('Orphaned session: user-session relation does not exist');
+            orphaned = true;
+        }
+        // cleanup if orphaned
+        if (orphaned) await this.sessionCleanup(userId, sessId);
+        return orphaned;
+    }
 
     private async deleteAllUserSessions(sessIDs: string[]) {
         await Promise.all(
