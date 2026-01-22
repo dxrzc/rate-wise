@@ -5,9 +5,7 @@ import { Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { seconds } from '@nestjs/throttler';
-import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { Code } from 'src/common/enum/code.enum';
 import request from 'supertest';
 import { Query as RestQuery } from '@nestjs/common';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -18,6 +16,9 @@ import { SessionsModule } from 'src/sessions/sessions.module';
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { SessionsService } from 'src/sessions/sessions.service';
+import { User } from 'src/users/entities/user.entity';
+import { Code } from 'src/common/enum/code.enum';
+import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 
 // Used to test the guard
 @Resolver()
@@ -82,8 +83,8 @@ describe('AuthGuard', () => {
         await testingModule.close();
     });
 
-    async function getSessionCookie(id: string) {
-        const res = await request(app.getHttpServer()).get(`/session?userId=${id}`);
+    async function getSessionCookie(userId: string) {
+        const res = await request(app.getHttpServer()).get(`/session?userId=${userId}`);
         const cookie = res.headers['set-cookie'][0];
         return cookie;
     }
@@ -91,8 +92,9 @@ describe('AuthGuard', () => {
     describe('Valid session cookie and user exists', () => {
         test('guard allows access successfully', async () => {
             // mock existing user
-            userFound = { user: 'test' };
-            const cookie = await getSessionCookie('test-id');
+            const userId = '123';
+            userFound = { id: userId };
+            const cookie = await getSessionCookie(userId);
             const res = await request(app.getHttpServer())
                 .post('/graphql')
                 .set('Cookie', cookie)
