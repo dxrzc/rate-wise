@@ -96,6 +96,22 @@ describe('Sessions Service ', () => {
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeTruthy();
                     });
+
+                    test('delete orphaned session record', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete session from index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.setRem(indexKey, sessId);
+                        // act
+                        await sessionsService.isOrphaned(userId, sessId);
+                        // sess deleted
+                        const sess = await redisClient.get(sessionKey(sessId));
+                        expect(sess).toBeNull();
+                    });
                 });
 
                 describe("User's session index does not exist", () => {
@@ -130,6 +146,22 @@ describe('Sessions Service ', () => {
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeTruthy();
                     });
+
+                    test('delete orphaned session record', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete user-session relation
+                        const relationKey = userAndSessionRelationKey(sessId);
+                        await redisClient.delete(relationKey);
+                        // act
+                        await sessionsService.isOrphaned(userId, sessId);
+                        // sess deleted
+                        const sess = await redisClient.get(sessionKey(sessId));
+                        expect(sess).toBeNull();
+                    });
                 });
             });
 
@@ -150,6 +182,25 @@ describe('Sessions Service ', () => {
                         // check if orphaned
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeTruthy();
+                    });
+
+                    test('delete orphaned session record', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete user-session relation
+                        const relationKey = userAndSessionRelationKey(sessId);
+                        await redisClient.delete(relationKey);
+                        // delete session from index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.setRem(indexKey, sessId);
+                        // act
+                        await sessionsService.isOrphaned(userId, sessId);
+                        // sess deleted
+                        const sess = await redisClient.get(sessionKey(sessId));
+                        expect(sess).toBeNull();
                     });
                 });
             });
