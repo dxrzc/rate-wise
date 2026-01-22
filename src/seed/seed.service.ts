@@ -11,10 +11,10 @@ import { ItemsSeedService } from './services/items-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { ReviewSeedService } from './services/reviews-seed.service';
 import { VoteAction } from 'src/votes/enum/vote.enum';
-import { SeedArgs } from './dtos/args/seed.args';
 import { AdminConfigService } from 'src/config/services/admin.config.service';
 import { Vote } from 'src/votes/entities/vote.entity';
 import { ReviewService } from 'src/reviews/reviews.service';
+import { SEED_CONFIG } from './constants/seed.config.constant';
 
 @Injectable()
 export class SeedService {
@@ -71,10 +71,10 @@ export class SeedService {
         this.logger.debug('Database cleaned');
     }
 
-    async runSeed(seedArgs: SeedArgs): Promise<void> {
+    async runSeed(): Promise<void> {
         await this.cleanDb();
-        await this.createUsers(seedArgs.users);
-        await this.createItems(seedArgs.itemsPerUser);
+        await this.createUsers(SEED_CONFIG.USERS);
+        await this.createItems(SEED_CONFIG.ITEMS_PER_USER);
         await this.createReviews();
         await this.createVotes();
         this.logger.debug('Database seeding completed');
@@ -103,41 +103,51 @@ export class SeedService {
         this.logger.debug(`${identifiers.length} items seeded`);
     }
 
-    // Every user reviews every item but their own
-    async createReviews() {
+    /**
+     * Each item receives a limited number of random reviews
+     */
+    private async createReviews(): Promise<void> {
         const usersIds = await this.getUserIdsOrThrow();
         const itemsMeta = await this.getItemsMetaOrThrow();
         const reviews = new Array<Review>();
-        for (let i = 0; i < itemsMeta.length; i++) {
-            for (const userId of usersIds) {
-                const { id: itemId, createdBy } = itemsMeta[i];
-                if (createdBy === userId) continue;
-                const review = this.reviewRepository.create({
-                    ...this.reviewsSeed.review,
-                    relatedItem: itemId,
-                    createdBy: userId,
-                });
-                reviews.push(review);
+        for (const { id: itemId, createdBy } of itemsMeta) {
+            const eligibleUsers = usersIds.filter((u) => u !== createdBy);
+            const reviewers = eligibleUsers
+                .sort(() => 0.5 - Math.random())
+                .slice(0, SEED_CONFIG.MAX_REVIEWS_PER_ITEM);
+            for (const userId of reviewers) {
+                reviews.push(
+                    this.reviewRepository.create({
+                        ...this.reviewsSeed.review,
+                        relatedItem: itemId,
+                        createdBy: userId,
+                    }),
+                );
             }
         }
         const { identifiers } = await this.reviewRepository.insert(reviews);
         this.logger.debug(`${identifiers.length} reviews seeded`);
     }
 
-    // Every user upvotes every review (and their own)
-    async createVotes() {
+    /**
+     * Each review receives a limited number of random votes
+     */
+    private async createVotes(): Promise<void> {
         const usersIds = await this.getUserIdsOrThrow();
         const reviewsIds = await this.getReviewsIdsOrThrow();
         const votes = new Array<Vote>();
         for (const reviewId of reviewsIds) {
-            for (const userId of usersIds) {
-                const randomVote = Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN;
-                const voteEntity = this.voteRepository.create({
-                    relatedReview: reviewId,
-                    createdBy: userId,
-                    vote: randomVote,
-                });
-                votes.push(voteEntity);
+            const voters = usersIds
+                .sort(() => 0.5 - Math.random())
+                .slice(0, SEED_CONFIG.MAX_VOTES_PER_REVIEW);
+            for (const userId of voters) {
+                votes.push(
+                    this.voteRepository.create({
+                        relatedReview: reviewId,
+                        createdBy: userId,
+                        vote: Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN,
+                    }),
+                );
             }
         }
         const { identifiers } = await this.voteRepository.insert(votes);
