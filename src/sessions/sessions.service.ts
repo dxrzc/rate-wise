@@ -8,6 +8,7 @@ import { SESS_REDIS_PREFIX, SESSIONS_REDIS_CONNECTION } from './constants/sessio
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { sessionKey } from './functions/session-key';
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
+import { ISessionDetails } from './interfaces/session.details.interface';
 
 @Injectable()
 export class SessionsService {
@@ -34,12 +35,12 @@ export class SessionsService {
      * @param sessId
      * @returns boolean indicating if the session is a dangling session
      */
-    async isDangling(userId: string, sessId: string): Promise<boolean> {
-        const indexKey = userSessionsSetKey(userId);
-        const relationKey = userAndSessionRelationKey(sessId);
+    async isDangling(sessionDetails: ISessionDetails): Promise<boolean> {
+        const indexKey = userSessionsSetKey(sessionDetails.userId);
+        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
         let dangling = false;
         const [sessInIndex, sessRelationExists] = await runSettledOrThrow([
-            this.redisClient.setIsMember(indexKey, sessId),
+            this.redisClient.setIsMember(indexKey, sessionDetails.sessId),
             this.redisClient.get(relationKey),
         ]);
         // index

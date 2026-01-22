@@ -135,7 +135,7 @@ describe('Sessions Service ', () => {
                         const indexKey = userSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
                         // check if dangling
-                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
                         expect(isDangling).toBeTruthy();
                     });
                 });
@@ -151,7 +151,7 @@ describe('Sessions Service ', () => {
                         const indexKey = userSessionsSetKey(userId);
                         await redisClient.delete(indexKey);
                         // check if dangling
-                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
                         expect(isDangling).toBeTruthy();
                     });
                 });
@@ -169,7 +169,7 @@ describe('Sessions Service ', () => {
                         const relationKey = userAndSessionRelationKey(sessId);
                         await redisClient.delete(relationKey);
                         // check if dangling
-                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
                         expect(isDangling).toBeTruthy();
                     });
                 });
@@ -190,7 +190,7 @@ describe('Sessions Service ', () => {
                         const indexKey = userSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
                         // check if dangling
-                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
                         expect(isDangling).toBeTruthy();
                     });
                 });
@@ -205,7 +205,7 @@ describe('Sessions Service ', () => {
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
                         // check if dangling
-                        const isDangling = await sessionsService.isDangling(userId, sessId);
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
                         expect(isDangling).toBeFalsy();
                     });
                 });
