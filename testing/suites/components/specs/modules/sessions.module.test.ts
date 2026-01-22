@@ -174,7 +174,7 @@ describe('Sessions Service ', () => {
             mockRequest.sessionID = sessId;
             await sessionsService.create(<any>mockRequest, userId);
             // cleanup
-            await sessionsService.sessionCleanup(userId, sessId);
+            await sessionsService.sessionCleanup({ userId, sessId });
             // session deleted
             const sess = await redisClient.get(sessionKey(sessId));
             expect(sess).toBeNull();
@@ -187,7 +187,7 @@ describe('Sessions Service ', () => {
             mockRequest.sessionID = sessId;
             await sessionsService.create(<any>mockRequest, userId);
             // cleanup
-            await sessionsService.sessionCleanup(userId, sessId);
+            await sessionsService.sessionCleanup({ userId, sessId });
             // session not in users's sessions index
             const indexKey = userSessionsSetKey(userId);
             const inSet = await redisClient.setIsMember(indexKey, sessId);
@@ -201,7 +201,7 @@ describe('Sessions Service ', () => {
             mockRequest.sessionID = sessId;
             await sessionsService.create(<any>mockRequest, userId);
             // cleanup
-            await sessionsService.sessionCleanup(userId, sessId);
+            await sessionsService.sessionCleanup({ userId, sessId });
             // relation deleted
             const relationKey = userAndSessionRelationKey(sessId);
             const relation = await redisClient.get(relationKey);

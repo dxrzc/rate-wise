@@ -35,14 +35,18 @@ export class SessionsService {
         return sess === null && relation === null && inIndex === false;
     }
 
-    async sessionCleanup(userId: string, sessId: string) {
-        const indexKey = userSessionsSetKey(userId);
-        const relationKey = userAndSessionRelationKey(sessId);
-        const sessKey = sessionKey(sessId);
+    /**
+     * Cleans up all redis keys related to a session.
+     * @param sessionDetails details of the session
+     */
+    async sessionCleanup(sessionDetails: ISessionDetails): Promise<void> {
+        const indexKey = userSessionsSetKey(sessionDetails.userId);
+        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
+        const sessKey = sessionKey(sessionDetails.sessId);
         await runSettledOrThrow([
             this.redisClient.delete(sessKey),
             this.redisClient.delete(relationKey),
-            this.redisClient.setRem(indexKey, sessId),
+            this.redisClient.setRem(indexKey, sessionDetails.sessId),
         ]);
     }
 
