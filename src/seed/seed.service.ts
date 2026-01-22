@@ -10,10 +10,11 @@ import { Item } from 'src/items/entities/item.entity';
 import { ItemsSeedService } from './services/items-seed.service';
 import { Review } from 'src/reviews/entities/review.entity';
 import { ReviewSeedService } from './services/reviews-seed.service';
-import { Vote } from 'src/votes/entities/vote.entity';
 import { VoteAction } from 'src/votes/enum/vote.enum';
-import { SeedInput } from './dtos/seed.input';
 import { AdminConfigService } from 'src/config/services/admin.config.service';
+import { Vote } from 'src/votes/entities/vote.entity';
+import { ReviewService } from 'src/reviews/reviews.service';
+import { SEED_CONFIG } from './constants/seed.config.constant';
 
 @Injectable()
 export class SeedService {
@@ -31,6 +32,7 @@ export class SeedService {
         private readonly reviewsSeed: ReviewSeedService,
         private readonly logger: HttpLoggerService,
         private readonly adminConfigService: AdminConfigService,
+        private readonly reviewService: ReviewService,
     ) {}
 
     private async getUserIdsOrThrow(): Promise<string[]> {
@@ -44,12 +46,14 @@ export class SeedService {
         return selectedUserIds.map((e) => e.id);
     }
 
-    private async getItemsIdsOrThrow(): Promise<string[]> {
-        const selectedItemsIds = await this.itemRepository.find({ select: { id: true } });
-        if (selectedItemsIds.length === 0) {
+    private async getItemsMetaOrThrow(): Promise<{ id: string; createdBy: string }[]> {
+        const items = await this.itemRepository.find({
+            select: { id: true, createdBy: true },
+        });
+        if (items.length === 0) {
             throw new Error('No items found. Seed items first');
         }
-        return selectedItemsIds.map((e) => e.id);
+        return items;
     }
 
     private async getReviewsIdsOrThrow(): Promise<string[]> {
@@ -67,50 +71,53 @@ export class SeedService {
         this.logger.debug('Database cleaned');
     }
 
-    async runSeed(seedOptions: SeedInput): Promise<void> {
+    async runSeed(): Promise<void> {
         await this.cleanDb();
-        await this.createUsers(seedOptions.users);
-        await this.createItems(seedOptions.itemsPerUser);
+        await this.createUsers(SEED_CONFIG.USERS);
+        await this.createItems(SEED_CONFIG.ITEMS_PER_USER);
         await this.createReviews();
         await this.createVotes();
         this.logger.debug('Database seeding completed');
     }
 
     private async createUsers(entries: number): Promise<void> {
-        await Promise.all(
-            Array.from({ length: entries }, async () => {
-                return await this.userRepository.save({
-                    ...this.usersSeed.user,
-                    roles: getRandomUserRoles(),
-                    status: getRandomAccountStatus(),
-                });
+        const users = Array.from({ length: entries }, () =>
+            this.userRepository.create({
+                ...this.usersSeed.user,
+                roles: getRandomUserRoles(),
+                status: getRandomAccountStatus(),
             }),
         );
+        await this.userRepository.insert(users);
         this.logger.debug(`${entries} users seeded`);
     }
 
     private async createItems(itemsPerUser: number): Promise<void> {
         const usersIds = await this.getUserIdsOrThrow();
-        const promises = new Array<Promise<Item>>();
+        const items = new Array<Item>();
         for (const id of usersIds) {
             for (let i = 0; i < itemsPerUser; i++)
-                promises.push(this.itemRepository.save({ ...this.itemsSeed.item, createdBy: id }));
+                items.push(this.itemRepository.create({ ...this.itemsSeed.item, createdBy: id }));
         }
-        await Promise.all(promises);
-        this.logger.debug(`${itemsPerUser} items per user seeded`);
+        const { identifiers } = await this.itemRepository.insert(items);
+        this.logger.debug(`${identifiers.length} items seeded`);
     }
 
-    // Every user reviews every item but their own
-    async createReviews() {
+    /**
+     * Each item receives a limited number of random reviews
+     */
+    private async createReviews(): Promise<void> {
         const usersIds = await this.getUserIdsOrThrow();
-        const itemsIds = await this.getItemsIdsOrThrow();
-        const promises = new Array<Promise<Review>>();
-        for (const itemId of itemsIds) {
-            for (const userId of usersIds) {
-                const item = await this.itemRepository.findOneBy({ id: itemId });
-                if (item!.createdBy === userId) continue;
-                promises.push(
-                    this.reviewRepository.save({
+        const itemsMeta = await this.getItemsMetaOrThrow();
+        const reviews = new Array<Review>();
+        for (const { id: itemId, createdBy } of itemsMeta) {
+            const eligibleUsers = usersIds.filter((u) => u !== createdBy);
+            const reviewers = eligibleUsers
+                .sort(() => 0.5 - Math.random())
+                .slice(0, SEED_CONFIG.MAX_REVIEWS_PER_ITEM);
+            for (const userId of reviewers) {
+                reviews.push(
+                    this.reviewRepository.create({
                         ...this.reviewsSeed.review,
                         relatedItem: itemId,
                         createdBy: userId,
@@ -118,28 +125,33 @@ export class SeedService {
                 );
             }
         }
-        const { length } = await Promise.all(promises);
-        this.logger.debug(`${length} reviews seeded`);
+        const { identifiers } = await this.reviewRepository.insert(reviews);
+        this.logger.debug(`${identifiers.length} reviews seeded`);
     }
 
-    // Every user upvotes every review (and their own)
-    async createVotes() {
+    /**
+     * Each review receives a limited number of random votes
+     */
+    private async createVotes(): Promise<void> {
         const usersIds = await this.getUserIdsOrThrow();
         const reviewsIds = await this.getReviewsIdsOrThrow();
-        const promises = new Array<Promise<Vote>>();
+        const votes = new Array<Vote>();
         for (const reviewId of reviewsIds) {
-            for (const userId of usersIds) {
-                const randomVote = Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN;
-                promises.push(
-                    this.voteRepository.save({
+            const voters = usersIds
+                .sort(() => 0.5 - Math.random())
+                .slice(0, SEED_CONFIG.MAX_VOTES_PER_REVIEW);
+            for (const userId of voters) {
+                votes.push(
+                    this.voteRepository.create({
                         relatedReview: reviewId,
                         createdBy: userId,
-                        vote: randomVote,
+                        vote: Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN,
                     }),
                 );
             }
         }
-        const { length } = await Promise.all(promises);
-        this.logger.debug(`${length} votes seeded`);
+        const { identifiers } = await this.voteRepository.insert(votes);
+        this.logger.debug(`${identifiers.length} votes seeded`);
+        await this.reviewService.refreshReviewVotes();
     }
 }

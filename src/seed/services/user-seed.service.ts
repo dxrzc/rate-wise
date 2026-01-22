@@ -42,8 +42,10 @@ export class UserSeedService {
     }
 
     get user() {
+        const { password: passwordHash, ...signUpInput } = this.signUpInput;
         return {
-            ...this.signUpInput,
+            ...signUpInput,
+            passwordHash,
             role: this.role,
         };
     }
