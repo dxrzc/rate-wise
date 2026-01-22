@@ -363,7 +363,13 @@ type Query {
 
 type Mutation {
   "\nPopulates the database with sample data for development and testing purposes.\n\n- **Behavior:**\n  - Database is cleared of existing data before seeding.\n  - Creates sample users with various roles and account statuses.\n  - Creates sample items with different categories and tags.\n  - Generates reviews: each user reviews every item except their own.\n  - Generates votes: each user upvotes every review (including their own reviews).\n  - During the process the admin user is not deleted or modified at all (no items or reviews are created for the admin).\n\n- **Returns:** Boolean `true` indicating the seeding process completed successfully.\n\n- **Constraints:**\n  - Can only be executed in non-production environments (development/testing).\n\n- **Authentication:** Required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** `ACTIVE`.\n\n    "
-  runSeed(seed_options: SeedInput!): Boolean!
+  runSeed(
+    """Number of users to create during the seeding process."""
+    users: Int = 10
+
+    """Number of items to create per user during the seeding process."""
+    itemsPerUser: Int = 3
+  ): Boolean!
 
   "\nCreates a new item (product/business/entity) to be rated and reviewed.\n\n- **Returns:** The created item details.\n\n- **Constraints:**\n  - `title`: 5-40 characters (trimmed).\n  - `description`: 5-500 characters (trimmed).\n  - `category`: 3-40 characters (trimmed and lowercased for consistency).\n  - `tags`: Optional array, max 10 tags, each 2-20 characters (trimmed and lowercased).\n  - Title must be unique.\n\n- **Side Effects:**\n  - Title is trimmed (whitespace removal).\n  - Description is trimmed.\n  - Category is normalized: trimmed and converted to lowercase.\n  - Tags array is normalized: each tag trimmed and lowercased, duplicates preserved.\n  - Item is associated with the authenticated user as `createdBy`.\n\n- **Rate Limiting:** 100 requests per minute per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** `CREATOR` role (assigned by default on sign-up).\n\n- **Account Status Required:** `ACTIVE` only — email verification must be completed.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `FORBIDDEN`: Account status is not `ACTIVE` or user lacks `CREATOR` role.\n  - `CONFLICT`: Item with the same title already exists.\n  - `BAD_USER_INPUT`: Validation failed (title/description/category length, tags array size).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Additional Notes:**\n  - Users cannot review their own items (enforced at review creation).\n  - Items can be filtered by category, tag, or creator via the `filterItems` query.\n  - Average rating is computed dynamically from associated reviews.\n    "
   createItem(item_data: CreateItemInput!): ItemModel!
@@ -403,15 +409,6 @@ type Mutation {
 
   "\nSigns out the authenticated user from **all active sessions** across all devices.\n\n- **Returns:** Boolean `true` indicating all sessions were successfully terminated.\n\n- **Constraints:**\n  - User must be authenticated with a valid session.\n  - Re-authentication required: current password must be provided for security verification.\n\n- **Side Effects:**\n  - All user sessions are destroyed from the **Redis** session store.\n  - Session cookie is cleared from the current client.\n  - Security event is logged for audit trail.\n\n- **Rate Limiting:** 3 requests per 20 minutes per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** Any role (`REVIEWER`, `CREATOR`, `MODERATOR`, `ADMIN`).\n\n- **Account Status Required:** Any status (`ACTIVE`, `PENDING_VERIFICATION`, `SUSPENDED`).\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated or re-authentication password is incorrect.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Additional Notes:**\n  - For remote sign-out without being logged in, use `requestSignOutAll` instead.\n    "
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
-}
-
-"""Input data required for seeding the database."""
-input SeedInput {
-  """Number of users to create during the seeding process."""
-  users: Int!
-
-  """Number of items to create per user during the seeding process."""
-  itemsPerUser: Int!
 }
 
 """Input type for creating a new item"""
