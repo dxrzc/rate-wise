@@ -18,6 +18,23 @@ export class SessionsService {
         private readonly logger: HttpLoggerService,
     ) {}
 
+    /**
+     * Check if the session is fully deleted in redis.
+     * @param sessionDetails details of the session
+     * @returns boolean indicating if the session is completed deleted from redis
+     */
+    async isFullyCleaned(sessionDetails: ISessionDetails): Promise<boolean> {
+        const indexKey = userSessionsSetKey(sessionDetails.userId);
+        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
+        const sessKey = sessionKey(sessionDetails.sessId);
+        const [sess, relation, inIndex] = await Promise.all([
+            this.redisClient.get(sessKey),
+            this.redisClient.get(relationKey),
+            this.redisClient.setIsMember(indexKey, sessionDetails.sessId),
+        ]);
+        return sess === null && relation === null && inIndex === false;
+    }
+
     async sessionCleanup(userId: string, sessId: string) {
         const indexKey = userSessionsSetKey(userId);
         const relationKey = userAndSessionRelationKey(sessId);

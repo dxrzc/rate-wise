@@ -78,6 +78,94 @@ describe('Sessions Service ', () => {
         await testingModule.close();
     });
 
+    describe('isFullyCleaned', () => {
+        describe("Session still exists in user's sessions index", () => {
+            test('return false', async () => {
+                // create session
+                const userId = faker.string.alpha(10);
+                const sessId = faker.string.uuid();
+                mockRequest.sessionID = sessId;
+                await sessionsService.create(<any>mockRequest, userId);
+                // delete session
+                const sessKey = sessionKey(sessId);
+                await redisClient.delete(sessKey);
+                // delete user-session relation
+                const relationKey = userAndSessionRelationKey(sessId);
+                await redisClient.delete(relationKey);
+                // still exists in index
+                const isFullyCleaned = await sessionsService.isFullyCleaned({ userId, sessId });
+                expect(isFullyCleaned).toBeFalsy();
+            });
+        });
+
+        describe('User-session relation record still exists', () => {
+            test('return false', async () => {
+                // create session
+                const userId = faker.string.alpha(10);
+                const sessId = faker.string.uuid();
+                mockRequest.sessionID = sessId;
+                await sessionsService.create(<any>mockRequest, userId);
+                // delete session
+                const sessKey = sessionKey(sessId);
+                await redisClient.delete(sessKey);
+                // delete from index
+                const indexKey = userSessionsSetKey(userId);
+                await redisClient.setRem(indexKey, sessId);
+                // still exists relation
+                const isFullyCleaned = await sessionsService.isFullyCleaned({ userId, sessId });
+                expect(isFullyCleaned).toBeFalsy();
+            });
+        });
+
+        describe('Session record still exists', () => {
+            test('return false', async () => {
+                // create session
+                const userId = faker.string.alpha(10);
+                const sessId = faker.string.uuid();
+                mockRequest.sessionID = sessId;
+                await sessionsService.create(<any>mockRequest, userId);
+                // delete from index
+                const indexKey = userSessionsSetKey(userId);
+                await redisClient.setRem(indexKey, sessId);
+                // delete user-session relation
+                const relationKey = userAndSessionRelationKey(sessId);
+                await redisClient.delete(relationKey);
+                // still exists session
+                const isFullyCleaned = await sessionsService.isFullyCleaned({ userId, sessId });
+                expect(isFullyCleaned).toBeFalsy();
+            });
+        });
+
+        describe("User does not exist in user's sessions index", () => {
+            describe('User-session record does not exist', () => {
+                describe('Session record does not exist', () => {
+                    test('return true', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete session
+                        const sessKey = sessionKey(sessId);
+                        await redisClient.delete(sessKey);
+                        // delete from index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.setRem(indexKey, sessId);
+                        // delete user-session relation
+                        const relationKey = userAndSessionRelationKey(sessId);
+                        await redisClient.delete(relationKey);
+                        // check if fully cleaned
+                        const isFullyCleaned = await sessionsService.isFullyCleaned({
+                            userId,
+                            sessId,
+                        });
+                        expect(isFullyCleaned).toBeTruthy();
+                    });
+                });
+            });
+        });
+    });
+
     describe('sessionCleanup', () => {
         test('delete session record', async () => {
             // create session
