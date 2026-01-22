@@ -2,16 +2,15 @@ import { createLightweightRedisContainer } from '@components/utils/create-lightw
 import { SilentHttpLogger } from '@components/utils/silent-http-logger.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import {
     SESS_REDIS_PREFIX,
     SESSIONS_REDIS_CONNECTION,
 } from 'src/sessions/constants/sessions.constants';
+import { sessionKey } from 'src/sessions/functions/session-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
-import { sessionKey } from 'src/sessions/functions/session-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { SessionsService } from 'src/sessions/sessions.service';
 
@@ -79,6 +78,49 @@ describe('Sessions Service ', () => {
         await testingModule.close();
     });
 
+    describe('sessionCleanup', () => {
+        test('delete session record', async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // cleanup
+            await sessionsService.sessionCleanup(userId, sessId);
+            // session deleted
+            const sess = await redisClient.get(sessionKey(sessId));
+            expect(sess).toBeNull();
+        });
+
+        test("delete session from user's sessions index", async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // cleanup
+            await sessionsService.sessionCleanup(userId, sessId);
+            // session not in users's sessions index
+            const indexKey = userSessionsSetKey(userId);
+            const inSet = await redisClient.setIsMember(indexKey, sessId);
+            expect(inSet).toBeFalsy();
+        });
+
+        test('delete user-session relation record', async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // cleanup
+            await sessionsService.sessionCleanup(userId, sessId);
+            // relation deleted
+            const relationKey = userAndSessionRelationKey(sessId);
+            const relation = await redisClient.get(relationKey);
+            expect(relation).toBeNull();
+        });
+    });
+
     describe('isOrphaned', () => {
         describe('Session exists', () => {
             describe('User-session relation record exists', () => {
@@ -95,22 +137,6 @@ describe('Sessions Service ', () => {
                         // check if orphaned
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeTruthy();
-                    });
-
-                    test('delete orphaned session record', async () => {
-                        // create session
-                        const userId = faker.string.alpha(10);
-                        const sessId = faker.string.uuid();
-                        mockRequest.sessionID = sessId;
-                        await sessionsService.create(<any>mockRequest, userId);
-                        // delete session from index
-                        const indexKey = userSessionsSetKey(userId);
-                        await redisClient.setRem(indexKey, sessId);
-                        // act
-                        await sessionsService.isOrphaned(userId, sessId);
-                        // sess deleted
-                        const sess = await redisClient.get(sessionKey(sessId));
-                        expect(sess).toBeNull();
                     });
                 });
 
@@ -146,22 +172,6 @@ describe('Sessions Service ', () => {
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeTruthy();
                     });
-
-                    test('delete orphaned session record', async () => {
-                        // create session
-                        const userId = faker.string.alpha(10);
-                        const sessId = faker.string.uuid();
-                        mockRequest.sessionID = sessId;
-                        await sessionsService.create(<any>mockRequest, userId);
-                        // delete user-session relation
-                        const relationKey = userAndSessionRelationKey(sessId);
-                        await redisClient.delete(relationKey);
-                        // act
-                        await sessionsService.isOrphaned(userId, sessId);
-                        // sess deleted
-                        const sess = await redisClient.get(sessionKey(sessId));
-                        expect(sess).toBeNull();
-                    });
                 });
             });
 
@@ -183,25 +193,6 @@ describe('Sessions Service ', () => {
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeTruthy();
                     });
-
-                    test('delete orphaned session record', async () => {
-                        // create session
-                        const userId = faker.string.alpha(10);
-                        const sessId = faker.string.uuid();
-                        mockRequest.sessionID = sessId;
-                        await sessionsService.create(<any>mockRequest, userId);
-                        // delete user-session relation
-                        const relationKey = userAndSessionRelationKey(sessId);
-                        await redisClient.delete(relationKey);
-                        // delete session from index
-                        const indexKey = userSessionsSetKey(userId);
-                        await redisClient.setRem(indexKey, sessId);
-                        // act
-                        await sessionsService.isOrphaned(userId, sessId);
-                        // sess deleted
-                        const sess = await redisClient.get(sessionKey(sessId));
-                        expect(sess).toBeNull();
-                    });
                 });
             });
 
@@ -216,28 +207,6 @@ describe('Sessions Service ', () => {
                         // check if orphaned
                         const isOrphaned = await sessionsService.isOrphaned(userId, sessId);
                         expect(isOrphaned).toBeFalsy();
-                    });
-
-                    test('no redis records related to session deleted', async () => {
-                        // create session
-                        const userId = faker.string.alpha(10);
-                        const sessId = faker.string.uuid();
-                        mockRequest.sessionID = sessId;
-                        await sessionsService.create(<any>mockRequest, userId);
-                        // act
-                        await sessionsService.isOrphaned(userId, sessId);
-                        // session state is correct
-                        const indexKey = userSessionsSetKey(userId);
-                        const relationKey = userAndSessionRelationKey(sessId);
-                        const sessKey = sessionKey(sessId);
-                        const [inIndex, normalRecord, relation] = await runSettledOrThrow([
-                            redisClient.setIsMember(indexKey, sessId),
-                            redisClient.get(sessKey),
-                            redisClient.get(relationKey),
-                        ]);
-                        expect(inIndex).toBeTruthy();
-                        expect(normalRecord).not.toBeNull();
-                        expect(relation).not.toBeNull();
                     });
                 });
             });
