@@ -30,9 +30,8 @@ export class SessionsService {
     }
 
     /**
-     * Check if the session state is inconsistent in Redis.
-     * @param userId
-     * @param sessId
+     * Check if the session state is inconsistent in Redis
+     * @param sessionDetails details of the session
      * @returns boolean indicating if the session is a dangling session
      */
     async isDangling(sessionDetails: ISessionDetails): Promise<boolean> {
