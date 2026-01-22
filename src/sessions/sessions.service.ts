@@ -17,7 +17,7 @@ export class SessionsService {
         private readonly logger: HttpLoggerService,
     ) {}
 
-    private async sessionCleanup(userId: string, sessId: string) {
+    async sessionCleanup(userId: string, sessId: string) {
         const indexKey = userSessionsSetKey(userId);
         const relationKey = userAndSessionRelationKey(sessId);
         const sessKey = sessionKey(sessId);
@@ -26,6 +26,7 @@ export class SessionsService {
             this.redisClient.delete(relationKey),
             this.redisClient.setRem(indexKey, sessId),
         ]);
+        this.logger.info('Orphaned session deleted completely');
     }
 
     /*
@@ -49,8 +50,6 @@ export class SessionsService {
             this.logger.warn('Orphaned session: user-session relation does not exist');
             orphaned = true;
         }
-        // cleanup if orphaned
-        if (orphaned) await this.sessionCleanup(userId, sessId);
         return orphaned;
     }
 
