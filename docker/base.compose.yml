@@ -87,4 +87,4 @@ services:
       postgres:
         condition: service_healthy  
     environment:
-      POSTGRES_URI: postgresql://dev:secretpassword@postgres:${POSTGRES_PORT:-5432}/ratewise         
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise         
