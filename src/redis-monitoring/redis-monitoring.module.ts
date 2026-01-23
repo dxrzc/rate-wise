@@ -47,7 +47,10 @@ import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconne
         {
             provide: QUEUE_REDIS_CONNECTION,
             useFactory: (db: DbConfigService) => {
-                const redis = new Redis(db.redisQueuesUri, { maxRetriesPerRequest: null });
+                const redis = new Redis(db.redisQueuesUri, {
+                    maxRetriesPerRequest: null,
+                    retryStrategy: redisReconnectStrategy,
+                });
                 redis.on('error', (err) => logRedisClientError(err, 'Queues'));
                 return redis;
             },
