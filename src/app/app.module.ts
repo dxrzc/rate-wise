@@ -49,6 +49,7 @@ import {
 } from 'src/redis-monitoring/constants/redis.connections';
 import KeyvRedis from '@keyv/redis';
 import Redis from 'ioredis';
+import { serviceUnavailableErrorFilter } from './providers/filters/service-unavailable.filter.provider';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -63,6 +64,7 @@ import Redis from 'ioredis';
     providers: [
         RequestContextPlugin,
         catchEverythingFilter,
+        serviceUnavailableErrorFilter,
         appValidationPipe,
         rateLimiterGuard,
         appAuthGuard,
