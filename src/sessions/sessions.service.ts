@@ -9,6 +9,7 @@ import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { sessionKey } from './functions/session-key';
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { ISessionDetails } from './interfaces/session.details.interface';
+import { ISessionKeys } from './interfaces/session.keys.interface';
 
 @Injectable()
 export class SessionsService {
@@ -19,14 +20,24 @@ export class SessionsService {
     ) {}
 
     /**
+     * Returns the keys used in redis for index, relation and session
+     * @param sessionDetails details of the session
+     * @returns object containing the keys
+     */
+    getRedisKeys(sessionDetails: ISessionDetails): ISessionKeys {
+        const indexKey = userSessionsSetKey(sessionDetails.userId);
+        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
+        const sessKey = sessionKey(sessionDetails.sessId);
+        return { indexKey, relationKey, sessKey };
+    }
+
+    /**
      * Check if the session is fully deleted in redis.
      * @param sessionDetails details of the session
      * @returns boolean indicating if the session is completed deleted from redis
      */
     async isFullyCleaned(sessionDetails: ISessionDetails): Promise<boolean> {
-        const indexKey = userSessionsSetKey(sessionDetails.userId);
-        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
-        const sessKey = sessionKey(sessionDetails.sessId);
+        const { indexKey, relationKey, sessKey } = this.getRedisKeys(sessionDetails);
         const [sess, relation, inIndex] = await Promise.all([
             this.redisClient.get(sessKey),
             this.redisClient.get(relationKey),
@@ -40,9 +51,7 @@ export class SessionsService {
      * @param sessionDetails details of the session
      */
     async sessionCleanup(sessionDetails: ISessionDetails): Promise<void> {
-        const indexKey = userSessionsSetKey(sessionDetails.userId);
-        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
-        const sessKey = sessionKey(sessionDetails.sessId);
+        const { indexKey, relationKey, sessKey } = this.getRedisKeys(sessionDetails);
         await runSettledOrThrow([
             this.redisClient.delete(sessKey),
             this.redisClient.delete(relationKey),
@@ -56,8 +65,7 @@ export class SessionsService {
      * @returns boolean indicating if the session is a dangling session
      */
     async isDangling(sessionDetails: ISessionDetails): Promise<boolean> {
-        const indexKey = userSessionsSetKey(sessionDetails.userId);
-        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
+        const { indexKey, relationKey } = this.getRedisKeys(sessionDetails);
         let dangling = false;
         const [sessInIndex, sessRelationExists] = await runSettledOrThrow([
             this.redisClient.setIsMember(indexKey, sessionDetails.sessId),
