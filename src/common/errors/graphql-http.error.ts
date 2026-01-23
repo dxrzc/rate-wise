@@ -8,6 +8,12 @@ export class GqlHttpError {
         });
     }
 
+    static ServiceUnavailable() {
+        return new GraphQLError('Service Unavailable', {
+            extensions: { code: Code.SERVICE_UNAVAILABLE },
+        });
+    }
+
     static NotFound(message: string) {
         return new GraphQLError(message, {
             extensions: { code: Code.NOT_FOUND },
