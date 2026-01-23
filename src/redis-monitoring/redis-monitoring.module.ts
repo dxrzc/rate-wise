@@ -1,4 +1,4 @@
-import KeyvRedis from '@keyv/redis';
+import KeyvRedis, { RedisClientOptions } from '@keyv/redis';
 import { Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import Redis from 'ioredis';
@@ -25,9 +25,13 @@ import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconne
         {
             provide: CACHE_REDIS_STORE,
             useFactory: (db: DbConfigService) => {
-                const redis = new KeyvRedis(db.redisCacheUri);
-                redis.on('error', (err: string) => logRedisClientError(err, 'Cache'));
-                return redis;
+                const clientOptions: RedisClientOptions = {
+                    url: db.redisCacheUri,
+                    socket: { reconnectStrategy: redisReconnectStrategy },
+                };
+                const keyvRedis = new KeyvRedis(clientOptions);
+                keyvRedis.on('error', (err: string) => logRedisClientError(err, 'Cache'));
+                return keyvRedis;
             },
             inject: [DbConfigService],
         },
