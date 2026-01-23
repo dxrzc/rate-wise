@@ -10,6 +10,7 @@ import {
 } from './constants/redis.connections';
 import { RedisHealthIndicator } from './health/redis.health';
 import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
+import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconnect-strategy';
 
 /**
  * Provides and exports redis stores for EXTERNAL library modules like cache, throttler and queues.
@@ -33,7 +34,11 @@ import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
         {
             provide: THROTTLER_REDIS_CONNECTION,
             useFactory: (db: DbConfigService) => {
-                const redis = new Redis(db.redisAuthUri);
+                const redis = new Redis(db.redisAuthUri, {
+                    retryStrategy: redisReconnectStrategy,
+                    enableOfflineQueue: false,
+                    maxRetriesPerRequest: 0,
+                });
                 redis.on('error', (err) => logRedisClientError(err, 'Throttler'));
                 return redis;
             },
