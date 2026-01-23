@@ -9,6 +9,7 @@
 
 import { createClient } from '@redis/client';
 import { logRedisClientError } from './log-redis.client-error';
+import { IRedisConnectionOptions } from '../interfaces/redis/redis.connection.options.interface';
 
 // Maximum reconnection delay in milliseconds (30 seconds)
 const MAX_RECONNECT_DELAY = 30000;
@@ -17,12 +18,10 @@ export class RedisConnection {
     private readonly subscribers = new Array<any>();
     private readonly _client: any;
 
-    constructor(
-        private readonly redisUri: string,
-        private readonly context: string,
-    ) {
+    constructor(private readonly options: IRedisConnectionOptions) {
         this._client = createClient({
-            url: redisUri,
+            url: options.redisUri,
+            disableOfflineQueue: options.disableOfflineQueue,
             socket: {
                 reconnectStrategy: (retries) => {
                     // Calculate delay with exponential backoff: 2^retries * 50ms
@@ -44,7 +43,7 @@ export class RedisConnection {
 
     configEvents(client = this._client) {
         client.on('error', (err: Error) => {
-            logRedisClientError(err, this.context);
+            logRedisClientError(err, this.options.context);
         });
     }
 

@@ -8,16 +8,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
+import { IRedisConnectionOptions } from '../interfaces/redis/redis.connection.options.interface';
 import { RedisConnection } from './redis.connection';
 
 export class RedisClientAdapter {
     private readonly _connection: RedisConnection;
 
-    constructor(
-        private readonly redisUri: string,
-        private readonly context: string,
-    ) {
-        this._connection = new RedisConnection(redisUri, context);
+    constructor(private readonly connectionOptions: IRedisConnectionOptions) {
+        this._connection = new RedisConnection(connectionOptions);
     }
 
     get connection() {

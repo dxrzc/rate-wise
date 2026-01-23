@@ -34,8 +34,11 @@ export class SessionsModule implements OnApplicationShutdown {
                 {
                     provide: SESSIONS_REDIS_CONNECTION,
                     useFactory: async (moduleOpts: ISessionsRootOptions) => {
-                        const redisUri = moduleOpts.connection.redisUri;
-                        const redisClient = new RedisClientAdapter(redisUri, SessionsModule.name);
+                        const redisClient = new RedisClientAdapter({
+                            context: SessionsModule.name,
+                            redisUri: moduleOpts.connection.redisUri,
+                            disableOfflineQueue: true,
+                        });
                         SessionsModule.redisConnection = redisClient.connection;
                         await redisClient.connection.connect();
                         return redisClient;

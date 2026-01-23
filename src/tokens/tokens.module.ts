@@ -37,8 +37,11 @@ export class TokensModule implements OnApplicationShutdown {
                 {
                     provide: TOKENS_REDIS_CONNECTION,
                     useFactory: async (moduleOpts: ITokensRootOptions) => {
-                        const redisUri = moduleOpts.connection.redisUri;
-                        const redisClient = new RedisClientAdapter(redisUri, 'Tokens');
+                        const redisClient = new RedisClientAdapter({
+                            redisUri: moduleOpts.connection.redisUri,
+                            context: TokensModule.name,
+                            disableOfflineQueue: true,
+                        });
                         TokensModule.redisConnection = redisClient.connection;
                         await redisClient.connection.connect();
                         return redisClient;
