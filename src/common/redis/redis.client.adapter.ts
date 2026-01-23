@@ -124,8 +124,16 @@ export class RedisClientAdapter {
                 multi.sAdd(key, member);
                 return wrapper;
             },
+            setRem: (key: string, member: string) => {
+                multi.sRem(key, member);
+                return wrapper;
+            },
             store: (key: string, value: string) => {
                 multi.set(key, value);
+                return wrapper;
+            },
+            delete: (key: string) => {
+                multi.del(key);
                 return wrapper;
             },
             exec: async () => {

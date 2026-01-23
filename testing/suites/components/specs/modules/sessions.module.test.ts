@@ -8,6 +8,7 @@ import {
     SESS_REDIS_PREFIX,
     SESSIONS_REDIS_CONNECTION,
 } from 'src/sessions/constants/sessions.constants';
+import { sessionKey } from 'src/sessions/functions/session-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
@@ -75,6 +76,229 @@ describe('Sessions Service ', () => {
 
     afterAll(async () => {
         await testingModule.close();
+    });
+
+    describe('isFullyCleaned', () => {
+        describe("Session still exists in user's sessions index", () => {
+            test('return false', async () => {
+                // create session
+                const userId = faker.string.alpha(10);
+                const sessId = faker.string.uuid();
+                mockRequest.sessionID = sessId;
+                await sessionsService.create(<any>mockRequest, userId);
+                // delete session
+                const sessKey = sessionKey(sessId);
+                await redisClient.delete(sessKey);
+                // delete user-session relation
+                const relationKey = userAndSessionRelationKey(sessId);
+                await redisClient.delete(relationKey);
+                // still exists in index
+                const isFullyCleaned = await sessionsService.isFullyCleaned({ userId, sessId });
+                expect(isFullyCleaned).toBeFalsy();
+            });
+        });
+
+        describe('User-session relation record still exists', () => {
+            test('return false', async () => {
+                // create session
+                const userId = faker.string.alpha(10);
+                const sessId = faker.string.uuid();
+                mockRequest.sessionID = sessId;
+                await sessionsService.create(<any>mockRequest, userId);
+                // delete session
+                const sessKey = sessionKey(sessId);
+                await redisClient.delete(sessKey);
+                // delete from index
+                const indexKey = userSessionsSetKey(userId);
+                await redisClient.setRem(indexKey, sessId);
+                // still exists relation
+                const isFullyCleaned = await sessionsService.isFullyCleaned({ userId, sessId });
+                expect(isFullyCleaned).toBeFalsy();
+            });
+        });
+
+        describe('Session record still exists', () => {
+            test('return false', async () => {
+                // create session
+                const userId = faker.string.alpha(10);
+                const sessId = faker.string.uuid();
+                mockRequest.sessionID = sessId;
+                await sessionsService.create(<any>mockRequest, userId);
+                // delete from index
+                const indexKey = userSessionsSetKey(userId);
+                await redisClient.setRem(indexKey, sessId);
+                // delete user-session relation
+                const relationKey = userAndSessionRelationKey(sessId);
+                await redisClient.delete(relationKey);
+                // still exists session
+                const isFullyCleaned = await sessionsService.isFullyCleaned({ userId, sessId });
+                expect(isFullyCleaned).toBeFalsy();
+            });
+        });
+
+        describe("User does not exist in user's sessions index", () => {
+            describe('User-session record does not exist', () => {
+                describe('Session record does not exist', () => {
+                    test('return true', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete session
+                        const sessKey = sessionKey(sessId);
+                        await redisClient.delete(sessKey);
+                        // delete from index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.setRem(indexKey, sessId);
+                        // delete user-session relation
+                        const relationKey = userAndSessionRelationKey(sessId);
+                        await redisClient.delete(relationKey);
+                        // check if fully cleaned
+                        const isFullyCleaned = await sessionsService.isFullyCleaned({
+                            userId,
+                            sessId,
+                        });
+                        expect(isFullyCleaned).toBeTruthy();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('sessionCleanup', () => {
+        test('delete session record', async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // cleanup
+            await sessionsService.sessionCleanup({ userId, sessId });
+            // session deleted
+            const sess = await redisClient.get(sessionKey(sessId));
+            expect(sess).toBeNull();
+        });
+
+        test("delete session from user's sessions index", async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // cleanup
+            await sessionsService.sessionCleanup({ userId, sessId });
+            // session not in users's sessions index
+            const indexKey = userSessionsSetKey(userId);
+            const inSet = await redisClient.setIsMember(indexKey, sessId);
+            expect(inSet).toBeFalsy();
+        });
+
+        test('delete user-session relation record', async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // cleanup
+            await sessionsService.sessionCleanup({ userId, sessId });
+            // relation deleted
+            const relationKey = userAndSessionRelationKey(sessId);
+            const relation = await redisClient.get(relationKey);
+            expect(relation).toBeNull();
+        });
+    });
+
+    describe('isDangling', () => {
+        describe('Session exists', () => {
+            describe('User-session relation record exists', () => {
+                describe("Session not in user's sessions index", () => {
+                    test('return true', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete session from index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.setRem(indexKey, sessId);
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
+                        expect(isDangling).toBeTruthy();
+                    });
+                });
+
+                describe("User's session index does not exist", () => {
+                    test('return true', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.delete(indexKey);
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
+                        expect(isDangling).toBeTruthy();
+                    });
+                });
+            });
+
+            describe("Session exists in user's session redis index", () => {
+                describe('User-session relation does not exist', () => {
+                    test('return true', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete user-session relation
+                        const relationKey = userAndSessionRelationKey(sessId);
+                        await redisClient.delete(relationKey);
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
+                        expect(isDangling).toBeTruthy();
+                    });
+                });
+            });
+
+            describe("Session does not exist in user's sessions index", () => {
+                describe('User-session relation does not exist', () => {
+                    test('return true', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // delete user-session relation
+                        const relationKey = userAndSessionRelationKey(sessId);
+                        await redisClient.delete(relationKey);
+                        // delete session from index
+                        const indexKey = userSessionsSetKey(userId);
+                        await redisClient.setRem(indexKey, sessId);
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
+                        expect(isDangling).toBeTruthy();
+                    });
+                });
+            });
+
+            describe("Session exists in user's session redis index", () => {
+                describe('User-session relation exists', () => {
+                    test('return false', async () => {
+                        // create session
+                        const userId = faker.string.alpha(10);
+                        const sessId = faker.string.uuid();
+                        mockRequest.sessionID = sessId;
+                        await sessionsService.create(<any>mockRequest, userId);
+                        // check if dangling
+                        const isDangling = await sessionsService.isDangling({ userId, sessId });
+                        expect(isDangling).toBeFalsy();
+                    });
+                });
+            });
+        });
     });
 
     describe('create', () => {

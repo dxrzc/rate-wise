@@ -6,6 +6,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SESS_REDIS_PREFIX, SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { sessionKey } from './functions/session-key';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
+import { ISessionDetails } from './interfaces/session.details.interface';
+import { ISessionKeys } from './interfaces/session.keys.interface';
 
 @Injectable()
 export class SessionsService {
@@ -14,6 +18,71 @@ export class SessionsService {
         private readonly redisClient: RedisClientAdapter,
         private readonly logger: HttpLoggerService,
     ) {}
+
+    /**
+     * Returns the keys used in redis for index, relation and session
+     * @param sessionDetails details of the session
+     * @returns object containing the keys
+     */
+    getRedisKeys(sessionDetails: ISessionDetails): ISessionKeys {
+        const indexKey = userSessionsSetKey(sessionDetails.userId);
+        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
+        const sessKey = sessionKey(sessionDetails.sessId);
+        return { indexKey, relationKey, sessKey };
+    }
+
+    /**
+     * Check if the session is fully deleted in redis.
+     * @param sessionDetails details of the session
+     * @returns boolean indicating if the session is completed deleted from redis
+     */
+    async isFullyCleaned(sessionDetails: ISessionDetails): Promise<boolean> {
+        const { indexKey, relationKey, sessKey } = this.getRedisKeys(sessionDetails);
+        const [sess, relation, inIndex] = await Promise.all([
+            this.redisClient.get(sessKey),
+            this.redisClient.get(relationKey),
+            this.redisClient.setIsMember(indexKey, sessionDetails.sessId),
+        ]);
+        return sess === null && relation === null && inIndex === false;
+    }
+
+    /**
+     * Cleans up all redis keys related to a session.
+     * @param sessionDetails details of the session
+     */
+    async sessionCleanup(sessionDetails: ISessionDetails): Promise<void> {
+        const { indexKey, relationKey, sessKey } = this.getRedisKeys(sessionDetails);
+        await runSettledOrThrow([
+            this.redisClient.delete(sessKey),
+            this.redisClient.delete(relationKey),
+            this.redisClient.setRem(indexKey, sessionDetails.sessId),
+        ]);
+    }
+
+    /**
+     * Check if the session state is inconsistent in Redis
+     * @param sessionDetails details of the session
+     * @returns boolean indicating if the session is a dangling session
+     */
+    async isDangling(sessionDetails: ISessionDetails): Promise<boolean> {
+        const { indexKey, relationKey } = this.getRedisKeys(sessionDetails);
+        let dangling = false;
+        const [sessInIndex, sessRelationExists] = await runSettledOrThrow([
+            this.redisClient.setIsMember(indexKey, sessionDetails.sessId),
+            this.redisClient.get(relationKey),
+        ]);
+        // index
+        if (!sessInIndex) {
+            this.logger.warn("Orphaned session: not in user's sessions index");
+            dangling = true;
+        }
+        // relation
+        if (!sessRelationExists) {
+            this.logger.warn('Orphaned session: user-session relation does not exist');
+            dangling = true;
+        }
+        return dangling;
+    }
 
     private async deleteAllUserSessions(sessIDs: string[]) {
         await Promise.all(
