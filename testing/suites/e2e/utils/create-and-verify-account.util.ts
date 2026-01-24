@@ -3,9 +3,11 @@ import { e2eKit } from './e2e-kit.util';
 import { requestAccountVerification } from '@testing/tools/gql-operations/auth/request-account-verification.operation';
 import { EmailPaths } from '@e2e/enum/email-paths.enum';
 import { HttpClient } from '@e2e/client/http.client';
+import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 
 type AccountCreated = {
     client: HttpClient;
+    userData: SignUpInput;
 };
 
 export async function createAndVerifyAccount(): Promise<AccountCreated> {
@@ -17,5 +19,5 @@ export async function createAndVerifyAccount(): Promise<AccountCreated> {
     expect(reqAccVerif).notToFail();
     const link = await e2eKit.emailClient.getLinkSent(EmailPaths.verifyAccount, user.email);
     await client.get(link!);
-    return { client };
+    return { client, userData: user };
 }
