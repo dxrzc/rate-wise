@@ -47,15 +47,18 @@ export class SessionsService {
     }
 
     /**
-     * Cleans up all redis keys related to a session.
+     * Cleans up all redis keys related to the current session
      * @param sessionDetails details of the session
      */
-    async sessionCleanup(sessionDetails: ISessionDetails): Promise<void> {
-        const { indexKey, relationKey, sessKey } = this.getRedisKeys(sessionDetails);
+    async sessionCleanup(req: RequestContext): Promise<void> {
+        const userId = req.session.userId;
+        const sessId = req.sessionID;
+        const { indexKey, relationKey, sessKey } = this.getRedisKeys({ userId, sessId });
         await runSettledOrThrow([
+            promisify<void>((cb) => req.session.destroy(cb)),
             this.redisClient.delete(sessKey),
             this.redisClient.delete(relationKey),
-            this.redisClient.setRem(indexKey, sessionDetails.sessId),
+            this.redisClient.setRem(indexKey, sessId),
         ]);
     }
 
