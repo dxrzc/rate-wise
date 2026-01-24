@@ -35,14 +35,11 @@ describe('Sessions Service ', () => {
             session: {
                 userId: 'test-user',
                 destroy: jest.fn((cb) => cb && cb()), // simulate successful callback
-                regenerate: jest.fn((cb) => {
-                    // creates a real session simulating async behavior
-                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    setImmediate(async () => {
-                        await redisClient.store(`session:${mockRequest.sessionID}`, {});
-                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                        cb && cb(); // signal success to promisify()
-                    });
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                regenerate: jest.fn(async (cb) => {
+                    await redisClient.store(`session:${mockRequest.sessionID}`, {});
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                    cb && cb(); // signal success to promisify()
                 }),
             },
         };
