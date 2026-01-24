@@ -139,7 +139,7 @@ export class SessionsService {
             this.redisClient.setRem(userSessionsSetKey(userId), sessionId),
             this.redisClient.delete(userAndSessionRelationKey(sessionId)),
         ]);
-        this.logger.debug(`Session ${sessionId} deleted`);
+        this.logger.debug(`Session deleted`);
     }
 
     /**
