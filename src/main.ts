@@ -6,6 +6,7 @@ import { ServerConfigService } from './config/services/server.config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import hpp from 'hpp';
+import { isRecoverableInfraError } from './common/functions/error/is-recoverable-infra-error';
 
 let app: NestExpressApplication | undefined;
 
@@ -22,8 +23,9 @@ function tryToCloseApp(app: INestApplication, context: string) {
         });
 }
 
-process.on('uncaughtException', ({ message, stack }: Error) => {
-    SystemLogger.getInstance().error(message, stack, 'uncaughtException');
+process.on('uncaughtException', (error: Error) => {
+    SystemLogger.getInstance().error(error.message, error.stack, 'uncaughtException');
+    if (isRecoverableInfraError(error) && app) return;
     if (app) {
         tryToCloseApp(app, 'uncaughtException');
         return;
