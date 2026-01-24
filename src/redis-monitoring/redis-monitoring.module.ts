@@ -28,6 +28,7 @@ import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconne
                 const clientOptions: RedisClientOptions = {
                     url: db.redisCacheUri,
                     socket: { reconnectStrategy: redisReconnectStrategy },
+                    disableOfflineQueue: true,
                 };
                 const keyvRedis = new KeyvRedis(clientOptions);
                 keyvRedis.on('error', (err: string) => logRedisClientError(err, 'Cache'));
