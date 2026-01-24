@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
+import { getSessionCookieIfExists } from '@integration/utils/get-session-cookie-if-exists.util';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -71,6 +72,17 @@ describe('GraphQL - signOut', () => {
             await testKit.gqlClient.set('Cookie', sessionCookie).send(signOut()).expect(success);
             // sid not in set anymore
             await expect(testKit.sessionsRedisClient.setIsMember(setKey, sid)).resolves.toBeFalsy();
+        });
+
+        test('session cookie is cleared in response', async () => {
+            const { sessionCookie } = await createAccount();
+            // logout
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(signOut())
+                .expect(success);
+            const cookieInRes = getSessionCookieIfExists(res);
+            expect(cookieInRes).toBeNull();
         });
     });
 
