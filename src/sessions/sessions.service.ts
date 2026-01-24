@@ -125,6 +125,10 @@ export class SessionsService {
         return sessIDs.length;
     }
 
+    /**
+     * @param userId id of the user
+     * @returns the number of sessions belonging to this user
+     */
     async count(userId: string): Promise<number> {
         const setkey = userSessionsSetKey(userId);
         return await this.redisClient.setSize(setkey);
