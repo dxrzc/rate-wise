@@ -32,21 +32,6 @@ export class SessionsService {
     }
 
     /**
-     * Checks if the session is fully deleted in redis.
-     * @param sessionDetails details of the session
-     * @returns boolean indicating if the session is completed deleted from redis
-     */
-    async isFullyCleaned(sessionDetails: ISessionDetails): Promise<boolean> {
-        const { indexKey, relationKey, sessKey } = this.getRedisKeys(sessionDetails);
-        const [sess, relation, inIndex] = await Promise.all([
-            this.redisClient.get(sessKey),
-            this.redisClient.get(relationKey),
-            this.redisClient.setIsMember(indexKey, sessionDetails.sessId),
-        ]);
-        return sess === null && relation === null && inIndex === false;
-    }
-
-    /**
      * Cleans up all redis keys related to the current session
      * @param sessionDetails details of the session
      */
