@@ -23,6 +23,10 @@ import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconne
     imports: [TerminusModule],
     providers: [
         {
+            /**
+             * Fails fast but silently.
+             * Redis client is replaced on fatal socket errors. See "uncaughtException" listener
+             */
             provide: CACHE_REDIS_STORE,
             useFactory: (db: DbConfigService) => {
                 const clientOptions: RedisClientOptions = {
@@ -37,6 +41,9 @@ import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconne
             inject: [DbConfigService],
         },
         {
+            /**
+             * Fails fast.
+             */
             provide: THROTTLER_REDIS_CONNECTION,
             useFactory: (db: DbConfigService) => {
                 const redis = new Redis(db.redisAuthUri, {
@@ -50,6 +57,10 @@ import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconne
             inject: [DbConfigService],
         },
         {
+            /**
+             * When redis is down, this connection is will retry indefinitely
+             * until redis is available again.
+             */
             provide: QUEUE_REDIS_CONNECTION,
             useFactory: (db: DbConfigService) => {
                 const redis = new Redis(db.redisQueuesUri, {
