@@ -154,6 +154,6 @@ export class SessionsService {
         await this.regenerate(req);
         req.session.userId = userId;
         await this.bindUserToSession(req.sessionID, userId);
-        this.logger.debug(`Session ${req.sessionID} created`);
+        this.logger.info(`Session created`);
     }
 }
