@@ -5,6 +5,8 @@ import { GraphQLError } from 'graphql';
 import { convertGqlErrorToHttpError } from '../functions/error/transform-gql-error-into-http-error';
 import { SystemLogger } from '../logging/system.logger';
 import { COMMON_MESSAGES } from '../messages/common.messages';
+import { isServiceUnavailableError } from '../functions/error/is-service-unavailable-error';
+import { GqlHttpError } from '../errors/graphql-http.error';
 
 function logException(exception: unknown) {
     if (exception instanceof Error)
@@ -19,6 +21,10 @@ function logException(exception: unknown) {
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
     catch(exception: unknown, host: ArgumentsHost) {
+        if (exception instanceof Error && isServiceUnavailableError(exception)) {
+            exception = GqlHttpError.ServiceUnavailable();
+        }
+
         switch (host.getType<GqlContextType>()) {
             case 'http': {
                 // After configuring Apollo, http exceptions are no longer handled automatically
