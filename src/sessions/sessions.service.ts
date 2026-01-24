@@ -106,13 +106,6 @@ export class SessionsService {
         this.logger.debug(`Session regenerated`);
     }
 
-    private async bindUserToSession(sessionId: string, userId: string) {
-        await this.redisClient
-            .transaction()
-            .store(userAndSessionRelationKey(sessionId), userId)
-            .setAdd(userSessionsSetKey(userId), sessionId)
-            .exec();
-    }
 
     async deleteAll(userId: string): Promise<number> {
         const sessIDs = await this.redisClient.setMembers(userSessionsSetKey(userId));
@@ -161,7 +154,11 @@ export class SessionsService {
     async create(req: RequestContext, userId: string) {
         await this.regenerate(req);
         req.session.userId = userId;
-        await this.bindUserToSession(req.sessionID, userId);
+        await this.redisClient
+            .transaction()
+            .store(userAndSessionRelationKey(req.sessionID), userId)
+            .setAdd(userSessionsSetKey(userId), req.sessionID)
+            .exec();
         this.logger.info(`Session created`);
     }
 }
