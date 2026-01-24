@@ -351,12 +351,40 @@ describe('Sessions Service ', () => {
         });
     });
 
-    describe('delete', () => {
+    describe('destroy', () => {
         test('req.session.destroy is called', async () => {
             const sess1Id = faker.string.uuid();
             mockRequest.sessionID = sess1Id;
-            await sessionsService.delete(<any>mockRequest);
+            await sessionsService.destroy(<any>mockRequest);
             expect(mockRequest.session.destroy).toHaveBeenCalledTimes(1);
+        });
+
+        test("session is deleted from user's sessions index in redis", async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // destroy
+            await sessionsService.destroy(<any>mockRequest);
+            // session not in users's sessions index
+            const indexKey = userSessionsSetKey(userId);
+            const inSet = await redisClient.setIsMember(indexKey, sessId);
+            expect(inSet).toBeFalsy();
+        });
+
+        test('user-session redis record is deleted', async () => {
+            // create session
+            const userId = faker.string.alpha(10);
+            const sessId = faker.string.uuid();
+            mockRequest.sessionID = sessId;
+            await sessionsService.create(<any>mockRequest, userId);
+            // destroy
+            await sessionsService.destroy(<any>mockRequest);
+            // relation deleted
+            const relationKey = userAndSessionRelationKey(sessId);
+            const relation = await redisClient.get(relationKey);
+            expect(relation).toBeNull();
         });
     });
 

@@ -130,14 +130,18 @@ export class SessionsService {
         return await this.redisClient.setSize(setkey);
     }
 
-    async delete(req: RequestContext) {
+    /**
+     * Destroys the session in the req object and deletes the redis records related
+     * @param req request object
+     */
+    async destroy(req: RequestContext) {
         const userId = req.session.userId;
         const sessionId = req.sessionID;
-        await promisify<void>((cb) => req.session.destroy(cb));
-        if (userId) {
-            await this.redisClient.setRem(userSessionsSetKey(userId), sessionId);
-        }
-        await this.redisClient.delete(userAndSessionRelationKey(sessionId));
+        await runSettledOrThrow([
+            promisify<void>((cb) => req.session.destroy(cb)),
+            this.redisClient.setRem(userSessionsSetKey(userId), sessionId),
+            this.redisClient.delete(userAndSessionRelationKey(sessionId)),
+        ]);
         this.logger.debug(`Session ${sessionId} deleted`);
     }
 

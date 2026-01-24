@@ -142,7 +142,7 @@ export class AuthService {
 
     async signOut(req: RequestContext): Promise<void> {
         const userId = req.session.userId;
-        await this.sessionService.delete(req);
+        await this.sessionService.destroy(req);
         this.logger.info(`User ${userId} signed out`);
     }
 
