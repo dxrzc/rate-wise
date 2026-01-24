@@ -1,4 +1,4 @@
-import KeyvRedis from '@keyv/redis';
+import KeyvRedis, { RedisClientOptions } from '@keyv/redis';
 import { Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import Redis from 'ioredis';
@@ -10,6 +10,7 @@ import {
 } from './constants/redis.connections';
 import { RedisHealthIndicator } from './health/redis.health';
 import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
+import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconnect-strategy';
 
 /**
  * Provides and exports redis stores for EXTERNAL library modules like cache, throttler and queues.
@@ -22,27 +23,50 @@ import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
     imports: [TerminusModule],
     providers: [
         {
+            /**
+             * Fails fast but silently.
+             * Redis client is replaced on fatal socket errors. See "uncaughtException" listener
+             */
             provide: CACHE_REDIS_STORE,
             useFactory: (db: DbConfigService) => {
-                const redis = new KeyvRedis(db.redisCacheUri);
-                redis.on('error', (err: string) => logRedisClientError(err, 'Cache'));
-                return redis;
+                const clientOptions: RedisClientOptions = {
+                    url: db.redisCacheUri,
+                    socket: { reconnectStrategy: redisReconnectStrategy },
+                    disableOfflineQueue: true,
+                };
+                const keyvRedis = new KeyvRedis(clientOptions);
+                keyvRedis.on('error', (err: string) => logRedisClientError(err, 'Cache'));
+                return keyvRedis;
             },
             inject: [DbConfigService],
         },
         {
+            /**
+             * Fails fast.
+             */
             provide: THROTTLER_REDIS_CONNECTION,
             useFactory: (db: DbConfigService) => {
-                const redis = new Redis(db.redisAuthUri);
+                const redis = new Redis(db.redisAuthUri, {
+                    retryStrategy: redisReconnectStrategy,
+                    enableOfflineQueue: false,
+                    maxRetriesPerRequest: 0,
+                });
                 redis.on('error', (err) => logRedisClientError(err, 'Throttler'));
                 return redis;
             },
             inject: [DbConfigService],
         },
         {
+            /**
+             * When redis is down, this connection is will retry indefinitely
+             * until redis is available again.
+             */
             provide: QUEUE_REDIS_CONNECTION,
             useFactory: (db: DbConfigService) => {
-                const redis = new Redis(db.redisQueuesUri, { maxRetriesPerRequest: null });
+                const redis = new Redis(db.redisQueuesUri, {
+                    maxRetriesPerRequest: null,
+                    retryStrategy: redisReconnectStrategy,
+                });
                 redis.on('error', (err) => logRedisClientError(err, 'Queues'));
                 return redis;
             },

@@ -6,6 +6,10 @@ import { ServerConfigService } from './config/services/server.config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import hpp from 'hpp';
+import { isRecoverableInfraError } from './common/functions/error/is-recoverable-infra-error';
+import { CACHE_REDIS_STORE } from './redis-monitoring/constants/redis.connections';
+import KeyvRedis from '@keyv/redis';
+import { patchRedisStoreSocketClosedUnexpectedly } from './common/functions/redis/patch-redis-store-socket-closed-unexpectedly';
 
 let app: NestExpressApplication | undefined;
 
@@ -22,8 +26,17 @@ function tryToCloseApp(app: INestApplication, context: string) {
         });
 }
 
-process.on('uncaughtException', ({ message, stack }: Error) => {
-    SystemLogger.getInstance().error(message, stack, 'uncaughtException');
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+process.on('uncaughtException', async (error: Error) => {
+    SystemLogger.getInstance().error(error.message, error.stack, 'uncaughtException');
+    if (isRecoverableInfraError(error)) {
+        if (app && error.message.includes('Socket closed unexpectedly')) {
+            console.log('Trying reconneciton');
+            const keyVRedis = app.get<KeyvRedis<unknown>>(CACHE_REDIS_STORE);
+            await patchRedisStoreSocketClosedUnexpectedly(keyVRedis);
+        }
+        return;
+    }
     if (app) {
         tryToCloseApp(app, 'uncaughtException');
         return;

@@ -30,7 +30,7 @@ import { AdminModule } from 'src/admin/admin.module';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
-import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
+import { catchEverythingFilter } from './providers/filters/catch-everything.filter.provider';
 import { appAccountStatusGuard } from './providers/guards/app-account-status.guard.provider';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appRolesGuard } from './providers/guards/app-roles.guard.provider';
@@ -62,7 +62,7 @@ import Redis from 'ioredis';
 @Module({
     providers: [
         RequestContextPlugin,
-        catchEverythingFiler,
+        catchEverythingFilter,
         appValidationPipe,
         rateLimiterGuard,
         appAuthGuard,
