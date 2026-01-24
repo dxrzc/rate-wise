@@ -141,6 +141,15 @@ export class SessionsService {
         this.logger.debug(`Session ${sessionId} deleted`);
     }
 
+    /**
+     * Creates a session cookie
+     *
+     * Binds the session to user doing the following:
+     * - Adds the session id in a redis set to keep track of the user's sessions
+     * - Creates a user-session(id) relation record in redis
+     * @param req request object
+     * @param userId id of the user
+     */
     async create(req: RequestContext, userId: string) {
         await this.regenerate(req);
         req.session.userId = userId;
