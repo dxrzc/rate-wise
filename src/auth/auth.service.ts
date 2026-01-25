@@ -173,6 +173,13 @@ export class AuthService {
         this.logger.info(`Queued sign-out-all email for user ${user.id}`);
     }
 
+    /**
+     * Public sign-out-all operation triggered via email verification.
+     *
+     * **SECURITY NOTE**:
+     * If token blacklisting fails, the operation MUST abort to prevent
+     * token replay and repeated sign-out abuse.
+     */
     async signOutAllPublic(tokenInUrl: string) {
         const { id, jti, exp } = await verifyTokenOrThrow(
             this.signOutAllToken,
@@ -180,10 +187,8 @@ export class AuthService {
             tokenInUrl,
         );
         await this.userService.existsOrThrow(id);
-        const [sessions] = await runSettledOrThrow<[number, void]>([
-            this.sessionService.deleteAll(id),
-            this.signOutAllToken.blacklist(jti, exp),
-        ]);
+        await this.signOutAllToken.blacklist(jti, exp);
+        const sessions = await this.sessionService.deleteAll(id);
         this.logger.info(`${sessions} sessions of user ${id} have been deleted successfully`);
     }
 }
