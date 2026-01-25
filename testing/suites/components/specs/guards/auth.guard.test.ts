@@ -23,6 +23,8 @@ import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-co
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { disableSystemErrorLoggingForThisTest } from '@components/utils/disable-system-error-logging.util';
 
 // Used to test the guard
 @Resolver()
@@ -193,6 +195,30 @@ describe('AuthGuard', () => {
                 const setCookieHeader = res.header['set-cookie'];
                 expect(setCookieHeader).toBeUndefined();
             });
+
+            describe('Session cleanup fails', () => {
+                test('return unauthorized code and unauthorized error message', async () => {
+                    // mock existing user
+                    const userId = '123';
+                    userFound = { id: userId };
+                    const cookie = await generateFullSession(userId);
+                    // delete user-session relation
+                    const sessId = extractSessionIdFromCookie(cookie);
+                    await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
+                    // mock redis delete method to produce an error
+                    const redisDeleteMock = jest
+                        .spyOn(RedisClientAdapter.prototype, 'delete')
+                        .mockRejectedValueOnce(() => new Error());
+                    disableSystemErrorLoggingForThisTest();
+                    // authentication attemp
+                    const res = await request(app.getHttpServer())
+                        .post('/graphql')
+                        .set('Cookie', cookie)
+                        .send({ query: testOperation });
+                    expect(redisDeleteMock).toHaveBeenCalled();
+                    expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+                });
+            });
         });
     });
 
@@ -241,6 +267,27 @@ describe('AuthGuard', () => {
                 // cookie cleared in response
                 const setCookieHeader = res.header['set-cookie'];
                 expect(setCookieHeader).toBeUndefined();
+            });
+
+            describe('Session cleanup fails', () => {
+                test('return unauthorized code and unauthorized error message', async () => {
+                    // mock non-existing user and generate valid session (zombie session)
+                    userFound = undefined;
+                    const deletedUserId = 'test-id';
+                    const cookie = await generateFullSession(deletedUserId);
+                    // mock redis delete method to produce an error
+                    const redisDeleteMock = jest
+                        .spyOn(RedisClientAdapter.prototype, 'delete')
+                        .mockRejectedValueOnce(() => new Error());
+                    disableSystemErrorLoggingForThisTest();
+                    // authentication attemp
+                    const res = await request(app.getHttpServer())
+                        .post('/graphql')
+                        .set('Cookie', cookie)
+                        .send({ query: testOperation });
+                    expect(redisDeleteMock).toHaveBeenCalled();
+                    expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+                });
             });
         });
     });
