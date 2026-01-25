@@ -20,6 +20,7 @@ const config: Config = {
         ...baseJestConfig.moduleNameMapper,
         '^@components/(.*)$': '<rootDir>/testing/suites/components/$1',
     },
+    restoreMocks: true,
 };
 
 export default config;

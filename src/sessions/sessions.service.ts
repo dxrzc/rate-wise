@@ -10,6 +10,7 @@ import { sessionKey } from './functions/session-key';
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { ISessionDetails } from './interfaces/session.details.interface';
 import { ISessionKeys } from './interfaces/session.keys.interface';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class SessionsService {
@@ -32,19 +33,25 @@ export class SessionsService {
     }
 
     /**
-     * Cleans up all redis keys related to the current session
+     * Tries ot clean up all the redis keys related to the current session.
+     * If the operation fails the error is logged.
      * @param sessionDetails details of the session
      */
-    async sessionCleanup(req: RequestContext): Promise<void> {
-        const userId = req.session.userId;
-        const sessId = req.sessionID;
-        const { indexKey, relationKey, sessKey } = this.getRedisKeys({ userId, sessId });
-        await runSettledOrThrow([
-            promisify<void>((cb) => req.session.destroy(cb)),
-            this.redisClient.delete(sessKey),
-            this.redisClient.delete(relationKey),
-            this.redisClient.setRem(indexKey, sessId),
-        ]);
+    async trySessionCleanup(req: RequestContext): Promise<void> {
+        try {
+            const userId = req.session.userId;
+            const sessId = req.sessionID;
+            const { indexKey, relationKey, sessKey } = this.getRedisKeys({ userId, sessId });
+            await runSettledOrThrow([
+                promisify<void>((cb) => req.session.destroy(cb)),
+                this.redisClient.delete(sessKey),
+                this.redisClient.delete(relationKey),
+                this.redisClient.setRem(indexKey, sessId),
+            ]);
+        } catch (error) {
+            this.logger.error('Session cleanup failed');
+            SystemLogger.getInstance().logAny(error, SessionsService.name);
+        }
     }
 
     /**
