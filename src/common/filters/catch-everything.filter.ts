@@ -24,7 +24,12 @@ export class CatchEverythingFilter implements ExceptionFilter {
         if (exception instanceof Error && isServiceUnavailableError(exception)) {
             exception = GqlHttpError.ServiceUnavailable();
         }
-
+        if (exception instanceof AggregateError) {
+            exception.errors.forEach((e) => {
+                logException(e);
+            });
+            exception = GqlHttpError.InternalServerError();
+        }
         switch (host.getType<GqlContextType>()) {
             case 'http': {
                 // After configuring Apollo, http exceptions are no longer handled automatically
