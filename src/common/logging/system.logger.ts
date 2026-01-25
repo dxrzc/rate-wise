@@ -37,6 +37,23 @@ export class SystemLogger extends ConsoleLogger {
         return SystemLogger.instance;
     }
 
+    /**
+     * Logs the following types of exceptions: Error, AggregateError and unknown
+     * @param exception exception to log
+     * @param context context where the error was thrown
+     */
+    logAny(exception: unknown, context: string) {
+        if (exception instanceof Error) {
+            this.error(exception.message, exception.stack, context);
+        } else if (exception instanceof AggregateError) {
+            exception.errors.forEach((e) => {
+                this.error(e, context);
+            });
+        } else {
+            this.error(exception);
+        }
+    }
+
     error(...args: Parameters<ConsoleLogger['error']>) {
         const [message, stack, context] = args as string[];
         SystemLogger.fsLogger.log({
