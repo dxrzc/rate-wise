@@ -45,7 +45,7 @@ export class AuthGuard implements CanActivate {
         const sessionDetails: ISessionDetails = { sessId: session.id, userId: sessionUserId };
         if (!user) {
             this.logger.warn(`Zombie session detected: user "${sessionUserId}" not found`);
-            await this.sessionService.sessionCleanup(reqContext.req);
+            await this.sessionService.trySessionCleanup(reqContext.req);
             this.logger.info('Zombie session deleted completely');
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.UNAUTHORIZED);
         }
@@ -53,7 +53,7 @@ export class AuthGuard implements CanActivate {
         const isDanglingSession = await this.sessionService.isDangling(sessionDetails);
         if (isDanglingSession) {
             this.logger.warn('Dangling session detected');
-            await this.sessionService.sessionCleanup(reqContext.req);
+            await this.sessionService.trySessionCleanup(reqContext.req);
             this.logger.info('Dangling session deleted completely');
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.UNAUTHORIZED);
         }
