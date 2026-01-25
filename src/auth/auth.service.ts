@@ -84,7 +84,7 @@ export class AuthService {
         try {
             await this.accountVerificationToken.blacklist(jti, exp);
         } catch (error) {
-            this.logger.error('Failed to blacklist token');
+            this.logger.error('Verification token blacklisted failed');
             SystemLogger.getInstance().logAny(error, AuthService.name);
         }
         this.logger.info(`Account ${user.id} verified successfully`);
