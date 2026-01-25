@@ -82,6 +82,7 @@ export class SessionsService {
     /**
      * Deletes all the user's sessions in redis. Does not destroy the current session
      * @param userId id of the user
+     * @returns the number of sessions belonging to the user
      */
     async deleteAll(userId: string): Promise<number> {
         const indexKey = userSessionsSetKey(userId);
