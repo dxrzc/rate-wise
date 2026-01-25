@@ -22,6 +22,7 @@ import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-cookie.util';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
 
 // Used to test the guard
 @Resolver()
@@ -53,6 +54,7 @@ describe('AuthGuard', () => {
     let sessionService: SessionsService;
     let userFound: Partial<User> | undefined = {};
     const usersService = { findOneById: () => userFound };
+    const sessionCookieName = 'sess';
     let app: NestExpressApplication;
 
     beforeAll(async () => {
@@ -65,7 +67,7 @@ describe('AuthGuard', () => {
                     useFactory: () => ({
                         connection: { redisUri: redisUrl },
                         cookieMaxAgeMs: seconds(3),
-                        cookieName: 'sess',
+                        cookieName: sessionCookieName,
                         cookieSecret: '123',
                         secure: false,
                     }),
@@ -88,7 +90,7 @@ describe('AuthGuard', () => {
         await testingModule.close();
     });
 
-    async function getSessionCookie(userId: string) {
+    async function generateFullSession(userId: string) {
         const res = await request(app.getHttpServer()).get(`/session?userId=${userId}`);
         const cookie = res.headers['set-cookie'][0];
         return cookie;
@@ -99,7 +101,7 @@ describe('AuthGuard', () => {
             // mock existing user
             const userId = '123';
             userFound = { id: userId };
-            const cookie = await getSessionCookie(userId);
+            const cookie = await generateFullSession(userId);
             const res = await request(app.getHttpServer())
                 .post('/graphql')
                 .set('Cookie', cookie)
@@ -138,7 +140,7 @@ describe('AuthGuard', () => {
                 // mock existing user
                 const userId = '123';
                 userFound = { id: userId };
-                const cookie = await getSessionCookie(userId);
+                const cookie = await generateFullSession(userId);
                 // delete from user's index
                 await sessionService['redisClient'].setRem(
                     userSessionsSetKey(userId),
@@ -152,11 +154,11 @@ describe('AuthGuard', () => {
                 expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
             });
 
-            test('cleanup session', async () => {
+            test('cleanup session in redis', async () => {
                 // mock existing user
                 const userId = '123';
                 userFound = { id: userId };
-                const cookie = await getSessionCookie(userId);
+                const cookie = await generateFullSession(userId);
                 // delete user-session relation
                 const sessId = extractSessionIdFromCookie(cookie);
                 await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
@@ -166,8 +168,30 @@ describe('AuthGuard', () => {
                     .set('Cookie', cookie)
                     .send({ query: testOperation });
                 // session should be fully cleaned
-                const isFullyCleaned = await sessionService.isFullyCleaned({ sessId, userId });
+                const isFullyCleaned = await sessionIsFullyCleaned({
+                    sessId,
+                    userId,
+                    sessionsService: sessionService,
+                });
                 expect(isFullyCleaned).toBeTruthy();
+            });
+
+            test('dangling session is fully destroyed', async () => {
+                // mock existing user
+                const userId = '123';
+                userFound = { id: userId };
+                const cookie = await generateFullSession(userId);
+                // delete user-session relation
+                const sessId = extractSessionIdFromCookie(cookie);
+                await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
+                // authentication attemp
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // cookie cleared in response
+                const setCookieHeader = res.header['set-cookie'];
+                expect(setCookieHeader).toBeUndefined();
             });
         });
     });
@@ -177,7 +201,7 @@ describe('AuthGuard', () => {
             test('return unauthorized code and unauthorized error message', async () => {
                 // mock non-existing user
                 userFound = undefined;
-                const cookie = await getSessionCookie('test-id');
+                const cookie = await generateFullSession('test-id');
                 const res = await request(app.getHttpServer())
                     .post('/graphql')
                     .set('Cookie', cookie)
@@ -185,22 +209,38 @@ describe('AuthGuard', () => {
                 expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
             });
 
-            test('cleanup session', async () => {
+            test('cleanup session in redis', async () => {
                 // mock non-existing user
                 userFound = undefined;
                 const deletedUserId = 'test-id';
-                const cookie = await getSessionCookie(deletedUserId);
+                const cookie = await generateFullSession(deletedUserId);
                 // authentication attemp
                 await request(app.getHttpServer())
                     .post('/graphql')
                     .set('Cookie', cookie)
                     .send({ query: testOperation });
-                // guard should purgue zombie session completely
-                const isFullyCleaned = await sessionService.isFullyCleaned({
+                // session should be fully cleaned
+                const isFullyCleaned = await sessionIsFullyCleaned({
                     userId: deletedUserId,
                     sessId: extractSessionIdFromCookie(cookie),
+                    sessionsService: sessionService,
                 });
                 expect(isFullyCleaned).toBeTruthy();
+            });
+
+            test('zombie session is fully destroyed', async () => {
+                // mock non-existing user
+                userFound = undefined;
+                const deletedUserId = 'test-id';
+                const cookie = await generateFullSession(deletedUserId);
+                // authentication attemp
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // cookie cleared in response
+                const setCookieHeader = res.header['set-cookie'];
+                expect(setCookieHeader).toBeUndefined();
             });
         });
     });
