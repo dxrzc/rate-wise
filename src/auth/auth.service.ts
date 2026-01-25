@@ -13,7 +13,6 @@ import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UsersService } from 'src/users/users.service';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { AUTH_LIMITS } from './constants/auth.constants';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
@@ -96,11 +95,14 @@ export class AuthService {
             this.logger,
             tokenInUrl,
         );
-        await runSettledOrThrow([
-            this.userDeletionService.deleteOne(id),
-            this.accountDeletionToken.blacklist(jti, exp),
-            this.sessionService.deleteAll(id),
-        ]);
+        await this.accountDeletionToken.blacklist(jti, exp);
+        await this.userDeletionService.deleteOne(id);
+        try {
+            await this.sessionService.deleteAll(id);
+        } catch (error) {
+            this.logger.error('Session cleanup after account deletion failed');
+            SystemLogger.getInstance().logAny(error, AuthService.name);
+        }
         this.logger.info(`Account ${id} deleted successfully`);
     }
 

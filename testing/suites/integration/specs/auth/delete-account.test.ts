@@ -14,7 +14,9 @@ import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
+import { sessionKey } from 'src/sessions/functions/session-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
@@ -355,6 +357,60 @@ describe('GET delete account endpoint with token', () => {
             const res = await testKit.restClient.get(deleteAccUrl).set('X-Forwarded-For', sameIp);
             expect(res.body).toStrictEqual({ error: COMMON_MESSAGES.TOO_MANY_REQUESTS });
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+        });
+    });
+
+    describe('Token blacklisting fails', () => {
+        test('unsuccessful request and user is not deleted', async () => {
+            const { id } = await createAccount();
+            const token = await testKit.accDeletionToken.generate({ id });
+            // mock to throw an error
+            const redisMock = jest
+                .spyOn(RedisClientAdapter.prototype, 'store')
+                .mockRejectedValueOnce(new Error());
+            // deletion attempt
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(500);
+            expect(redisMock).toHaveBeenCalledTimes(1);
+            // user still exists
+            const userInDb = await testKit.userRepos.findOneBy({ id });
+            expect(userInDb).not.toBeNull();
+        });
+
+        test('unsuccessful request and sessions are not deleted', async () => {
+            const { id, sessionCookie } = await createAccount();
+            const token = await testKit.accDeletionToken.generate({ id });
+            // mock to throw an error
+            const redisMock = jest
+                .spyOn(RedisClientAdapter.prototype, 'store')
+                .mockRejectedValueOnce(new Error());
+            // deletion attempt
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(500);
+            expect(redisMock).toHaveBeenCalledTimes(1);
+            // sessions still exist
+            const sid = getSidFromCookie(sessionCookie);
+            const indexKey = userSessionsSetKey(id);
+            const relationKey = userAndSessionRelationKey(sid);
+            const sessKey = sessionKey(sid);
+            const inIndex = await testKit.sessionsRedisClient.setIsMember(indexKey, sid);
+            const relation = await testKit.sessionsRedisClient.get(relationKey);
+            const session = await testKit.sessionsRedisClient.get(sessKey);
+            expect(inIndex).toBeTruthy();
+            expect(relation).not.toBeNull();
+            expect(session).not.toBeNull();
+        });
+    });
+
+    describe('Sessions deletion fails', () => {
+        test('request succcess', async () => {
+            const { id } = await createAccount();
+            const token = await testKit.accDeletionToken.generate({ id });
+            // mock to throw an error
+            const redisMock = jest
+                .spyOn(RedisClientAdapter.prototype, 'delete')
+                .mockRejectedValueOnce(new Error());
+            // deletion attempt
+            await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
+            expect(redisMock).toHaveBeenCalled();
         });
     });
 });
