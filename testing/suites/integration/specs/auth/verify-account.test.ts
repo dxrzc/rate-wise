@@ -162,7 +162,7 @@ describe('GET verify account endpoint with token', () => {
             const redisMock = jest
                 .spyOn(RedisClientAdapter.prototype, 'store')
                 .mockRejectedValueOnce(new Error());
-            // verify attemp
+            // verify attempt
             await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`).expect(status2xx);
             expect(redisMock).toHaveBeenCalledTimes(1);
         });
