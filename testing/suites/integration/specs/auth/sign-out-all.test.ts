@@ -16,6 +16,7 @@ import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { getSessionCookieIfExists } from '@integration/utils/get-session-cookie-if-exists.util';
 
 describe('GraphQL - signOutAll', () => {
     describe('Session Cookie not provided', () => {
@@ -107,6 +108,17 @@ describe('GraphQL - signOutAll', () => {
             // relations do not exist anymore
             await expect(testKit.sessionsRedisClient.get(relation1Key)).resolves.toBeNull();
             await expect(testKit.sessionsRedisClient.get(relation2Key)).resolves.toBeNull();
+        });
+
+        test('session cookie is cleared in response', async () => {
+            const { sessionCookie, password } = await createAccount();
+            // sign-out-all
+            const res = await testKit.gqlClient
+                .set('Cookie', sessionCookie)
+                .send(signOutAll({ args: { password } }))
+                .expect(success);
+            const cookieInRes = getSessionCookieIfExists(res);
+            expect(cookieInRes).toBeNull();
         });
     });
 
