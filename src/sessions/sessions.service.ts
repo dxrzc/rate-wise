@@ -73,17 +73,13 @@ export class SessionsService {
     }
 
     /**
-     * Destroys the current sessions and deletes all the user's sessions in redis
-     * @param userId
-     * @returns the number of sessions destroyed
+     * Deletes all the user's sessions in redis. Does not destroy the current session
+     * @param userId id of the user
      */
-    async destroyAll(req: RequestContext): Promise<number> {
-        const userId = req.session.userId;
+    async deleteAll(userId: string): Promise<number> {
         const indexKey = userSessionsSetKey(userId);
         const sessIDs = await this.redisClient.setMembers(indexKey);
         await runSettledOrThrow([
-            // current
-            promisify<void>((cb) => req.session.destroy(cb)),
             // all sessions
             runSettledOrThrow(sessIDs.map((id) => this.redisClient.delete(sessionKey(id)))),
             // index
@@ -93,8 +89,23 @@ export class SessionsService {
                 sessIDs.map((id) => this.redisClient.delete(userAndSessionRelationKey(id))),
             ),
         ]);
-        this.logger.info('All sessions destroyed');
+        this.logger.info('All sessions deleted');
         return sessIDs.length;
+    }
+
+    /**
+     * Destroys the current sessions and deletes all the user's sessions in redis
+     * @param userId id of the user
+     * @returns the number of sessions destroyed
+     */
+    async destroyAll(req: RequestContext): Promise<number> {
+        const userId = req.session.userId;
+        // current
+        const [numberOfSessions] = await runSettledOrThrow<[number, void]>([
+            this.deleteAll(userId),
+            promisify<void>((cb) => req.session.destroy(cb)),
+        ]);
+        return numberOfSessions;
     }
 
     /**
