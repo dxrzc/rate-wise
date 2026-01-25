@@ -8,6 +8,7 @@ import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.ope
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
@@ -150,6 +151,20 @@ describe('GET verify account endpoint with token', () => {
                 .set('X-Forwarded-For', sameIp);
             expect(res.body).toStrictEqual({ error: COMMON_MESSAGES.TOO_MANY_REQUESTS });
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+        });
+    });
+
+    describe('Token blacklisting fails', () => {
+        test('request success', async () => {
+            const { id } = await createAccount();
+            const token = await testKit.accVerifToken.generate({ id });
+            // mock to throw an error
+            const redisMock = jest
+                .spyOn(RedisClientAdapter.prototype, 'store')
+                .mockRejectedValueOnce(new Error());
+            // verify attemp
+            await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`).expect(status2xx);
+            expect(redisMock).toHaveBeenCalledTimes(1);
         });
     });
 });
