@@ -25,6 +25,7 @@ import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
 import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
 import { UserDeletionService } from 'src/orchestrators/user-deletion/user-deletion.service';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class AuthService {
@@ -79,10 +80,13 @@ export class AuthService {
         }
         this.accountIsNotAlreadyVerifiedOrThrow(user);
         user.status = AccountStatus.ACTIVE;
-        await runSettledOrThrow([
-            this.userService.saveOne(user),
-            this.accountVerificationToken.blacklist(jti, exp),
-        ]);
+        await this.userService.saveOne(user);
+        try {
+            await this.accountVerificationToken.blacklist(jti, exp);
+        } catch (error) {
+            this.logger.error('Failed to blacklist token');
+            SystemLogger.getInstance().logAny(error, AuthService.name);
+        }
         this.logger.info(`Account ${user.id} verified successfully`);
     }
 
