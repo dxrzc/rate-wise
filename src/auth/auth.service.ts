@@ -142,15 +142,16 @@ export class AuthService {
 
     async signOut(req: RequestContext): Promise<void> {
         const userId = req.session.userId;
-        await this.sessionService.delete(req);
+        await this.sessionService.destroy(req);
         this.logger.info(`User ${userId} signed out`);
     }
 
-    async signOutAll(auth: ReAuthenticationInput, userId: string): Promise<void> {
+    async signOutAll(auth: ReAuthenticationInput, req: RequestContext): Promise<void> {
+        const userId = req.session.userId;
         this.validatePasswordConstraintsOrThrow(auth.password);
         const user = await this.userService.findOneByIdOrThrow(userId);
         await this.passwordsMatchOrThrow(user.passwordHash, auth.password);
-        await this.sessionService.deleteAll(userId);
+        await this.sessionService.destroyAll(req);
         this.logger.info(`All sessions closed for userId: ${userId}`);
     }
 

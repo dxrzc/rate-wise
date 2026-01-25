@@ -100,7 +100,7 @@ export class AuthResolver {
         @Context('req') req: RequestContext,
         @Context('res') res: Response,
     ): Promise<boolean> {
-        await this.authService.signOutAll(input, req.session.userId);
+        await this.authService.signOutAll(input, req);
         this.clearCookie(res);
         return true;
     }
