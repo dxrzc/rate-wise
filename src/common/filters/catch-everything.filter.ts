@@ -9,13 +9,7 @@ import { isServiceUnavailableError } from '../functions/error/is-service-unavail
 import { GqlHttpError } from '../errors/graphql-http.error';
 
 function logException(exception: unknown) {
-    if (exception instanceof Error)
-        SystemLogger.getInstance().error(
-            exception.message,
-            exception.stack,
-            'CatchEverythingFilter',
-        );
-    else SystemLogger.getInstance().error(exception);
+    SystemLogger.getInstance().logAny(exception, CatchEverythingFilter.name);
 }
 
 @Catch()
