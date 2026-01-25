@@ -1,4 +1,5 @@
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
+import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
 import { SilentHttpLogger } from '@components/utils/silent-http-logger.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -11,7 +12,6 @@ import {
 import { sessionKey } from 'src/sessions/functions/session-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
-import { ISessionDetails } from 'src/sessions/interfaces/session.details.interface';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { SessionsService } from 'src/sessions/sessions.service';
 
@@ -76,19 +76,6 @@ describe('Sessions Service ', () => {
         await testingModule.close();
     });
 
-    /**
-     * Helper to check if a session does not exist in redis
-     */
-    async function sessionIsFullyCleaned(sessionDetails: ISessionDetails): Promise<boolean> {
-        const { indexKey, relationKey, sessKey } = sessionsService.getRedisKeys(sessionDetails);
-        const [sess, relation, inIndex] = await Promise.all([
-            redisClient.get(sessKey),
-            redisClient.get(relationKey),
-            redisClient.setIsMember(indexKey, sessionDetails.sessId),
-        ]);
-        return sess === null && relation === null && inIndex === false;
-    }
-
     describe('isFullyCleaned', () => {
         describe("Session still exists in user's sessions index", () => {
             test('return false', async () => {
@@ -104,7 +91,11 @@ describe('Sessions Service ', () => {
                 const relationKey = userAndSessionRelationKey(sessId);
                 await redisClient.delete(relationKey);
                 // still exists in index
-                const isFullyCleaned = await sessionIsFullyCleaned({ userId, sessId });
+                const isFullyCleaned = await sessionIsFullyCleaned({
+                    userId,
+                    sessId,
+                    sessionsService,
+                });
                 expect(isFullyCleaned).toBeFalsy();
             });
         });
@@ -123,7 +114,11 @@ describe('Sessions Service ', () => {
                 const indexKey = userSessionsSetKey(userId);
                 await redisClient.setRem(indexKey, sessId);
                 // still exists relation
-                const isFullyCleaned = await sessionIsFullyCleaned({ userId, sessId });
+                const isFullyCleaned = await sessionIsFullyCleaned({
+                    userId,
+                    sessId,
+                    sessionsService,
+                });
                 expect(isFullyCleaned).toBeFalsy();
             });
         });
@@ -142,7 +137,11 @@ describe('Sessions Service ', () => {
                 const relationKey = userAndSessionRelationKey(sessId);
                 await redisClient.delete(relationKey);
                 // still exists session
-                const isFullyCleaned = await sessionIsFullyCleaned({ userId, sessId });
+                const isFullyCleaned = await sessionIsFullyCleaned({
+                    userId,
+                    sessId,
+                    sessionsService,
+                });
                 expect(isFullyCleaned).toBeFalsy();
             });
         });
@@ -169,6 +168,7 @@ describe('Sessions Service ', () => {
                         const isFullyCleaned = await sessionIsFullyCleaned({
                             userId,
                             sessId,
+                            sessionsService,
                         });
                         expect(isFullyCleaned).toBeTruthy();
                     });
