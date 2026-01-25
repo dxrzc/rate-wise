@@ -13,7 +13,6 @@ import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UsersService } from 'src/users/users.service';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { AUTH_LIMITS } from './constants/auth.constants';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
@@ -25,6 +24,7 @@ import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
 import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
 import { UserDeletionService } from 'src/orchestrators/user-deletion/user-deletion.service';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class AuthService {
@@ -79,10 +79,13 @@ export class AuthService {
         }
         this.accountIsNotAlreadyVerifiedOrThrow(user);
         user.status = AccountStatus.ACTIVE;
-        await runSettledOrThrow([
-            this.userService.saveOne(user),
-            this.accountVerificationToken.blacklist(jti, exp),
-        ]);
+        await this.userService.saveOne(user);
+        try {
+            await this.accountVerificationToken.blacklist(jti, exp);
+        } catch (error) {
+            this.logger.error('Verification token blacklisted failed');
+            SystemLogger.getInstance().logAny(error, AuthService.name);
+        }
         this.logger.info(`Account ${user.id} verified successfully`);
     }
 
@@ -92,11 +95,14 @@ export class AuthService {
             this.logger,
             tokenInUrl,
         );
-        await runSettledOrThrow([
-            this.userDeletionService.deleteOne(id),
-            this.accountDeletionToken.blacklist(jti, exp),
-            this.sessionService.deleteAll(id),
-        ]);
+        await this.accountDeletionToken.blacklist(jti, exp);
+        await this.userDeletionService.deleteOne(id);
+        try {
+            await this.sessionService.deleteAll(id);
+        } catch (error) {
+            this.logger.error('Session cleanup after account deletion failed');
+            SystemLogger.getInstance().logAny(error, AuthService.name);
+        }
         this.logger.info(`Account ${id} deleted successfully`);
     }
 
@@ -169,6 +175,13 @@ export class AuthService {
         this.logger.info(`Queued sign-out-all email for user ${user.id}`);
     }
 
+    /**
+     * Public sign-out-all operation triggered via email verification.
+     *
+     * **SECURITY NOTE**:
+     * If token blacklisting fails, the operation MUST abort to prevent
+     * token replay and repeated sign-out abuse.
+     */
     async signOutAllPublic(tokenInUrl: string) {
         const { id, jti, exp } = await verifyTokenOrThrow(
             this.signOutAllToken,
@@ -176,10 +189,8 @@ export class AuthService {
             tokenInUrl,
         );
         await this.userService.existsOrThrow(id);
-        const [sessions] = await runSettledOrThrow<[number, void]>([
-            this.sessionService.deleteAll(id),
-            this.signOutAllToken.blacklist(jti, exp),
-        ]);
+        await this.signOutAllToken.blacklist(jti, exp);
+        const sessions = await this.sessionService.deleteAll(id);
         this.logger.info(`${sessions} sessions of user ${id} have been deleted successfully`);
     }
 }

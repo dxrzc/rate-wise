@@ -10,7 +10,9 @@ import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
+import { sessionKey } from 'src/sessions/functions/session-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
@@ -184,6 +186,31 @@ describe('GET sign-out-all (public)', () => {
             const res = await testKit.restClient.get(signOutAllUrl).set('X-Forwarded-For', sameIp);
             expect(res.body).toStrictEqual({ error: COMMON_MESSAGES.TOO_MANY_REQUESTS });
             expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+        });
+    });
+
+    describe('Token blacklisting fails', () => {
+        test('unsuccessful request and sessions are NOT deleted', async () => {
+            const { id, sessionCookie } = await createAccount();
+            const { token } = await testKit.signOutAllToken.generate({ id }, { metadata: true });
+            // mock to throw an error
+            const redisMock = jest
+                .spyOn(RedisClientAdapter.prototype, 'store')
+                .mockRejectedValueOnce(new Error());
+            // sign out all attempt
+            await testKit.restClient.get(`${signOutAllUrl}?token=${token}`).expect(500);
+            expect(redisMock).toHaveBeenCalledTimes(1);
+            // session is not deleted
+            const sid = getSidFromCookie(sessionCookie);
+            const indexKey = userSessionsSetKey(id);
+            const relationKey = userAndSessionRelationKey(sid);
+            const sessKey = sessionKey(sid);
+            const inIndex = await testKit.sessionsRedisClient.setIsMember(indexKey, sid);
+            const relation = await testKit.sessionsRedisClient.get(relationKey);
+            const session = await testKit.sessionsRedisClient.get(sessKey);
+            expect(inIndex).toBeTruthy();
+            expect(relation).not.toBeNull();
+            expect(session).not.toBeNull();
         });
     });
 });

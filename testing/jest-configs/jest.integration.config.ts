@@ -31,6 +31,7 @@ const config: Config = {
         ...baseJestConfig.moduleNameMapper,
         '^@integration/(.*)$': '<rootDir>/testing/suites/integration/$1',
     },
+    restoreMocks: true,
 };
 
 export default config;
