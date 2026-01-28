@@ -5,7 +5,6 @@ import { AUTH_MESSAGES } from '../messages/auth.messages';
 import { JwtPayload } from 'src/tokens/types/jwt-payload.type';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 
-// Verify token otherwise throw and log error.
 export async function verifyTokenOrThrow<T extends object>(
     tokenService: TokensService<T>,
     logger: HttpLoggerService,
