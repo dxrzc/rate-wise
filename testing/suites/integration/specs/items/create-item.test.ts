@@ -2,10 +2,12 @@ import { createAccount } from '@integration/utils/create-account.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { createItem } from '@testing/tools/gql-operations/items/create-item.operation';
+import { createItem as createItemUtil } from '@integration/utils/create-item.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enum/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 
 describe('Gql - createItem', () => {
     describe('Session cookie not provided', () => {
@@ -89,6 +91,32 @@ describe('Gql - createItem', () => {
                 .send(createItem({ args: itemData, fields: ['id'] }))
                 .set('Cookie', sessionCookie);
             expect(response).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining(prop));
+        });
+    });
+
+    describe("Item's title already exists", () => {
+        test('return 409 CONFLICT and already exists error message', async () => {
+            const { id: userId } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
+            const { title } = await createItemUtil(userId);
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
+            const res = await testKit.gqlClient
+                .send(
+                    createItem({
+                        fields: ['id', 'averageRating'],
+                        args: {
+                            ...testKit.itemSeed.itemInput,
+                            title,
+                        },
+                    }),
+                )
+                .set('Cookie', sessionCookie);
+            expect(res).toFailWith(Code.CONFLICT, ITEMS_MESSAGES.ALREADY_EXISTS);
         });
     });
 
