@@ -1,8 +1,6 @@
 import { QueryFailedError } from 'typeorm';
+import { DatabaseError } from 'pg';
 
-export function getDuplicatedErrorKeyDetail(err: unknown): string {
-    const driverError = (err as QueryFailedError).driverError as unknown as {
-        detail: string;
-    };
-    return driverError.detail;
+export function getDuplicatedErrorKeyDetail(err: QueryFailedError<DatabaseError>): string {
+    return err.driverError.detail || 'No duplicated error key details provided';
 }
