@@ -175,13 +175,6 @@ export class AuthService {
         this.logger.info(`Queued sign-out-all email for user ${user.id}`);
     }
 
-    /**
-     * Public sign-out-all operation triggered via email verification.
-     *
-     * **SECURITY NOTE**:
-     * If token blacklisting fails, the operation MUST abort to prevent
-     * token replay and repeated sign-out abuse.
-     */
     async signOutAllPublic(tokenInUrl: string) {
         const { id, jti, exp } = await verifyTokenOrThrow(
             this.signOutAllToken,
