@@ -42,7 +42,7 @@ export class SystemLogger extends ConsoleLogger {
      * @param exception exception to log
      * @param context context where the error was thrown
      */
-    logAny(exception: unknown, context: string) {
+    logAnyException(exception: unknown, context: string) {
         if (exception instanceof Error) {
             this.error(exception.message, exception.stack, context);
         } else if (exception instanceof AggregateError) {

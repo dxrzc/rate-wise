@@ -50,7 +50,7 @@ export class SessionsService {
             ]);
         } catch (error) {
             this.logger.error('Session cleanup failed');
-            SystemLogger.getInstance().logAny(error, SessionsService.name);
+            SystemLogger.getInstance().logAnyException(error, SessionsService.name);
         }
     }
 
