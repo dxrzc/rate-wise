@@ -24,7 +24,7 @@ import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { disableSystemErrorLoggingForThisTest } from '@components/utils/disable-system-error-logging.util';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 
 // Used to test the guard
 @Resolver()
