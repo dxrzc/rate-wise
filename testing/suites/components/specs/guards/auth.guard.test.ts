@@ -24,7 +24,7 @@ import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
 import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { disableSystemErrorLoggingForThisTest } from '@components/utils/disable-system-error-logging.util';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 
 // Used to test the guard
 @Resolver()
@@ -198,6 +198,7 @@ describe('AuthGuard', () => {
 
             describe('Session cleanup fails', () => {
                 test('return unauthorized code and unauthorized error message', async () => {
+                    disableSystemErrorLoggingForThisTest();
                     // mock existing user
                     const userId = '123';
                     userFound = { id: userId };
@@ -271,6 +272,7 @@ describe('AuthGuard', () => {
 
             describe('Session cleanup fails', () => {
                 test('return unauthorized code and unauthorized error message', async () => {
+                    disableSystemErrorLoggingForThisTest();
                     // mock non-existing user and generate valid session (zombie session)
                     userFound = undefined;
                     const deletedUserId = 'test-id';

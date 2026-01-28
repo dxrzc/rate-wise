@@ -3,6 +3,7 @@ import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleane
 import { SilentHttpLogger } from '@components/utils/silent-http-logger.util';
 import { faker } from '@faker-js/faker/.';
 import { Test, TestingModule } from '@nestjs/testing';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import {
@@ -180,6 +181,7 @@ describe('Sessions Service ', () => {
     describe('trySessionCleanup', () => {
         describe('redis fails', () => {
             test('the method does not throw', async () => {
+                disableSystemErrorLoggingForThisTest();
                 const redisDeleteMock = jest
                     .spyOn(RedisClientAdapter.prototype, 'delete')
                     .mockRejectedValueOnce(new Error());

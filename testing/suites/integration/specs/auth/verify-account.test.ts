@@ -5,6 +5,7 @@ import { status2xx } from '@integration/utils/status-2xx.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -156,6 +157,7 @@ describe('GET verify account endpoint with token', () => {
 
     describe('Token blacklisting fails', () => {
         test('request success', async () => {
+            disableSystemErrorLoggingForThisTest();
             const { id } = await createAccount();
             const token = await testKit.accVerifToken.generate({ id });
             // mock to throw an error
