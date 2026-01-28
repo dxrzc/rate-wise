@@ -7,6 +7,7 @@ import { status2xx } from '@integration/utils/status-2xx.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { HttpStatus } from '@nestjs/common';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -191,6 +192,7 @@ describe('GET sign-out-all (public)', () => {
 
     describe('Token blacklisting fails', () => {
         test('unsuccessful request and sessions are NOT deleted', async () => {
+            disableSystemErrorLoggingForThisTest();
             const { id, sessionCookie } = await createAccount();
             const { token } = await testKit.signOutAllToken.generate({ id }, { metadata: true });
             // mock to throw an error

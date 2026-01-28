@@ -11,6 +11,7 @@ import { HttpStatus } from '@nestjs/common';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
@@ -362,6 +363,7 @@ describe('GET delete account endpoint with token', () => {
 
     describe('Token blacklisting fails', () => {
         test('unsuccessful request and user is not deleted', async () => {
+            disableSystemErrorLoggingForThisTest();
             const { id } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             // mock to throw an error
@@ -377,6 +379,7 @@ describe('GET delete account endpoint with token', () => {
         });
 
         test('unsuccessful request and sessions are not deleted', async () => {
+            disableSystemErrorLoggingForThisTest();
             const { id, sessionCookie } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             // mock to throw an error
@@ -402,6 +405,7 @@ describe('GET delete account endpoint with token', () => {
 
     describe('Sessions deletion fails', () => {
         test('request succcess', async () => {
+            disableSystemErrorLoggingForThisTest();
             const { id } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             // mock to throw an error

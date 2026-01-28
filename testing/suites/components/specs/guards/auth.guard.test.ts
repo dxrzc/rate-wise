@@ -198,6 +198,7 @@ describe('AuthGuard', () => {
 
             describe('Session cleanup fails', () => {
                 test('return unauthorized code and unauthorized error message', async () => {
+                    disableSystemErrorLoggingForThisTest();
                     // mock existing user
                     const userId = '123';
                     userFound = { id: userId };
@@ -271,6 +272,7 @@ describe('AuthGuard', () => {
 
             describe('Session cleanup fails', () => {
                 test('return unauthorized code and unauthorized error message', async () => {
+                    disableSystemErrorLoggingForThisTest();
                     // mock non-existing user and generate valid session (zombie session)
                     userFound = undefined;
                     const deletedUserId = 'test-id';
