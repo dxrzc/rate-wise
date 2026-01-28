@@ -12,6 +12,12 @@ import { PaginationCacheConsumer } from 'src/pagination/queues/pagination.cache.
 
 let nestApp: NestExpressApplication;
 
+beforeEach(() => {
+    // Disable for every test. Necessary since "restoreMocks" is enabled in the config
+    jest.spyOn(SystemLogger.getInstance(), 'debug').mockImplementation();
+    jest.spyOn(SystemLogger.getInstance(), 'log').mockImplementation();
+});
+
 beforeAll(async () => {
     try {
         // Disable debug logs
