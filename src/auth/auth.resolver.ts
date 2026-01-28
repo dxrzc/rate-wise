@@ -52,7 +52,7 @@ export class AuthResolver {
         return await this.authService.signIn(credentials, req);
     }
 
-    @Roles(...ALL_ROLES)
+    @Roles(ALL_ROLES)
     @RateLimit(RateLimitTier.ULTRA_CRITICAL)
     @RequireAccountStatus(AccountStatus.PENDING_VERIFICATION, AccountStatus.ACTIVE)
     @Mutation(() => Boolean, requestAccountVerificationDocs)
@@ -61,7 +61,7 @@ export class AuthResolver {
         return true;
     }
 
-    @Roles(...ALL_ROLES)
+    @Roles(ALL_ROLES)
     @RateLimit(RateLimitTier.CRITICAL)
     @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, requestAccountDeletionDocs)
@@ -78,9 +78,9 @@ export class AuthResolver {
         return AUTH_MESSAGES.EMAIL_SENT_IF_EXISTS;
     }
 
-    @Roles(...ALL_ROLES)
+    @Roles(ALL_ROLES)
     @RateLimit(RateLimitTier.CRITICAL)
-    @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
+    @RequireAccountStatus(ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, signOutDocs)
     async signOut(
         @Context('req') req: RequestContext,
@@ -91,9 +91,9 @@ export class AuthResolver {
         return true;
     }
 
-    @Roles(...ALL_ROLES)
+    @Roles(ALL_ROLES)
     @RateLimit(RateLimitTier.ULTRA_CRITICAL)
-    @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
+    @RequireAccountStatus(ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, signOutAllDocs)
     async signOutAll(
         @Args('credentials') input: ReAuthenticationInput,
