@@ -84,7 +84,7 @@ export class AuthService {
             await this.accountVerificationToken.blacklist(jti, exp);
         } catch (error) {
             this.logger.error('Verification token blacklisted failed');
-            SystemLogger.getInstance().logAny(error, AuthService.name);
+            SystemLogger.getInstance().logAnyException(error, AuthService.name);
         }
         this.logger.info(`Account ${user.id} verified successfully`);
     }
@@ -101,7 +101,7 @@ export class AuthService {
             await this.sessionService.deleteAll(id);
         } catch (error) {
             this.logger.error('Session cleanup after account deletion failed');
-            SystemLogger.getInstance().logAny(error, AuthService.name);
+            SystemLogger.getInstance().logAnyException(error, AuthService.name);
         }
         this.logger.info(`Account ${id} deleted successfully`);
     }

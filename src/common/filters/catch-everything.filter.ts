@@ -10,7 +10,7 @@ import { GqlHttpError } from '../errors/graphql-http.error';
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
     private logException(exception: unknown) {
-        SystemLogger.getInstance().logAny(exception, CatchEverythingFilter.name);
+        SystemLogger.getInstance().logAnyException(exception, CatchEverythingFilter.name);
     }
 
     private convertGqlErrorToHttpError(gqlError: GraphQLError) {
