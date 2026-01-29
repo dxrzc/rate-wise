@@ -6,9 +6,12 @@ import { SystemLogger } from '../logging/system.logger';
 import { COMMON_MESSAGES } from '../messages/common.messages';
 import { isServiceUnavailableError } from '../functions/error/is-service-unavailable-error';
 import { GqlHttpError } from '../errors/graphql-http.error';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
+    constructor(private readonly logger: HttpLoggerService) {}
+
     private logException(exception: unknown) {
         SystemLogger.getInstance().logAnyException(exception, CatchEverythingFilter.name);
     }
@@ -46,6 +49,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         if (exception instanceof GraphQLError) {
+            // the error was logged from wherever the exception was thrown.
             try {
                 const { statusCode, message } = this.convertGqlErrorToHttpError(exception);
                 response.status(statusCode).json({ error: message });
@@ -54,10 +58,12 @@ export class CatchEverythingFilter implements ExceptionFilter {
                 response.status(500).json({ error: COMMON_MESSAGES.INTERNAL_SERVER_ERROR });
             }
         } else if (exception instanceof HttpException) {
+            // the error was logged from wherever the exception was thrown.
             const status = exception.getStatus();
             const message = exception.message;
             response.status(status).json({ error: message });
         } else {
+            this.logger.error('Internal server error');
             const statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
             response
                 .status(statusCode)
