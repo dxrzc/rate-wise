@@ -6,10 +6,13 @@ import { SystemLogger } from '../logging/system.logger';
 import { COMMON_MESSAGES } from '../messages/common.messages';
 import { isServiceUnavailableError } from '../functions/error/is-service-unavailable-error';
 import { GqlHttpError } from '../errors/graphql-http.error';
+import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
-    private logException(exception: unknown) {
+    constructor(private readonly logger: HttpLoggerService) {}
+
+    private logAnyException(exception: unknown) {
         SystemLogger.getInstance().logAnyException(exception, CatchEverythingFilter.name);
     }
 
@@ -29,13 +32,16 @@ export class CatchEverythingFilter implements ExceptionFilter {
         };
     }
 
+    /**
+     * Works because a GqlHttpError can be converted to HttpException
+     */
     private normalizeGqlError(exception: unknown): unknown {
         if (exception instanceof Error && isServiceUnavailableError(exception)) {
             return GqlHttpError.ServiceUnavailable();
         }
         if (exception instanceof AggregateError) {
             exception.errors.forEach((e) => {
-                this.logException(e);
+                this.logAnyException(e);
             });
             return GqlHttpError.InternalServerError();
         }
@@ -46,29 +52,35 @@ export class CatchEverythingFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         if (exception instanceof GraphQLError) {
+            // the error was logged from wherever the exception was thrown.
             try {
                 const { statusCode, message } = this.convertGqlErrorToHttpError(exception);
                 response.status(statusCode).json({ error: message });
             } catch (error) {
-                this.logException(error);
+                this.logAnyException(error);
                 response.status(500).json({ error: COMMON_MESSAGES.INTERNAL_SERVER_ERROR });
             }
         } else if (exception instanceof HttpException) {
+            // the error was logged from wherever the exception was thrown.
             const status = exception.getStatus();
             const message = exception.message;
             response.status(status).json({ error: message });
         } else {
+            this.logger.error('Internal server error');
             const statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
             response
                 .status(statusCode)
                 .json({ error: COMMON_MESSAGES.INTERNAL_SERVER_ERROR, statusCode });
-            this.logException(exception);
+            this.logAnyException(exception);
         }
     }
 
     private handleGqlContext(exception: unknown) {
         if (!(exception instanceof GraphQLError)) {
-            this.logException(exception);
+            this.logger.error('Internal server error');
+            if (exception instanceof HttpException)
+                SystemLogger.getInstance().error('HttpException thrown in a GraphQL context');
+            else this.logAnyException(exception);
         }
     }
 
@@ -85,7 +97,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
                 break;
             }
             default: {
-                this.logException(exception);
+                throw new Error('Not implemented');
             }
         }
         return exception;
