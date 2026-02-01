@@ -72,6 +72,7 @@ describe('AuthGuard', () => {
                         cookieName: sessionCookieName,
                         cookieSecret: '123',
                         secure: false,
+                        sameSite: 'strict',
                     }),
                 }),
             ],
