@@ -23,13 +23,17 @@ import { signOutAllDocs } from './docs/signOutAll.docs';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { RequestSignOutAllInput } from './dtos/request-sign-out-all.input';
 import { requestSignOutAllDocs } from './docs/requestSignOutAll.docs';
+import { AuthConfigService } from 'src/config/services/auth.config.service';
 
 @Resolver()
 export class AuthResolver {
-    constructor(private readonly authService: AuthService) {}
+    constructor(
+        private readonly authService: AuthService,
+        private readonly authConfig: AuthConfigService,
+    ) {}
 
     private clearCookie(res: Response) {
-        res.clearCookie('connect.sid', { path: '/' });
+        res.clearCookie(this.authConfig.sessCookieName, { path: '/' });
     }
 
     @Public()
