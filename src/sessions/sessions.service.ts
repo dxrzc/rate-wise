@@ -12,7 +12,6 @@ import { ISessionDetails } from './interfaces/session.details.interface';
 import { ISessionKeys } from './interfaces/session.keys.interface';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { Response } from 'express';
-import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { ISessionsRootOptions } from './interfaces/sessions.root.options.interface';
 
 @Injectable()
@@ -23,11 +22,10 @@ export class SessionsService {
         @Inject(SESSIONS_ROOT_OPTIONS)
         private sessionOptions: ISessionsRootOptions,
         private readonly logger: HttpLoggerService,
-        private readonly authConfig: AuthConfigService,
     ) {}
 
     clearCookie(res: Response) {
-        res.clearCookie(this.authConfig.sessCookieName, {
+        res.clearCookie(this.sessionOptions.cookieName, {
             path: '/',
             secure: this.sessionOptions.secure,
             sameSite: this.sessionOptions.sameSite,
