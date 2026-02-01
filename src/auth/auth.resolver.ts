@@ -62,7 +62,7 @@ export class AuthResolver {
     }
 
     @Roles(ALL_ROLES)
-    @RateLimit(RateLimitTier.CRITICAL)
+    @RateLimit(RateLimitTier.ULTRA_CRITICAL)
     @RequireAccountStatus(...ALL_ACCOUNT_STATUSES)
     @Mutation(() => Boolean, requestAccountDeletionDocs)
     async requestAccountDeletion(@Context('req') req: RequestContext): Promise<boolean> {

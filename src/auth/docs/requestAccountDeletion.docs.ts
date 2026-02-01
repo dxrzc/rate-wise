@@ -20,7 +20,7 @@ Sends an account deletion confirmation email to the authenticated user.
     - Associated data (items, reviews, votes) is handled according to cascade rules.
   - Used tokens are blacklisted to prevent replay attacks.
 
-- **Rate Limiting:** 3 requests per minute per user or IP address.
+- **Rate Limiting:** 3 requests per 20 minutes per user per IP address.
 
 - **Authentication:** Required — valid session cookie must be present.
 
