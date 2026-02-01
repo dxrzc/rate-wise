@@ -41,7 +41,6 @@ export class VotesResolver {
         return await this.votesService.deleteVote(reviewId, req.user);
     }
 
-    // TODO: test
     @Public()
     @RateLimit(RateLimitTier.BALANCED)
     @Query(() => VotePaginationModel, findAllReviewVotesDocs)
