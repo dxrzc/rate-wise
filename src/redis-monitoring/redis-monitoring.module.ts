@@ -11,6 +11,7 @@ import {
 import { RedisHealthIndicator } from './health/redis.health';
 import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
 import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconnect-strategy';
+import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 
 /**
  * Provides and exports redis stores for EXTERNAL library modules like cache, throttler and queues.
@@ -89,7 +90,7 @@ export class RedisMonitoringModule implements OnModuleDestroy {
     ) {}
 
     async onModuleDestroy() {
-        await Promise.all([
+        await runSettledOrThrow([
             this.cacheRedisStore.disconnect(),
             this.throttlerRedis.quit(),
             this.queueRedis.quit(),
