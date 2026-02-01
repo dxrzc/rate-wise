@@ -11,6 +11,7 @@ import { createClient } from '@redis/client';
 import { logRedisClientError } from './log-redis.client-error';
 import { IRedisConnectionOptions } from '../interfaces/redis/redis.connection.options.interface';
 import { redisReconnectStrategy } from '../functions/redis/redis-reconnect-strategy';
+import { runSettledOrThrow } from '../functions/utils/run-settled-or-throw.util';
 
 export class RedisConnection {
     private readonly subscribers = new Array<any>();
@@ -49,7 +50,7 @@ export class RedisConnection {
 
     async disconnect() {
         if (this._client.isOpen) {
-            await Promise.all(this.subscribers.map((sub) => sub.disconnect()));
+            await runSettledOrThrow(this.subscribers.map(async (sub) => await sub.disconnect()));
             await this._client.disconnect();
         }
     }
