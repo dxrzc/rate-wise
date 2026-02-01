@@ -16,7 +16,7 @@ import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
 import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
-import { getSessionCookieIfExists } from '@integration/utils/get-session-cookie-if-exists.util';
+import { isSessionCookieCleared } from '@integration/utils/is-session-cookie-cleared.util';
 
 describe('GraphQL - signOutAll', () => {
     describe('Session Cookie not provided', () => {
@@ -117,8 +117,8 @@ describe('GraphQL - signOutAll', () => {
                 .set('Cookie', sessionCookie)
                 .send(signOutAll({ args: { password } }))
                 .expect(success);
-            const cookieInRes = getSessionCookieIfExists(res);
-            expect(cookieInRes).toBeNull();
+            const cookieInRes = isSessionCookieCleared(res);
+            expect(cookieInRes).toBeTruthy();
         });
     });
 

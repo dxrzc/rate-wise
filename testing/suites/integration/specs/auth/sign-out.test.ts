@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
-import { getSessionCookieIfExists } from '@integration/utils/get-session-cookie-if-exists.util';
+import { isSessionCookieCleared } from '@integration/utils/is-session-cookie-cleared.util';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
@@ -81,8 +81,8 @@ describe('GraphQL - signOut', () => {
                 .set('Cookie', sessionCookie)
                 .send(signOut())
                 .expect(success);
-            const cookieInRes = getSessionCookieIfExists(res);
-            expect(cookieInRes).toBeNull();
+            const cookieInRes = isSessionCookieCleared(res);
+            expect(cookieInRes).toBeTruthy();
         });
     });
 

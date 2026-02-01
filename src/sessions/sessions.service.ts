@@ -4,21 +4,33 @@ import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/functions/utils/promisify.util';
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
+import { SESSIONS_REDIS_CONNECTION, SESSIONS_ROOT_OPTIONS } from './constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { sessionKey } from './functions/session-key';
 import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
 import { ISessionDetails } from './interfaces/session.details.interface';
 import { ISessionKeys } from './interfaces/session.keys.interface';
 import { SystemLogger } from 'src/common/logging/system.logger';
+import { Response } from 'express';
+import { ISessionsRootOptions } from './interfaces/sessions.root.options.interface';
 
 @Injectable()
 export class SessionsService {
     constructor(
         @Inject(SESSIONS_REDIS_CONNECTION)
         private readonly redisClient: RedisClientAdapter,
+        @Inject(SESSIONS_ROOT_OPTIONS)
+        private sessionOptions: ISessionsRootOptions,
         private readonly logger: HttpLoggerService,
     ) {}
+
+    clearCookie(res: Response) {
+        res.clearCookie(this.sessionOptions.cookieName, {
+            path: '/',
+            secure: this.sessionOptions.secure,
+            sameSite: this.sessionOptions.sameSite,
+        });
+    }
 
     /**
      * Returns the keys used in redis for index, relation and session

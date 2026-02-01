@@ -23,14 +23,14 @@ import { signOutAllDocs } from './docs/signOutAll.docs';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { RequestSignOutAllInput } from './dtos/request-sign-out-all.input';
 import { requestSignOutAllDocs } from './docs/requestSignOutAll.docs';
+import { SessionsService } from 'src/sessions/sessions.service';
 
 @Resolver()
 export class AuthResolver {
-    constructor(private readonly authService: AuthService) {}
-
-    private clearCookie(res: Response) {
-        res.clearCookie('connect.sid', { path: '/' });
-    }
+    constructor(
+        private readonly authService: AuthService,
+        private readonly sessionService: SessionsService,
+    ) {}
 
     @Public()
     @RateLimit(RateLimitTier.CRITICAL)
@@ -87,7 +87,7 @@ export class AuthResolver {
         @Context('res') res: Response,
     ): Promise<boolean> {
         await this.authService.signOut(req);
-        this.clearCookie(res);
+        this.sessionService.clearCookie(res);
         return true;
     }
 
@@ -101,7 +101,7 @@ export class AuthResolver {
         @Context('res') res: Response,
     ): Promise<boolean> {
         await this.authService.signOutAll(input, req);
-        this.clearCookie(res);
+        this.sessionService.clearCookie(res);
         return true;
     }
 }

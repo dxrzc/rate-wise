@@ -58,6 +58,7 @@ describe('Sessions Service ', () => {
                         cookieName: 'ssid',
                         cookieSecret: '123',
                         secure: false,
+                        sameSite: 'strict',
                         connection: {
                             redisUri: await createLightweightRedisContainer([
                                 'notify-keyspace-events ExgK',
