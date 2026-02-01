@@ -3,6 +3,7 @@ import { userSessionsSetKey } from '../functions/sessions-index-key';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { SESSIONS_REDIS_CONNECTION } from '../constants/sessions.constants';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class SessionsEvents implements OnModuleInit {
@@ -24,14 +25,21 @@ export class SessionsEvents implements OnModuleInit {
 
         const userSessionRelationKey = userAndSessionRelationKey(sessionId);
         const userId = await this.redisClient.get<string>(userSessionRelationKey);
+        const sysLogger = SystemLogger.getInstance();
 
         if (userId) {
-            await Promise.all([
-                // remove session-userId relation record
-                this.redisClient.delete(userSessionRelationKey),
-                // remove from set
-                this.redisClient.setRem(userSessionsSetKey(userId), sessionId),
-            ]);
+            this.redisClient.delete(userSessionRelationKey).catch((err) => {
+                sysLogger.error(
+                    `Failed to delete user-session record: ${String(err)}`,
+                    SessionsEvents.name,
+                );
+            });
+            this.redisClient.setRem(userSessionsSetKey(userId), sessionId).catch((err) => {
+                sysLogger.error(
+                    `Failed to delete session from user's sessions index: ${String(err)}`,
+                    SessionsEvents.name,
+                );
+            });
         }
     }
 }
