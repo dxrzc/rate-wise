@@ -17,7 +17,7 @@ export async function verifyTokenOrThrow<T extends object>(
             logger.error(error.message);
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_TOKEN);
         }
-        logger.error(String(error));
+        // let global error filter log and handle it
         throw error;
     }
 }
