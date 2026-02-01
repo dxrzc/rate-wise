@@ -130,6 +130,7 @@ import Redis from 'ioredis';
                 cookieName: authConfig.sessCookieName,
                 cookieSecret: authConfig.sessCookieSecret,
                 secure: serverConfig.isProduction,
+                sameSite: 'strict',
                 connection: {
                     redisUri: dbConfig.redisAuthUri,
                 },
