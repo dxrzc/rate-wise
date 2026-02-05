@@ -1,4 +1,4 @@
-export const PAG_LIMITS = {
+export const PAGINATION_RULES = {
     MAX: 100,
     MIN: 1,
     DEFAULT: 5,

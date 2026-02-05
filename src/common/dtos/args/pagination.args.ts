@@ -1,6 +1,6 @@
 import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ArgsType, Field, Int } from '@nestjs/graphql';
-import { PAG_LIMITS } from 'src/common/constants/pagination.constants';
+import { PAGINATION_RULES } from 'src/common/constants/pagination.rules';
 
 @ArgsType()
 export class PaginationArgs {
@@ -15,8 +15,8 @@ export class PaginationArgs {
     cursor?: string;
 
     @IsInt()
-    @Min(PAG_LIMITS.MIN)
-    @Max(PAG_LIMITS.MAX)
+    @Min(PAGINATION_RULES.MIN)
+    @Max(PAGINATION_RULES.MAX)
     @Field(() => Int, {
         description: `
         Number of items to retrieve per page.                
@@ -24,7 +24,7 @@ export class PaginationArgs {
         - **Maximum value:** 100.
         `,
         nullable: true,
-        defaultValue: PAG_LIMITS.DEFAULT,
+        defaultValue: PAGINATION_RULES.DEFAULT,
     })
     limit!: number;
 }
