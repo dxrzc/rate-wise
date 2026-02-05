@@ -1,7 +1,7 @@
 import { ArgsType, Field, ID } from '@nestjs/graphql';
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.util';
+import { trimAndLowercase } from 'src/common/utils/trim-and-lowercase.util';
 import { ITEMS_LIMITS } from '../../constants/items.constants';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
 

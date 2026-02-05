@@ -1,5 +1,5 @@
 import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
+import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
 import { PAGINATION_MODULE_OPTIONS_TOKEN } from './module/config.module-definition';
 import { PaginationOptionsType, QueryBuilder } from './types/pagination.options.type';
 import { PaginationCacheProducer } from './queues/pagination.cache.producer';

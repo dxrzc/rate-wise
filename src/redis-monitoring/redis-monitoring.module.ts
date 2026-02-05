@@ -11,7 +11,7 @@ import {
 import { RedisHealthIndicator } from './health/redis.health';
 import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
 import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconnect-strategy';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
+import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
 
 /**
  * Provides and exports redis stores for EXTERNAL library modules like cache, throttler and queues.

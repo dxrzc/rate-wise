@@ -10,7 +10,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';
-import { stringValueToMinutes } from 'src/common/functions/utils/stringvalue-to.util';
+import { stringValueToMinutes } from 'src/common/utils/stringvalue-to.util';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { AuthTokenService } from '../types/auth-tokens-service.type';

@@ -2,7 +2,7 @@ import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsDefined, IsInt, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { REVIEWS_LIMITS } from '../constants/reviews.constant';
 import { Transform } from 'class-transformer';
-import { trim } from 'src/common/functions/utils/trim.util';
+import { trim } from 'src/common/utils/trim.util';
 
 @InputType({
     description: 'Input data required to create a new review for an item.',

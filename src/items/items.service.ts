@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dtos/create-item.input';
-import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
+import { validUUID } from 'src/common/utils/valid-uuid.util';
 import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';

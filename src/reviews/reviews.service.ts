@@ -10,7 +10,7 @@ import { PaginationService } from 'src/pagination/pagination.service';
 import { UsersService } from 'src/users/users.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
-import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
+import { validUUID } from 'src/common/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
 import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 import { ReviewFiltersArgs } from './dtos/args/review-filters.args';

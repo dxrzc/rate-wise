@@ -1,10 +1,10 @@
 import { ArrayMaxSize, IsArray, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Field, InputType } from '@nestjs/graphql';
-import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.util';
-import { trimAndLowerCaseArray } from 'src/common/functions/utils/trim-and-lowercase-array.util';
+import { trimAndLowercase } from 'src/common/utils/trim-and-lowercase.util';
+import { trimAndLowerCaseArray } from 'src/common/utils/trim-and-lowercase-array.util';
 import { ITEMS_LIMITS } from '../constants/items.constants';
-import { trim } from 'src/common/functions/utils/trim.util';
+import { trim } from 'src/common/utils/trim.util';
 
 @InputType({ description: 'Input type for creating a new item' })
 export class CreateItemInput {

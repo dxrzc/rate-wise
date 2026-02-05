@@ -1,5 +1,5 @@
 import { ITokensFeatureOptions } from './interfaces/tokens.feature.options.interface';
-import { isSubset } from 'src/common/functions/utils/is-subset.util';
+import { isSubset } from 'src/common/utils/is-subset.util';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { TOKENS_FEATURE_OPTIONS, TOKENS_REDIS_CONNECTION } from './constants/tokens.constants';
 import { calculateTokenTTLSeconds } from './functions/calculate-token-ttl';

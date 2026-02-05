@@ -1,13 +1,13 @@
 import { userAndSessionRelationKey } from './functions/user-session-relation-key';
 import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { promisify } from 'src/common/functions/utils/promisify.util';
+import { promisify } from 'src/common/utils/promisify.util';
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SESSIONS_REDIS_CONNECTION, SESSIONS_ROOT_OPTIONS } from './constants/sessions.constants';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { sessionKey } from './functions/session-key';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
+import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
 import { ISessionDetails } from './interfaces/session.details.interface';
 import { ISessionKeys } from './interfaces/session.keys.interface';
 import { SystemLogger } from 'src/common/logging/system.logger';

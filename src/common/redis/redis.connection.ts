@@ -11,7 +11,7 @@ import { createClient } from '@redis/client';
 import { logRedisClientError } from './log-redis.client-error';
 import { IRedisConnectionOptions } from '../interfaces/redis/redis.connection.options.interface';
 import { redisReconnectStrategy } from '../functions/redis/redis-reconnect-strategy';
-import { runSettledOrThrow } from '../functions/utils/run-settled-or-throw.util';
+import { runSettledOrThrow } from '../utils/run-settled-or-throw.util';
 
 export class RedisConnection {
     private readonly subscribers = new Array<any>();
