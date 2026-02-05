@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseModel } from 'src/common/models/base.model';
+import { BaseModel } from 'src/common/graphql/base.model';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 

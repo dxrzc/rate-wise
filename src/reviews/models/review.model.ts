@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { BaseModel } from 'src/common/models/base.model';
+import { BaseModel } from 'src/common/graphql/base.model';
 
 @ObjectType({
     description: `
