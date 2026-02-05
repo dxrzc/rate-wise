@@ -7,9 +7,7 @@ import { EmailClient } from '../client/email.client';
 import { EMAILS_QUEUE } from '../di/emails.providers';
 import { IAls } from 'src/common/types/async-local-storage.type';
 import { IEmailInfo } from '../interface/email-info.interface';
-
-// requestId + email info
-type JobData = IAls & IEmailInfo;
+import { EmailsJobData } from '../types/emails-job-data.type';
 
 @Processor(EMAILS_QUEUE, {
     concurrency: 100,
@@ -46,14 +44,14 @@ export class EmailsConsumer extends WorkerHost {
     }
 
     @OnWorkerEvent('active')
-    onActive(job: Job<JobData>) {
+    onActive(job: Job<EmailsJobData>) {
         this.runInContext(job.data.requestId, () => {
             this.logger.debug(`Sending email to ${job.data.to}`);
         });
     }
 
     @OnWorkerEvent('failed')
-    onFailed(job: Job<JobData>) {
+    onFailed(job: Job<EmailsJobData>) {
         this.runInContext(job.data.requestId, () => {
             this.logger.warn(`Email service internal error`);
         });
@@ -65,7 +63,7 @@ export class EmailsConsumer extends WorkerHost {
     }
 
     @OnWorkerEvent('completed')
-    onCompleted(job: Job<JobData>) {
+    onCompleted(job: Job<EmailsJobData>) {
         this.runInContext(job.data.requestId, () => {
             this.logger.info(`Email successfully sent to ${job.data.to}`);
         });
