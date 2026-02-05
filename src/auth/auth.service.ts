@@ -22,7 +22,7 @@ import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { AuthTokenService } from './types/auth-tokens-service.type';
 import { RequestContext } from './types/request-context.type';
-import { matchesLengthConstraints } from 'src/common/functions/input/matches-length-constraints';
+import { lengthMatcher } from 'src/common/validation/lenght-matcher';
 import { UserDeletionService } from 'src/orchestrators/user-deletion/user-deletion.service';
 import { SystemLogger } from 'src/common/logging/system.logger';
 
@@ -53,7 +53,7 @@ export class AuthService {
     }
 
     private validatePasswordConstraintsOrThrow(password: string) {
-        if (!matchesLengthConstraints(password, AUTH_RULES.PASSWORD)) {
+        if (!lengthMatcher(password, AUTH_RULES.PASSWORD)) {
             this.logger.error('Invalid password length');
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }

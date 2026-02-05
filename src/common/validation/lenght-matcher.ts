@@ -3,10 +3,7 @@
  * for security reasons. (e.g password length validation).
  */
 
-export function matchesLengthConstraints(
-    input: string,
-    constraints: { MIN?: number; MAX?: number },
-): boolean {
+export function lengthMatcher(input: string, constraints: { MIN?: number; MAX?: number }): boolean {
     if (constraints.MIN !== undefined && input.length < constraints.MIN) {
         return false;
     }
