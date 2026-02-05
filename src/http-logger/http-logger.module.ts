@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { ClassConfigModule } from 'src/common/types/modules/class-config.module.type';
+import { ClassConfigModule } from 'src/common/types/class-config.module.type';
 import {
     HTTP_LOGGER_FEATURE_OPTIONS,
     HTTP_LOGGER_ROOT_OPTIONS,

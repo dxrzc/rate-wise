@@ -1,6 +1,6 @@
 import { DynamicModule, Global, Module, OnApplicationShutdown } from '@nestjs/common';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
+import { FactoryConfigModule } from 'src/common/types/factory-config.module.type';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { SESSIONS_ROOT_OPTIONS, SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
 import { SessionsEvents } from './events/sessions.events';

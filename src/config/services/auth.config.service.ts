@@ -1,7 +1,7 @@
 import { IConfigs } from '../interface/config.interface';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { StringValue } from 'src/common/types/others/string-value.type';
+import { StringValue } from 'src/common/types/string-value.type';
 
 @Injectable()
 export class AuthConfigService {

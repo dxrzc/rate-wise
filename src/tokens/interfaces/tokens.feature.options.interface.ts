@@ -1,4 +1,4 @@
-import { StringValue } from 'src/common/types/others/string-value.type';
+import { StringValue } from 'src/common/types/string-value.type';
 import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
 
 export interface ITokensFeatureOptions {

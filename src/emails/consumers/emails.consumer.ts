@@ -6,7 +6,7 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { EmailsClient } from '../client/emails.client';
 import { EMAILS_QUEUE } from '../constants/emails.constants';
 import { IEmailInfo } from '../interface/email-info.interface';
-import { IAls } from 'src/common/types/others/async-local-storage.type';
+import { IAls } from 'src/common/types/async-local-storage.type';
 
 // requestId + email info
 type JobData = IAls & IEmailInfo;

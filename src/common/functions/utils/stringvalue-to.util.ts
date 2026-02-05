@@ -1,4 +1,4 @@
-import { StringValue } from 'src/common/types/others/string-value.type';
+import { StringValue } from 'src/common/types/string-value.type';
 import ms from 'ms';
 
 export function stringValueToSeconds(stringValue: StringValue) {

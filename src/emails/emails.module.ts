@@ -3,7 +3,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import {
     FactoryConfigModule,
     FactoryConfigModuleWithExtraProvider,
-} from 'src/common/types/modules/factory-config.module.type';
+} from 'src/common/types/factory-config.module.type';
 import { EmailsClient } from './client/emails.client';
 import {
     EMAILS_FEATURE_OPTIONS,

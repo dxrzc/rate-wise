@@ -5,7 +5,7 @@ import { RedisConnection } from 'src/common/redis/redis.connection';
 import {
     FactoryConfigModule,
     FactoryConfigModuleWithCustomToken,
-} from 'src/common/types/modules/factory-config.module.type';
+} from 'src/common/types/factory-config.module.type';
 import {
     TOKENS_FEATURE_OPTIONS,
     TOKENS_REDIS_CONNECTION,
