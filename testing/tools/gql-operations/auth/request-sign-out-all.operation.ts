@@ -1,4 +1,4 @@
-import { RequestSignOutAllInput } from 'src/auth/dtos/request-sign-out-all.input';
+import { RequestSignOutAllInput } from 'src/auth/graphql/inputs/request-sign-out-all.input';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 

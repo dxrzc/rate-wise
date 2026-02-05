@@ -1,4 +1,4 @@
-import { ReAuthenticationInput } from 'src/auth/dtos/re-authentication.input';
+import { ReAuthenticationInput } from 'src/auth/graphql/inputs/re-authentication.input';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 

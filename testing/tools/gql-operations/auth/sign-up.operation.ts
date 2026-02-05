@@ -1,6 +1,6 @@
+import { SignUpInput } from 'src/auth/graphql/inputs/sign-up.input';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
 import { UserModel } from 'src/users/models/user.model';
 
 export function signUp({ args, fields }: IOperation<SignUpInput, UserModel>) {

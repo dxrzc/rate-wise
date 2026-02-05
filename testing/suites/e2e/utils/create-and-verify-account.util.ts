@@ -3,7 +3,7 @@ import { e2eKit } from './e2e-kit.util';
 import { requestAccountVerification } from '@testing/tools/gql-operations/auth/request-account-verification.operation';
 import { EmailPaths } from '@e2e/enum/email-paths.enum';
 import { HttpClient } from '@e2e/client/http.client';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { SignUpInput } from 'src/auth/graphql/inputs/sign-up.input';
 
 type AccountCreated = {
     client: HttpClient;

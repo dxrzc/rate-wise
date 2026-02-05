@@ -3,7 +3,7 @@ import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { SignUpInput } from 'src/auth/graphql/inputs/sign-up.input';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { mock } from 'jest-mock-extended';
 
