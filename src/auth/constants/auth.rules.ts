@@ -1,4 +1,4 @@
-export const AUTH_LIMITS = {
+export const AUTH_RULES = {
     USERNAME: {
         MIN: 3,
         MAX: 30,

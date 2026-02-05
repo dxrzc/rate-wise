@@ -13,7 +13,7 @@ import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UsersService } from 'src/users/users.service';
-import { AUTH_LIMITS } from './constants/auth.limits';
+import { AUTH_RULES } from './constants/auth.rules';
 import { ReAuthenticationInput } from './graphql/inputs/re-authentication.input';
 import { SignInInput } from './graphql/inputs/sign-in.input';
 import { SignUpInput } from './graphql/inputs/sign-up.input';
@@ -53,7 +53,7 @@ export class AuthService {
     }
 
     private validatePasswordConstraintsOrThrow(password: string) {
-        if (!matchesLengthConstraints(password, AUTH_LIMITS.PASSWORD)) {
+        if (!matchesLengthConstraints(password, AUTH_RULES.PASSWORD)) {
             this.logger.error('Invalid password length');
             throw GqlHttpError.Unauthorized(AUTH_MESSAGES.INVALID_CREDENTIALS);
         }

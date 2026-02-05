@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { SignUpInput } from 'src/auth/graphql/inputs/sign-up.input';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
+import { AUTH_RULES } from 'src/auth/constants/auth.rules';
 
 @Injectable()
 export class UserSeedService {
@@ -14,7 +14,7 @@ export class UserSeedService {
                 : `${faker.person.lastName()}_${randomNumber}${faker.person.firstName()}`;
 
         // Ensure username does not exceed AUTH_LIMITS.USERNAME.MAX
-        return baseUsername.slice(0, AUTH_LIMITS.USERNAME.MAX);
+        return baseUsername.slice(0, AUTH_RULES.USERNAME.MAX);
     }
 
     get email(): string {
@@ -29,7 +29,7 @@ export class UserSeedService {
     get password(): string {
         const randomNumber = faker.number.int({ max: 4 });
         return faker.internet.password({
-            length: AUTH_LIMITS.PASSWORD.MAX - randomNumber,
+            length: AUTH_RULES.PASSWORD.MAX - randomNumber,
         });
     }
 

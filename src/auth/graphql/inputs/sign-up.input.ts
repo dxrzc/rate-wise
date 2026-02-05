@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
-import { AUTH_LIMITS } from '../../constants/auth.limits';
+import { AUTH_RULES } from '../../constants/auth.rules';
 import { Transform } from 'class-transformer';
 
 @InputType({
@@ -8,14 +8,14 @@ import { Transform } from 'class-transformer';
 })
 export class SignUpInput {
     @IsString()
-    @MinLength(AUTH_LIMITS.USERNAME.MIN)
-    @MaxLength(AUTH_LIMITS.USERNAME.MAX)
+    @MinLength(AUTH_RULES.USERNAME.MIN)
+    @MaxLength(AUTH_RULES.USERNAME.MAX)
     @Transform(({ value }: { value: string }) => value.trim())
     @Field(() => String, {
         description: `
             The username for the account.
-            - **Minimum length:** ${AUTH_LIMITS.USERNAME.MIN} characters.
-            - **Maximum length:** ${AUTH_LIMITS.USERNAME.MAX} characters.
+            - **Minimum length:** ${AUTH_RULES.USERNAME.MIN} characters.
+            - **Maximum length:** ${AUTH_RULES.USERNAME.MAX} characters.
         `,
     })
     readonly username!: string;
@@ -31,13 +31,13 @@ export class SignUpInput {
     readonly email!: string;
 
     @IsString()
-    @MinLength(AUTH_LIMITS.PASSWORD.MIN)
-    @MaxLength(AUTH_LIMITS.PASSWORD.MAX)
+    @MinLength(AUTH_RULES.PASSWORD.MIN)
+    @MaxLength(AUTH_RULES.PASSWORD.MAX)
     @Field(() => String, {
         description: `
             The password for the account.
-            - **Minimum length:** ${AUTH_LIMITS.PASSWORD.MIN} characters.
-            - **Maximum length:** ${AUTH_LIMITS.PASSWORD.MAX} characters.
+            - **Minimum length:** ${AUTH_RULES.PASSWORD.MIN} characters.
+            - **Maximum length:** ${AUTH_RULES.PASSWORD.MAX} characters.
         `,
     })
     readonly password!: string;
