@@ -1,4 +1,4 @@
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 
 export interface IConfigs {
     readonly NODE_ENV: Environment;

@@ -1,4 +1,4 @@
-import { Environment } from '../enum/environment.enum';
+import { Environment } from '../enums/environment.enum';
 import { ConsoleLogger } from '@nestjs/common';
 import * as winston from 'winston';
 

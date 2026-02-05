@@ -10,7 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { AuthController } from 'src/auth/auth.controller';
 import { AuthModule } from 'src/auth/auth.module';
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
 import { ConfigModule } from 'src/config/config.module';

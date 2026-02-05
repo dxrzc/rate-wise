@@ -1,4 +1,4 @@
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 import { IConfigs } from '../interface/config.interface';
 import * as Joi from 'joi';
 

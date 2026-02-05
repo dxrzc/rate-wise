@@ -1,5 +1,5 @@
 import { GraphQLFormattedError } from 'graphql';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 
 type ReturnedError = {

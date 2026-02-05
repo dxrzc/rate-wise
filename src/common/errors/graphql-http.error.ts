@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import { Code } from '../enum/code.enum';
+import { Code } from '../enums/code.enum';
 import { COMMON_MESSAGES } from '../messages/common.messages';
 
 export class GqlHttpError {
