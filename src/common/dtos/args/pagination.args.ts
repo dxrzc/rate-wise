@@ -1,6 +1,6 @@
 import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ArgsType, Field, Int } from '@nestjs/graphql';
-import { PAGINATION_RULES } from 'src/common/constants/pagination.rules';
+import { PAGINATION_RULES } from 'src/common/pagination/pagination.rules';
 
 @ArgsType()
 export class PaginationArgs {

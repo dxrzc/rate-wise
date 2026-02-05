@@ -1,5 +1,5 @@
 import { Throttle } from '@nestjs/throttler';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 
 export enum RateLimitTier {
     ULTRA_CRITICAL = 'ULTRA_CRITICAL',
@@ -8,4 +8,4 @@ export enum RateLimitTier {
     RELAXED = 'RELAXED',
 }
 
-export const RateLimit = (tier: RateLimitTier) => Throttle({ default: THROTTLE_CONFIG[tier] });
+export const RateLimit = (tier: RateLimitTier) => Throttle({ default: RATE_LIMIT_PROFILES[tier] });
