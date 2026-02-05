@@ -11,7 +11,7 @@ import {
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from '../errors/graphql-http.error';
-import { IGraphQLContext } from '../interfaces/graphql/graphql-context.interface';
+import { IGraphQLContext } from '../graphql/graphql-context.interface';
 import { COMMON_MESSAGES } from '../messages/common.messages';
 import { Request, Response } from 'express';
 import { TooManyRequestsException } from '../errors/http.exceptions';

@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { ACCOUNT_STATUS_KEY } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { IGraphQLContext } from 'src/common/interfaces/graphql/graphql-context.interface';
+import { IGraphQLContext } from 'src/common/graphql/graphql-context.interface';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { AUTH_MESSAGES } from '../messages/auth.messages';
