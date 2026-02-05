@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
-import { AUTH_RULES } from '../../constants/auth.rules';
+import { AUTH_RULES } from '../../policy/auth.rules';
 import { Transform } from 'class-transformer';
 
 @InputType({

@@ -3,7 +3,7 @@ import { Item } from 'src/items/entities/item.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { AccountStatus } from '../enums/account-status.enum';
-import { AUTH_RULES } from 'src/auth/constants/auth.rules';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 import { Review } from 'src/reviews/entities/review.entity';
 import { Vote } from 'src/votes/entities/vote.entity';
 

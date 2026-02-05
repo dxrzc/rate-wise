@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { SignUpInput } from 'src/auth/graphql/inputs/sign-up.input';
-import { AUTH_RULES } from 'src/auth/constants/auth.rules';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 
 @Injectable()
 export class UserSeedService {

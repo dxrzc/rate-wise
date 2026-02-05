@@ -14,7 +14,7 @@ import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
     SIGN_OUT_ALL_TOKEN,
-} from './constants/auth.providers';
+} from './di/auth.providers';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { UserDeletionModule } from 'src/orchestrators/user-deletion/user-deletion.module';
 
