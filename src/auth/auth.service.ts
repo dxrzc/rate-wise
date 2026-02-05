@@ -2,7 +2,7 @@ import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
     SIGN_OUT_ALL_TOKEN,
-} from './constants/tokens.provider.constant';
+} from './constants/auth.providers';
 import { Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
@@ -13,7 +13,7 @@ import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UsersService } from 'src/users/users.service';
-import { AUTH_LIMITS } from './constants/auth.constants';
+import { AUTH_LIMITS } from './constants/auth.limits';
 import { ReAuthenticationInput } from './dtos/re-authentication.input';
 import { SignInInput } from './dtos/sign-in.input';
 import { SignUpInput } from './dtos/sign-up.input';

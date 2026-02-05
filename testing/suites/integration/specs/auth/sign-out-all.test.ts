@@ -2,7 +2,7 @@ import { signOutAll } from '@testing/tools/gql-operations/auth/sign-out-all.oper
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createAccount } from '@integration/utils/create-account.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
+import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
 import { testKit } from '@integration/utils/test-kit.util';
 import { Code } from 'src/common/enum/code.enum';
 import { faker } from '@faker-js/faker/.';

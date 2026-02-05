@@ -5,7 +5,7 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signUp } from '@testing/tools/gql-operations/auth/sign-up.operation';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
+import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
 import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
 import { Code } from 'src/common/enum/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';

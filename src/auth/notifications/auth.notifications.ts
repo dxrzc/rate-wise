@@ -6,7 +6,7 @@ import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
     SIGN_OUT_ALL_TOKEN,
-} from '../constants/tokens.provider.constant';
+} from '../constants/auth.providers';
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
 import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';

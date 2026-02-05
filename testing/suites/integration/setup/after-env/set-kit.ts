@@ -1,24 +1,24 @@
+import { testKit } from '@integration/utils/test-kit.util';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
     ACCOUNT_DELETION_TOKEN,
     ACCOUNT_VERIFICATION_TOKEN,
     SIGN_OUT_ALL_TOKEN,
-} from 'src/auth/constants/tokens.provider.constant';
-import { testKit } from '@integration/utils/test-kit.util';
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+} from 'src/auth/constants/auth.providers';
+import { AuthTokenService } from 'src/auth/types/auth-tokens-service.type';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
-import { AuthTokenService } from 'src/auth/types/auth-tokens-service.type';
+import { Item } from 'src/items/entities/item.entity';
+import { Review } from 'src/reviews/entities/review.entity';
+import { SeedService } from 'src/seed/seed.service';
+import { ItemsSeedService } from 'src/seed/services/items-seed.service';
+import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
 import { UserSeedService } from 'src/seed/services/user-seed.service';
 import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
 import { TOKENS_REDIS_CONNECTION } from 'src/tokens/constants/tokens.constants';
 import { User } from 'src/users/entities/user.entity';
-import { DataSource } from 'typeorm';
-import { Item } from 'src/items/entities/item.entity';
-import { ItemsSeedService } from 'src/seed/services/items-seed.service';
-import { ReviewSeedService } from 'src/seed/services/reviews-seed.service';
-import { Review } from 'src/reviews/entities/review.entity';
-import { SeedService } from 'src/seed/seed.service';
 import { Vote } from 'src/votes/entities/vote.entity';
+import { DataSource } from 'typeorm';
 
 beforeAll(() => {
     testKit.userSeed = testKit.app.get(UserSeedService);
