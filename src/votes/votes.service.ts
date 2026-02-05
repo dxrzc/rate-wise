@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { User } from 'src/users/entities/user.entity';
 import { Vote } from './entities/vote.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';

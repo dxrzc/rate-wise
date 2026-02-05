@@ -8,7 +8,7 @@ import {
     SIGN_OUT_ALL_TOKEN,
 } from '../constants/auth.providers';
 import { Inject, Injectable } from '@nestjs/common';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { verifyYourEmailHtml, verifyYourEmailPlainText } from '../pages/verify-your-email.page';
 import { stringValueToMinutes } from 'src/common/functions/utils/stringvalue-to.util';
 import { ServerConfigService } from 'src/config/services/server.config.service';

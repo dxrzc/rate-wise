@@ -9,7 +9,7 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { ITEMS_MESSAGES } from './messages/items.messages';
 import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { ItemModel } from './models/item.model';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createItemCacheKey } from './cache/create-cache-key';

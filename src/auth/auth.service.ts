@@ -5,7 +5,7 @@ import {
 } from './constants/auth.providers';
 import { Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { HashingService } from 'src/common/services/hashing.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';

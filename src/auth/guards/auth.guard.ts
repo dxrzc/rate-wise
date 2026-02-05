@@ -7,7 +7,7 @@ import { UsersService } from 'src/users/users.service';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { ISessionDetails } from 'src/sessions/interfaces/session.details.interface';
 

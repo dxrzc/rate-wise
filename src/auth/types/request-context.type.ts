@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { ISessionData } from '../interfaces/session-data.interface';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 
 /**
  * Defines the request object with authentiuser data and session

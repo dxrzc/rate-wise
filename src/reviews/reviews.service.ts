@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateReviewInput } from './dtos/create-review.input';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { EntityManager, In, Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
 import { InjectRepository } from '@nestjs/typeorm';
