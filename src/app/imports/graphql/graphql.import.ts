@@ -3,7 +3,7 @@ import { ApolloDriverConfig } from '@nestjs/apollo';
 import { Injectable } from '@nestjs/common';
 import { GqlOptionsFactory } from '@nestjs/graphql';
 import { join } from 'path';
-import { handleGqlError } from 'src/common/functions/graphql/handle-gql-error';
+import { handleGqlError } from 'src/common/graphql/handle-gql-error';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import depthLimit from 'graphql-depth-limit';
 import { GRAPHQL_CONSTANTS } from 'src/common/graphql/graphql.rules';
