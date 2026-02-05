@@ -1,4 +1,4 @@
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 
 export type QueryBuilder<T extends ObjectLiteral> = {

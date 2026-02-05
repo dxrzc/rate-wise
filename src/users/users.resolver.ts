@@ -3,7 +3,7 @@ import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decor
 import { UserModel } from './models/user.model';
 import { UsersService } from './users.service';
 import { Public } from 'src/common/decorators/public.decorator';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { UserPaginationModel } from './models/pagination.model';
 import { findUserByIdDocs } from './docs/findUserById.docs';
 import { findAllUsersDocs } from './docs/findAllUsers.docs';

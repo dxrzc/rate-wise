@@ -11,7 +11,7 @@ import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 import { ICreateUserData } from './interfaces/create-user-data.interface';
 

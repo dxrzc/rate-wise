@@ -3,7 +3,7 @@ import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { trimAndLowercase } from 'src/common/functions/utils/trim-and-lowercase.util';
 import { ITEMS_LIMITS } from '../../constants/items.constants';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { PaginationArgs } from 'src/common/graphql/pagination.args';
 
 @ArgsType()
 export class ItemFiltersArgs extends PaginationArgs {

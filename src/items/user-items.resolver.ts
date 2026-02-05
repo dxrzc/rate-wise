@@ -1,5 +1,5 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { ItemPaginationModel } from 'src/items/models/pagination.model';
 import { ItemsService } from 'src/items/items.service';
 import { UserModel } from 'src/users/models/user.model';
