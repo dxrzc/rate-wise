@@ -4,11 +4,10 @@ import { Item } from './entities/item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dtos/create-item.input';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
-import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
+import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { ITEMS_MESSAGES } from './messages/items.messages';
-import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { ItemModel } from './models/item.model';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -17,6 +16,7 @@ import { deserializeItem } from './functions/deserialize-item.entity';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { UsersService } from 'src/users/users.service';
 import { ItemFiltersArgs } from './dtos/args/item-filters.args';
+import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
 
 @Injectable()
 export class ItemsService {
@@ -104,7 +104,7 @@ export class ItemsService {
             return created as unknown as ItemModel;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(ITEMS_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);

@@ -1,5 +1,3 @@
-import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
-import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
@@ -14,6 +12,8 @@ import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 import { ICreateUserData } from './interfaces/create-user-data.interface';
+import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
+import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 
 @Injectable()
 export class UsersService {
@@ -122,7 +122,7 @@ export class UsersService {
             return saved;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
@@ -139,7 +139,7 @@ export class UsersService {
             return updated;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
@@ -157,7 +157,7 @@ export class UsersService {
             return created;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);

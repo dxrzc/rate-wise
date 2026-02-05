@@ -4,9 +4,9 @@ import { Response } from 'express';
 import { GraphQLError } from 'graphql';
 import { SystemLogger } from '../logging/system.logger';
 import { COMMON_MESSAGES } from '../messages/common.messages';
-import { isServiceUnavailableError } from '../functions/error/is-service-unavailable-error';
 import { GqlHttpError } from '../errors/graphql-http.error';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { isServiceUnavailableError } from '../errors/is-service-unavailable-error';
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {

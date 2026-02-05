@@ -6,10 +6,10 @@ import { ServerConfigService } from './config/services/server.config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import hpp from 'hpp';
-import { isRecoverableInfraError } from './common/functions/error/is-recoverable-infra-error';
 import { CACHE_REDIS_STORE } from './redis-monitoring/constants/redis.connections';
 import KeyvRedis from '@keyv/redis';
 import { patchRedisStoreSocketClosedUnexpectedly } from './common/functions/redis/patch-redis-store-socket-closed-unexpectedly';
+import { isRecoverableInfraError } from './common/errors/is-recoverable-infra-error';
 
 let app: NestExpressApplication | undefined;
 

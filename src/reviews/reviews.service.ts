@@ -12,11 +12,11 @@ import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
-import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
-import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
+import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SystemLogger } from 'src/common/logging/system.logger';
+import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
 
 @Injectable()
 export class ReviewService {
@@ -102,7 +102,7 @@ export class ReviewService {
             return review;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(REVIEW_MESSAGES.ALREADY_REVIEWED);
             }
             throw error;
