@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { SignUpInput } from 'src/auth/graphql/inputs/sign-up.input';
 import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
 
 @Injectable()
