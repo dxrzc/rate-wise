@@ -1,12 +1,12 @@
 import * as nodemailer from 'nodemailer';
-import { IEmailInfo } from '../interface/email-info.interface';
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemLogger } from 'src/common/logging/system.logger';
-import { EMAILS_ROOT_OPTIONS } from '../constants/emails.constants';
-import { IEmailsRootOptions } from '../interface/emails.root.options.interface';
+import { EMAILS_ROOT_OPTIONS } from '../di/emails.providers';
+import { IEmailsRootOptions } from '../config/emails.root.options';
+import { IEmailInfo } from '../interface/email-info.interface';
 
 @Injectable()
-export class EmailsClient {
+export class EmailClient {
     private transporter: nodemailer.Transporter;
 
     constructor(

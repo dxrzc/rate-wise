@@ -1,10 +1,10 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Inject, Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { IEmailInfo } from './interface/email-info.interface';
-import { IEmailsFeatureOptions } from './interface/emails.feature.options.interface';
-import { EMAILS_FEATURE_OPTIONS, EMAILS_QUEUE } from './constants/emails.constants';
+import { IEmailsFeatureOptions } from './config/emails-feature.options';
+import { EMAILS_FEATURE_OPTIONS, EMAILS_QUEUE } from './di/emails.providers';
 import { ClsService } from 'nestjs-cls';
+import { IEmailInfo } from './interface/email-info.interface';
 
 @Injectable()
 export class EmailsService {

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { EmailsClient } from '../client/emails.client';
+import { EmailClient } from '../client/email.client';
 import { HealthIndicatorService } from '@nestjs/terminus';
 
 @Injectable()
 export class EmailHealthIndicator {
     constructor(
-        private readonly emailClient: EmailsClient,
+        private readonly emailClient: EmailClient,
         private readonly healthIndicatorService: HealthIndicatorService,
     ) {}
 
