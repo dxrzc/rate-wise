@@ -6,7 +6,7 @@ export type QueryBuilder<T extends ObjectLiteral> = {
     readonly sqbAlias: string;
 };
 
-export type PaginationOptionsType<T extends ObjectLiteral> = PaginationArgs & {
+export type CreatePagination<T extends ObjectLiteral> = PaginationArgs & {
     readonly cache: boolean;
     readonly queryBuilder?: QueryBuilder<T>;
 };

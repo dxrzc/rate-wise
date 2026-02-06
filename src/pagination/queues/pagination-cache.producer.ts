@@ -1,4 +1,4 @@
-import { PAGINATION_CACHE_QUEUE } from '../constants/pagination.constants';
+import { PAGINATION_CACHE_QUEUE } from '../di/pagination.providers';
 import { ICacheJobData } from '../interfaces/cache-job.data.interface';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
