@@ -1,8 +1,8 @@
-import { ITokensFeatureOptions } from './interfaces/tokens.feature.options.interface';
+import { ITokensFeatureOptions } from './config/tokens-feature.options';
 import { isSubset } from 'src/common/utils/is-subset.util';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
-import { TOKENS_FEATURE_OPTIONS, TOKENS_REDIS_CONNECTION } from './constants/tokens.constants';
-import { calculateTokenTTLSeconds } from './functions/calculate-token-ttl';
+import { TOKENS_FEATURE_OPTIONS, TOKENS_REDIS_CONNECTION } from './di/tokens.providers';
+import { calculateTokenTTLSeconds } from './ttl/calculate-token-ttl';
 import {
     InvalidDataInToken,
     InvalidToken,
@@ -12,7 +12,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtPayload } from './types/jwt-payload.type';
-import { blacklistTokenKey } from './functions/blacklist-token-key';
+import { blacklistTokenKey } from './keys/create-blacklist-token-key';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 
 @Injectable()

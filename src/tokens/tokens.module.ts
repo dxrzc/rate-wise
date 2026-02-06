@@ -10,9 +10,9 @@ import {
     TOKENS_FEATURE_OPTIONS,
     TOKENS_REDIS_CONNECTION,
     TOKENS_ROOT_OPTIONS,
-} from './constants/tokens.constants';
-import { ITokensFeatureOptions } from './interfaces/tokens.feature.options.interface';
-import { ITokensRootOptions } from './interfaces/tokens.root.options.interface';
+} from './di/tokens.providers';
+import { ITokensFeatureOptions } from './config/tokens-feature.options';
+import { ITokensRootOptions } from './config/tokens-root.options';
 import { TokensService } from './tokens.service';
 
 @Module({})
