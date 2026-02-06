@@ -17,7 +17,7 @@ import { AUTH_RULES } from './policy/auth.rules';
 import { ReAuthenticationInput } from './graphql/inputs/re-authentication.input';
 import { SignInInput } from './graphql/inputs/sign-in.input';
 import { SignUpInput } from './graphql/inputs/sign-up.input';
-import { verifyTokenOrThrow } from './functions/verify-token-or-throw';
+import { verifyTokenOrThrow } from './tokens/verify-token-or-throw';
 import { AUTH_MESSAGES } from './messages/auth.messages';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { AuthTokenService } from './types/auth-tokens-service.type';
