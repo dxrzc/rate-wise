@@ -7,7 +7,7 @@ import {
     CACHE_REDIS_STORE,
     QUEUE_REDIS_CONNECTION,
     THROTTLER_REDIS_CONNECTION,
-} from './constants/redis.connections';
+} from './di/redis-monitoring.providers';
 import { RedisHealthIndicator } from './health/redis.health';
 import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
 import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconnect-strategy';

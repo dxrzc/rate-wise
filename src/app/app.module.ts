@@ -46,7 +46,7 @@ import {
     CACHE_REDIS_STORE,
     QUEUE_REDIS_CONNECTION,
     THROTTLER_REDIS_CONNECTION,
-} from 'src/redis-monitoring/constants/redis.connections';
+} from 'src/redis-monitoring/di/redis-monitoring.providers';
 import KeyvRedis from '@keyv/redis';
 import Redis from 'ioredis';
 
