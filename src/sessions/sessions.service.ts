@@ -1,18 +1,18 @@
-import { userAndSessionRelationKey } from './functions/user-session-relation-key';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
+import { createSessionAndUserMappingKey } from './keys/create-session-and-user-mapping-key';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
 import { RequestContext } from 'src/auth/types/request-context.type';
 import { promisify } from 'src/common/utils/promisify.util';
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { SESSIONS_REDIS_CONNECTION, SESSIONS_ROOT_OPTIONS } from './constants/sessions.constants';
+import { SESSIONS_REDIS_CONNECTION, SESSIONS_ROOT_OPTIONS } from './di/sessions.providers';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { sessionKey } from './functions/session-key';
+import { createSessionKey } from './keys/create-session-key';
 import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
-import { ISessionDetails } from './interfaces/session.details.interface';
-import { ISessionKeys } from './interfaces/session.keys.interface';
+import { ISessionDetails } from './interfaces/session-details.interface';
+import { ISessionKeys } from './interfaces/session-keys.interface';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { Response } from 'express';
-import { ISessionsRootOptions } from './interfaces/sessions.root.options.interface';
+import { ISessionsRootOptions } from './config/sessions-root.interface';
 
 @Injectable()
 export class SessionsService {
@@ -38,9 +38,9 @@ export class SessionsService {
      * @returns object containing the keys
      */
     getRedisKeys(sessionDetails: ISessionDetails): ISessionKeys {
-        const indexKey = userSessionsSetKey(sessionDetails.userId);
-        const relationKey = userAndSessionRelationKey(sessionDetails.sessId);
-        const sessKey = sessionKey(sessionDetails.sessId);
+        const indexKey = createUserSessionsSetKey(sessionDetails.userId);
+        const relationKey = createSessionAndUserMappingKey(sessionDetails.sessId);
+        const sessKey = createSessionKey(sessionDetails.sessId);
         return { indexKey, relationKey, sessKey };
     }
 
@@ -97,16 +97,16 @@ export class SessionsService {
      * @returns the number of sessions belonging to the user
      */
     async deleteAll(userId: string): Promise<number> {
-        const indexKey = userSessionsSetKey(userId);
+        const indexKey = createUserSessionsSetKey(userId);
         const sessIDs = await this.redisClient.setMembers(indexKey);
         await runSettledOrThrow([
             // all sessions
-            runSettledOrThrow(sessIDs.map((id) => this.redisClient.delete(sessionKey(id)))),
+            runSettledOrThrow(sessIDs.map((id) => this.redisClient.delete(createSessionKey(id)))),
             // index
             this.redisClient.delete(indexKey),
             // every user-session relation
             runSettledOrThrow(
-                sessIDs.map((id) => this.redisClient.delete(userAndSessionRelationKey(id))),
+                sessIDs.map((id) => this.redisClient.delete(createSessionAndUserMappingKey(id))),
             ),
         ]);
         this.logger.info('All sessions deleted');
@@ -133,7 +133,7 @@ export class SessionsService {
      * @returns the number of sessions belonging to this user
      */
     async count(userId: string): Promise<number> {
-        const setkey = userSessionsSetKey(userId);
+        const setkey = createUserSessionsSetKey(userId);
         return await this.redisClient.setSize(setkey);
     }
 
@@ -146,8 +146,8 @@ export class SessionsService {
         const sessionId = req.sessionID;
         await runSettledOrThrow([
             promisify<void>((cb) => req.session.destroy(cb)),
-            this.redisClient.setRem(userSessionsSetKey(userId), sessionId),
-            this.redisClient.delete(userAndSessionRelationKey(sessionId)),
+            this.redisClient.setRem(createUserSessionsSetKey(userId), sessionId),
+            this.redisClient.delete(createSessionAndUserMappingKey(sessionId)),
         ]);
         this.logger.info('Session destroyed');
     }
@@ -166,8 +166,8 @@ export class SessionsService {
         req.session.userId = userId;
         await this.redisClient
             .transaction()
-            .store(userAndSessionRelationKey(req.sessionID), userId)
-            .setAdd(userSessionsSetKey(userId), req.sessionID)
+            .store(createSessionAndUserMappingKey(req.sessionID), userId)
+            .setAdd(createUserSessionsSetKey(userId), req.sessionID)
             .exec();
         this.logger.info(`Session created`);
     }

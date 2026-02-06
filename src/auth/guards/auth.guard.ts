@@ -9,7 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { SessionsService } from 'src/sessions/sessions.service';
-import { ISessionDetails } from 'src/sessions/interfaces/session.details.interface';
+import { ISessionDetails } from 'src/sessions/interfaces/session-details.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { HealthIndicatorService } from '@nestjs/terminus';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/constants/sessions.constants';
+import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/di/sessions.providers';
 import { TOKENS_REDIS_CONNECTION } from 'src/tokens/constants/tokens.constants';
 import {
     QUEUE_REDIS_CONNECTION,

@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
-import { ISessionsRootOptions } from '../interfaces/sessions.root.options.interface';
+import { ISessionsRootOptions } from '../config/sessions-root.interface';
 import {
     SESSIONS_ROOT_OPTIONS,
     SESSIONS_REDIS_CONNECTION,
     SESS_REDIS_PREFIX,
-} from '../constants/sessions.constants';
+} from '../di/sessions.providers';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 
 @Injectable()
