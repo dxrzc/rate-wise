@@ -6,10 +6,3 @@ export interface IGqlRequestLog {
     readonly variables?: { [name: string]: unknown };
     readonly error?: string;
 }
-
-export interface IRestRequestLog {
-    readonly requestId: string;
-    readonly responseTime: string;
-    readonly endpoint: string;
-    readonly ip: string;
-}

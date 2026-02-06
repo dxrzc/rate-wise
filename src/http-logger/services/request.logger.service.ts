@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import * as winston from 'winston';
-import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
-import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
+import { HTTP_LOGGER_ROOT_OPTIONS } from '../di/http-logger.providers';
+import { IHttpLoggerRootOptions } from '../config/http-logger-root.options';
 import { createDummyTransport } from '../functions/create-dummy-transport';
-import { IRestRequestLog, IGqlRequestLog } from '../interfaces/request-log.interface';
+import { IRestRequestLog } from '../interfaces/rest-request-log.interface';
+import { IGqlRequestLog } from '../interfaces/gql-request-log.interface';
 
 // Request logs fs
 @Injectable()

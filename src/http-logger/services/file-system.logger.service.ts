@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import * as winston from 'winston';
 import { ClsServiceManager } from 'nestjs-cls';
-import { IHttpLoggerRootOptions } from '../interfaces/http-logger.root.options.interface';
-import { HTTP_LOGGER_ROOT_OPTIONS } from '../constants/http-logger.options.constants';
+import { IHttpLoggerRootOptions } from '../config/http-logger-root.options';
+import { HTTP_LOGGER_ROOT_OPTIONS } from '../di/http-logger.providers';
 import { createDummyTransport } from '../functions/create-dummy-transport';
 import { InfoType } from '../types/info.type';
 

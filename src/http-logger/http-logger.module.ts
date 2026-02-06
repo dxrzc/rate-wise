@@ -1,16 +1,13 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ClassConfigModule } from 'src/common/types/class-config.module.type';
-import {
-    HTTP_LOGGER_FEATURE_OPTIONS,
-    HTTP_LOGGER_ROOT_OPTIONS,
-} from './constants/http-logger.options.constants';
+import { HTTP_LOGGER_FEATURE_OPTIONS, HTTP_LOGGER_ROOT_OPTIONS } from './di/http-logger.providers';
 import { HttpLoggerService } from './http-logger.service';
 import { ConsoleLoggerService } from './services/console.logger.service';
 import { FileSystemLoggerService } from './services/file-system.logger.service';
 import { RequestLoggerService } from './services/request.logger.service';
-import { IHttpLoggerRootOptions } from './interfaces/http-logger.root.options.interface';
-import { IHttpLoggerFeatureOptions } from './interfaces/http-logger.feature.options.interface';
-import { IHttpLoggerOptionsFactory } from './interfaces/http-logger.options.factory.interface';
+import { IHttpLoggerRootOptions } from './config/http-logger-root.options';
+import { IHttpLoggerFeatureOptions } from './config/http-logger-feature.options';
+import { IHttpLoggerOptionsFactory } from './config/http-logger-factory.options';
 
 @Module({})
 export class HttpLoggerModule {
