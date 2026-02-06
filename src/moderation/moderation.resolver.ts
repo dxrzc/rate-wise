@@ -5,8 +5,8 @@ import { ModerationService } from './moderation.service';
 import { RequireAccountStatus } from 'src/common/decorators/min-account-status.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
-import { suspendAccountDocs } from './docs/suspendAccount.docs';
-import { reactivateAccountDocs } from './docs/reactivateAccount.docs';
+import { suspendAccountDocs } from './graphql/docs/suspendAccount.docs';
+import { reactivateAccountDocs } from './graphql/docs/reactivateAccount.docs';
 
 @Resolver()
 @Roles(UserRole.MODERATOR)
