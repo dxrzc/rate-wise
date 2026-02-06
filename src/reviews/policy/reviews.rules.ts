@@ -1,4 +1,4 @@
-export const REVIEWS_LIMITS = {
+export const REVIEWS_RULES = {
     CONTENT: {
         MIN: 10,
         MAX: 2000,

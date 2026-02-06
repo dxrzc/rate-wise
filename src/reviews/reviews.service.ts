@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateReviewInput } from './dtos/create-review.input';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { EntityManager, In, Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
@@ -13,10 +12,11 @@ import { REVIEW_MESSAGES } from './messages/reviews.messages';
 import { validUUID } from 'src/common/utils/valid-uuid.util';
 import { VoteAction } from 'src/votes/enum/vote.enum';
 import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
-import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
+import { ReviewFiltersArgs } from './graphql/args/review-filters.args';
+import { CreateReviewInput } from './graphql/inputs/create-review.input';
 
 @Injectable()
 export class ReviewService {

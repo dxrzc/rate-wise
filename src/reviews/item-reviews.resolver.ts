@@ -1,7 +1,7 @@
 import { Args, Float, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { ItemModel } from 'src/items/graphql/models/item.model';
-import { ReviewPaginationModel } from './models/pagination.model';
+import { ReviewPaginationModel } from './graphql/models/pagination.model';
 import { ReviewService } from './reviews.service';
 
 @Resolver(() => ItemModel)

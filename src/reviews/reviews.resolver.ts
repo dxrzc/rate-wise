@@ -4,15 +4,15 @@ import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decor
 import { RequireAccountStatus } from 'src/common/decorators/min-account-status.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { CreateReviewInput } from './dtos/create-review.input';
-import { ReviewModel } from './models/review.model';
+import { ReviewModel } from './graphql/models/review.model';
 import { Public } from 'src/common/decorators/public.decorator';
-import { ReviewPaginationModel } from './models/pagination.model';
-import { createReviewDocs } from './docs/createReview.docs';
+import { ReviewPaginationModel } from './graphql/models/pagination.model';
+import { createReviewDocs } from './graphql/docs/createReview.docs';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { ReviewFiltersArgs } from './dtos/args/review-filters.args';
-import { filterReviewsDocs } from './docs/filterReviews.docs';
+import { filterReviewsDocs } from './graphql/docs/filterReviews.docs';
+import { CreateReviewInput } from './graphql/inputs/create-review.input';
+import { ReviewFiltersArgs } from './graphql/args/review-filters.args';
 
 @Resolver(() => ReviewModel)
 export class ReviewResolver {
