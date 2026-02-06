@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
-import { ITEMS_LIMITS } from 'src/items/constants/items.constants';
+import { ITEM_RULES } from 'src/items/policy/items.rules';
 
 @Injectable()
 export class ItemsSeedService {
@@ -13,7 +13,7 @@ export class ItemsSeedService {
         ];
         const randomFn = options[Math.floor(Math.random() * options.length)];
         const randomTitle = randomFn() + ' ' + Math.floor(Math.random() * 1000) + ' ' + randomFn();
-        return randomTitle.slice(0, ITEMS_LIMITS.TITLE.MAX).trim();
+        return randomTitle.slice(0, ITEM_RULES.TITLE.MAX).trim();
     }
 
     get description(): string {

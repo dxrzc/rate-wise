@@ -1,4 +1,4 @@
-export const ITEMS_LIMITS = {
+export const ITEM_RULES = {
     TITLE: {
         MIN: 5,
         MAX: 40,

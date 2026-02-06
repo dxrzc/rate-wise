@@ -6,14 +6,14 @@ import { RequireAccountStatus } from 'src/common/decorators/min-account-status.d
 import { Public } from 'src/common/decorators/public.decorator';
 import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
-import { CreateItemInput } from './dtos/create-item.input';
+import { CreateItemInput } from './graphql/inputs/create-item.input';
 import { ItemsService } from './items.service';
-import { ItemModel } from './models/item.model';
-import { ItemPaginationModel } from './models/pagination.model';
-import { createItemDocs } from './docs/createItem.docs';
-import { findItemByIdDocs } from './docs/findItemById.docs';
-import { filterItemsDocs } from './docs/filterItems.docs';
-import { ItemFiltersArgs } from './dtos/args/item-filters.args';
+import { ItemModel } from './graphql/models/item.model';
+import { ItemPaginationModel } from './graphql/models/pagination.model';
+import { createItemDocs } from './graphql/docs/createItem.docs';
+import { findItemByIdDocs } from './graphql/docs/findItemById.docs';
+import { filterItemsDocs } from './graphql/docs/filterItems.docs';
+import { ItemFiltersArgs } from './graphql/args/item-filters.args';
 
 @Resolver(() => ItemModel)
 export class ItemsResolver {

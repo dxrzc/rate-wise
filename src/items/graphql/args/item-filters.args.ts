@@ -2,7 +2,7 @@ import { ArgsType, Field, ID } from '@nestjs/graphql';
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { trimAndLowercase } from 'src/common/utils/trim-and-lowercase.util';
-import { ITEMS_LIMITS } from '../../constants/items.constants';
+import { ITEM_RULES } from '../../policy/items.rules';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
 
 @ArgsType()
@@ -14,23 +14,23 @@ export class ItemFiltersArgs extends PaginationArgs {
 
     @IsOptional()
     @IsString()
-    @MinLength(ITEMS_LIMITS.CATEGORY.MIN)
-    @MaxLength(ITEMS_LIMITS.CATEGORY.MAX)
+    @MinLength(ITEM_RULES.CATEGORY.MIN)
+    @MaxLength(ITEM_RULES.CATEGORY.MAX)
     @Transform(trimAndLowercase)
     @Field(() => String, {
         nullable: true,
-        description: `Filter items by category. Minimum length: ${ITEMS_LIMITS.CATEGORY.MIN}, Maximum length: ${ITEMS_LIMITS.CATEGORY.MAX}.`,
+        description: `Filter items by category. Minimum length: ${ITEM_RULES.CATEGORY.MIN}, Maximum length: ${ITEM_RULES.CATEGORY.MAX}.`,
     })
     category?: string;
 
     @IsOptional()
     @IsString()
-    @MinLength(ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH)
-    @MaxLength(ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH)
+    @MinLength(ITEM_RULES.TAGS.TAG_MIN_LENGTH)
+    @MaxLength(ITEM_RULES.TAGS.TAG_MAX_LENGTH)
     @Transform(trimAndLowercase)
     @Field(() => String, {
         nullable: true,
-        description: `Filter items by tag. Minimum length: ${ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH}, Maximum length: ${ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH}.`,
+        description: `Filter items by tag. Minimum length: ${ITEM_RULES.TAGS.TAG_MIN_LENGTH}, Maximum length: ${ITEM_RULES.TAGS.TAG_MAX_LENGTH}.`,
     })
     tag?: string;
 }

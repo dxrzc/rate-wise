@@ -2,20 +2,20 @@ import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common
 import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateItemInput } from './dtos/create-item.input';
+import { CreateItemInput } from './graphql/inputs/create-item.input';
 import { validUUID } from 'src/common/utils/valid-uuid.util';
 import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { ITEMS_MESSAGES } from './messages/items.messages';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
-import { ItemModel } from './models/item.model';
+import { ItemModel } from './graphql/models/item.model';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createItemCacheKey } from './cache/create-cache-key';
-import { deserializeItem } from './functions/deserialize-item.entity';
+import { deserializeItem } from './cache/deserialize-item-entity';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { UsersService } from 'src/users/users.service';
-import { ItemFiltersArgs } from './dtos/args/item-filters.args';
+import { ItemFiltersArgs } from './graphql/args/item-filters.args';
 import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
 
 @Injectable()

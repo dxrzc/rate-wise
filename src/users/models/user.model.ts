@@ -1,7 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { AccountModel } from 'src/auth/graphql/models/account.model';
-import { ItemModel } from 'src/items/models/item.model';
-import { ItemPaginationModel } from 'src/items/models/pagination.model';
+import { ItemModel } from 'src/items/graphql/models/item.model';
+import { ItemPaginationModel } from 'src/items/graphql/models/pagination.model';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 
 @ObjectType({
