@@ -1,9 +1,9 @@
 import { HTTP_LOGGER_FEATURE_OPTIONS } from './di/http-logger.providers';
 import { IRestRequestLog } from './interfaces/rest-request-log.interface';
 import { Inject, Injectable } from '@nestjs/common';
-import { ConsoleLoggerService } from './services/console.logger.service';
-import { FileSystemLoggerService } from './services/file-system.logger.service';
-import { RequestLoggerService } from './services/request.logger.service';
+import { ConsoleLoggerService } from './loggers/console.logger';
+import { FileSystemLoggerService } from './loggers/file-system.logger';
+import { RequestLoggerService } from './loggers/request.logger';
 import { IHttpLoggerFeatureOptions } from './config/http-logger-feature.options';
 import { IGqlRequestLog } from './interfaces/gql-request-log.interface';
 
