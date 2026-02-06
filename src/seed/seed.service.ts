@@ -2,19 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { UserSeedService } from './services/user-seed.service';
+import { UserDataGenerator } from './generators/user-data.generator';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { getRandomUserRoles } from './functions/get-random-user-roles';
-import { getRandomAccountStatus } from './functions/get-random-account-status';
 import { Item } from 'src/items/entities/item.entity';
-import { ItemsSeedService } from './services/items-seed.service';
+import { ItemDataGenerator } from './generators/item-data.generator';
 import { Review } from 'src/reviews/entities/review.entity';
-import { ReviewSeedService } from './services/reviews-seed.service';
+import { ReviewDataGenerator } from './generators/review-data.generator';
 import { VoteAction } from 'src/votes/enum/vote.enum';
 import { AdminConfigService } from 'src/config/services/admin.config.service';
 import { Vote } from 'src/votes/entities/vote.entity';
 import { ReviewService } from 'src/reviews/reviews.service';
-import { SEED_CONFIG } from './constants/seed.config.constant';
+import { SEED_RULES } from './policy/seed.rules';
 
 @Injectable()
 export class SeedService {
@@ -27,9 +25,9 @@ export class SeedService {
         private readonly reviewRepository: Repository<Review>,
         @InjectRepository(Vote)
         private readonly voteRepository: Repository<Vote>,
-        private readonly usersSeed: UserSeedService,
-        private readonly itemsSeed: ItemsSeedService,
-        private readonly reviewsSeed: ReviewSeedService,
+        private readonly usersSeed: UserDataGenerator,
+        private readonly itemsSeed: ItemDataGenerator,
+        private readonly reviewsSeed: ReviewDataGenerator,
         private readonly logger: HttpLoggerService,
         private readonly adminConfigService: AdminConfigService,
         private readonly reviewService: ReviewService,
@@ -73,8 +71,8 @@ export class SeedService {
 
     async runSeed(): Promise<void> {
         await this.cleanDb();
-        await this.createUsers(SEED_CONFIG.USERS);
-        await this.createItems(SEED_CONFIG.ITEMS_PER_USER);
+        await this.createUsers(SEED_RULES.USERS);
+        await this.createItems(SEED_RULES.ITEMS_PER_USER);
         await this.createReviews();
         await this.createVotes();
         this.logger.debug('Database seeding completed');
@@ -82,11 +80,7 @@ export class SeedService {
 
     private async createUsers(entries: number): Promise<void> {
         const users = Array.from({ length: entries }, () =>
-            this.userRepository.create({
-                ...this.usersSeed.user,
-                roles: getRandomUserRoles(),
-                status: getRandomAccountStatus(),
-            }),
+            this.userRepository.create({ ...this.usersSeed.user }),
         );
         await this.userRepository.insert(users);
         this.logger.debug(`${entries} users seeded`);
@@ -114,7 +108,7 @@ export class SeedService {
             const eligibleUsers = usersIds.filter((u) => u !== createdBy);
             const reviewers = eligibleUsers
                 .sort(() => 0.5 - Math.random())
-                .slice(0, SEED_CONFIG.MAX_REVIEWS_PER_ITEM);
+                .slice(0, SEED_RULES.MAX_REVIEWS_PER_ITEM);
             for (const userId of reviewers) {
                 reviews.push(
                     this.reviewRepository.create({
@@ -139,7 +133,7 @@ export class SeedService {
         for (const reviewId of reviewsIds) {
             const voters = usersIds
                 .sort(() => 0.5 - Math.random())
-                .slice(0, SEED_CONFIG.MAX_VOTES_PER_REVIEW);
+                .slice(0, SEED_RULES.MAX_VOTES_PER_REVIEW);
             for (const userId of voters) {
                 votes.push(
                     this.voteRepository.create({

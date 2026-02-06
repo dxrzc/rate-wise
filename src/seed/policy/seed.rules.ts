@@ -1,4 +1,4 @@
-export const SEED_CONFIG = {
+export const SEED_RULES = {
     USERS: 8,
     ITEMS_PER_USER: 2,
     MAX_REVIEWS_PER_ITEM: 5,

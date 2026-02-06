@@ -3,11 +3,11 @@ import { SeedService } from './seed.service';
 import { SeedResolver } from './seed.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { UserSeedService } from './services/user-seed.service';
+import { UserDataGenerator } from './generators/user-data.generator';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
 import { Item } from 'src/items/entities/item.entity';
-import { ItemsSeedService } from './services/items-seed.service';
-import { ReviewSeedService } from './services/reviews-seed.service';
+import { ItemDataGenerator } from './generators/item-data.generator';
+import { ReviewDataGenerator } from './generators/review-data.generator';
 import { Review } from 'src/reviews/entities/review.entity';
 import { Vote } from 'src/votes/entities/vote.entity';
 import { ReviewsModule } from 'src/reviews/reviews.module';
@@ -18,6 +18,12 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
         HttpLoggerModule.forFeature({ context: SeedService.name }),
         ReviewsModule,
     ],
-    providers: [SeedResolver, SeedService, UserSeedService, ItemsSeedService, ReviewSeedService],
+    providers: [
+        SeedResolver,
+        SeedService,
+        UserDataGenerator,
+        ItemDataGenerator,
+        ReviewDataGenerator,
+    ],
 })
 export class SeedModule {}

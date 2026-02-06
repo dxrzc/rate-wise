@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ITEM_RULES } from 'src/items/policy/items.rules';
 
 @Injectable()
-export class ItemsSeedService {
+export class ItemDataGenerator {
     get title(): string {
         const options = [
             () => faker.string.alpha({ length: { max: 10, min: 3 } }),

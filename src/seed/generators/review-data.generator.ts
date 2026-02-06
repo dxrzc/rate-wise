@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-export class ReviewSeedService {
+export class ReviewDataGenerator {
     get content(): string {
         return faker.lorem.paragraphs(2);
     }
