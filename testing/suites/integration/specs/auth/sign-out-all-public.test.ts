@@ -11,7 +11,6 @@ import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disab
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
 import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
 import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
@@ -20,6 +19,7 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { createSessionKey } from 'src/sessions/keys/create-session-key';
 import { createBlacklistTokenKey } from 'src/tokens/keys/create-blacklist-token-key';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 
 const signOutAllUrl = testKit.endpointsREST.signOutAll;
 

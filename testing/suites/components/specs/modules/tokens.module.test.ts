@@ -10,7 +10,7 @@ import {
 } from 'src/tokens/errors/invalid-token.error';
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { TOKENS_REDIS_CONNECTION } from 'src/tokens/di/tokens.providers';
 
 describe('Tokens Service ', () => {
