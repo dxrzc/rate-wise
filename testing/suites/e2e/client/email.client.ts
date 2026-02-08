@@ -1,4 +1,4 @@
-import { EmailPaths } from '@e2e/enum/email-paths.enum';
+import { EmailPaths } from '@e2e/enums/email-paths.enum';
 import axios, { AxiosInstance } from 'axios';
 import * as cheerio from 'cheerio';
 

@@ -3,10 +3,10 @@ import { createAccount } from '@integration/utils/create-account.util';
 import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { ITEMS_LIMITS } from 'src/items/constants/items.constants';
 import { Item } from 'src/items/entities/item.entity';
+import { ITEM_RULES } from 'src/items/policy/items.rules';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 
@@ -302,7 +302,7 @@ describe('Gql - filterItems', () => {
 
     describe('Invalid category length', () => {
         test('return bad request code and invalid input error message', async () => {
-            const invalidCategory = faker.string.alpha({ length: ITEMS_LIMITS.CATEGORY.MAX + 1 });
+            const invalidCategory = faker.string.alpha({ length: ITEM_RULES.CATEGORY.MAX + 1 });
             const response = await testKit.gqlClient.send({
                 query: `query FilterItems($limit: Int!, $category: String) {
                           filterItems(limit: $limit, category: $category) {
@@ -324,7 +324,7 @@ describe('Gql - filterItems', () => {
 
     describe('Invalid tag length', () => {
         test('return bad request code and invalid input error message', async () => {
-            const invalidTag = faker.string.alpha({ length: ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH + 1 });
+            const invalidTag = faker.string.alpha({ length: ITEM_RULES.TAGS.TAG_MAX_LENGTH + 1 });
             const response = await testKit.gqlClient.send({
                 query: `query FilterItems($limit: Int!, $tag: String) {
                           filterItems(limit: $limit, tag: $tag) {

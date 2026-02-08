@@ -9,17 +9,17 @@ import { HttpStatus } from '@nestjs/common';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
-import { sessionKey } from 'src/sessions/functions/session-key';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
-import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
+import { createSessionKey } from 'src/sessions/keys/create-session-key';
+import { createBlacklistTokenKey } from 'src/tokens/keys/create-blacklist-token-key';
 
 const signOutAllUrl = testKit.endpointsREST.signOutAll;
 
@@ -63,7 +63,7 @@ describe('GET sign-out-all (public)', () => {
                 { metadata: true },
             );
             await testKit.restClient.get(`${signOutAllUrl}?token=${token}`).expect(status2xx);
-            const redisKey = blacklistTokenKey(jti);
+            const redisKey = createBlacklistTokenKey(jti);
             const tokenInRedis = await testKit.tokensRedisClient.get(redisKey);
             expect(tokenInRedis).not.toBeNull();
         });
@@ -71,7 +71,7 @@ describe('GET sign-out-all (public)', () => {
         test('delete user-sessions redis set', async () => {
             const { id } = await createAccount();
             // set exists
-            const redisKey = userSessionsSetKey(id);
+            const redisKey = createUserSessionsSetKey(id);
             await expect(testKit.sessionsRedisClient.exists(redisKey)).resolves.toBeTruthy();
             // sign-out-all
             const token = await testKit.signOutAllToken.generate({ id });
@@ -108,8 +108,8 @@ describe('GET sign-out-all (public)', () => {
                 .expect(success);
             const sess1ID = getSidFromCookie(sess1Cookie);
             const sess2ID = getSidFromCookie(getSessionCookie(signInRes));
-            const relation1Key = userAndSessionRelationKey(sess1ID);
-            const relation2Key = userAndSessionRelationKey(sess2ID);
+            const relation1Key = createSessionAndUserMappingKey(sess1ID);
+            const relation2Key = createSessionAndUserMappingKey(sess2ID);
             // relations exist in redis
             await expect(testKit.sessionsRedisClient.get(relation1Key)).resolves.not.toBeNull();
             await expect(testKit.sessionsRedisClient.get(relation2Key)).resolves.not.toBeNull();
@@ -178,7 +178,7 @@ describe('GET sign-out-all (public)', () => {
         test('return too many requests code and too many requests error message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
-            const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                 testKit.restClient
                     .get(`${signOutAllUrl}?token=${invalidToken}`)
                     .set('X-Forwarded-For', sameIp),
@@ -204,9 +204,9 @@ describe('GET sign-out-all (public)', () => {
             expect(redisMock).toHaveBeenCalledTimes(1);
             // session is not deleted
             const sid = getSidFromCookie(sessionCookie);
-            const indexKey = userSessionsSetKey(id);
-            const relationKey = userAndSessionRelationKey(sid);
-            const sessKey = sessionKey(sid);
+            const indexKey = createUserSessionsSetKey(id);
+            const relationKey = createSessionAndUserMappingKey(sid);
+            const sessKey = createSessionKey(sid);
             const inIndex = await testKit.sessionsRedisClient.setIsMember(indexKey, sid);
             const relation = await testKit.sessionsRedisClient.get(relationKey);
             const session = await testKit.sessionsRedisClient.get(sessKey);

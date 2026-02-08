@@ -1,5 +1,5 @@
-import { IHttpLoggerOptionsFactory } from 'src/http-logger/interfaces/http-logger.options.factory.interface';
-import { IHttpLoggerRootOptions } from 'src/http-logger/interfaces/http-logger.root.options.interface';
+import { IHttpLoggerOptionsFactory } from 'src/http-logger/config/http-logger-factory.options';
+import { IHttpLoggerRootOptions } from 'src/http-logger/config/http-logger-root.options';
 
 export class SilentHttpLogger implements IHttpLoggerOptionsFactory {
     create(): IHttpLoggerRootOptions {

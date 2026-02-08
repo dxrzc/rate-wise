@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { createBlacklistTokenKey } from 'src/tokens/keys/create-blacklist-token-key';
 import { TokensModule } from 'src/tokens/tokens.module';
 import { TokensService } from 'src/tokens/tokens.service';
 import {
@@ -11,7 +11,7 @@ import {
 import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
 import { JwtPurpose } from 'src/tokens/enums/jwt-purpose.enum';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { TOKENS_REDIS_CONNECTION } from 'src/tokens/constants/tokens.constants';
+import { TOKENS_REDIS_CONNECTION } from 'src/tokens/di/tokens.providers';
 
 describe('Tokens Service ', () => {
     // allow any data when generating token
@@ -157,7 +157,7 @@ describe('Tokens Service ', () => {
                 email: '',
             });
             const payload = await tokensService.consume(token);
-            const jtiInRedis = await redisClient.get(blacklistTokenKey(payload.jti));
+            const jtiInRedis = await redisClient.get(createBlacklistTokenKey(payload.jti));
             expect(jtiInRedis).toBe(1);
         });
     });

@@ -6,15 +6,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import {
-    SESS_REDIS_PREFIX,
-    SESSIONS_REDIS_CONNECTION,
-} from 'src/sessions/constants/sessions.constants';
-import { sessionKey } from 'src/sessions/functions/session-key';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { SessionsService } from 'src/sessions/sessions.service';
+import { createSessionKey } from 'src/sessions/keys/create-session-key';
+import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/di/sessions.providers';
 
 type MockRequestType = {
     sessionID?: string; // always generate your own sessionID
@@ -87,10 +84,10 @@ describe('Sessions Service ', () => {
                 mockRequest.sessionID = sessId;
                 await sessionsService.create(<any>mockRequest, userId);
                 // delete session
-                const sessKey = sessionKey(sessId);
+                const sessKey = createSessionKey(sessId);
                 await redisClient.delete(sessKey);
                 // delete user-session relation
-                const relationKey = userAndSessionRelationKey(sessId);
+                const relationKey = createSessionAndUserMappingKey(sessId);
                 await redisClient.delete(relationKey);
                 // still exists in index
                 const isFullyCleaned = await sessionIsFullyCleaned({
@@ -110,10 +107,10 @@ describe('Sessions Service ', () => {
                 mockRequest.sessionID = sessId;
                 await sessionsService.create(<any>mockRequest, userId);
                 // delete session
-                const sessKey = sessionKey(sessId);
+                const sessKey = createSessionKey(sessId);
                 await redisClient.delete(sessKey);
                 // delete from index
-                const indexKey = userSessionsSetKey(userId);
+                const indexKey = createUserSessionsSetKey(userId);
                 await redisClient.setRem(indexKey, sessId);
                 // still exists relation
                 const isFullyCleaned = await sessionIsFullyCleaned({
@@ -133,10 +130,10 @@ describe('Sessions Service ', () => {
                 mockRequest.sessionID = sessId;
                 await sessionsService.create(<any>mockRequest, userId);
                 // delete from index
-                const indexKey = userSessionsSetKey(userId);
+                const indexKey = createUserSessionsSetKey(userId);
                 await redisClient.setRem(indexKey, sessId);
                 // delete user-session relation
-                const relationKey = userAndSessionRelationKey(sessId);
+                const relationKey = createSessionAndUserMappingKey(sessId);
                 await redisClient.delete(relationKey);
                 // still exists session
                 const isFullyCleaned = await sessionIsFullyCleaned({
@@ -158,13 +155,13 @@ describe('Sessions Service ', () => {
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
                         // delete session
-                        const sessKey = sessionKey(sessId);
+                        const sessKey = createSessionKey(sessId);
                         await redisClient.delete(sessKey);
                         // delete from index
-                        const indexKey = userSessionsSetKey(userId);
+                        const indexKey = createUserSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
                         // delete user-session relation
-                        const relationKey = userAndSessionRelationKey(sessId);
+                        const relationKey = createSessionAndUserMappingKey(sessId);
                         await redisClient.delete(relationKey);
                         // check if fully cleaned
                         const isFullyCleaned = await sessionIsFullyCleaned({
@@ -206,7 +203,7 @@ describe('Sessions Service ', () => {
             // cleanup
             await sessionsService.trySessionCleanup(<any>mockRequest);
             // session deleted
-            const sess = await redisClient.get(sessionKey(sessId));
+            const sess = await redisClient.get(createSessionKey(sessId));
             expect(sess).toBeNull();
         });
 
@@ -219,7 +216,7 @@ describe('Sessions Service ', () => {
             // cleanup
             await sessionsService.trySessionCleanup(<any>mockRequest);
             // session not in users's sessions index
-            const indexKey = userSessionsSetKey(userId);
+            const indexKey = createUserSessionsSetKey(userId);
             const inSet = await redisClient.setIsMember(indexKey, sessId);
             expect(inSet).toBeFalsy();
         });
@@ -233,7 +230,7 @@ describe('Sessions Service ', () => {
             // cleanup
             await sessionsService.trySessionCleanup(<any>mockRequest);
             // relation deleted
-            const relationKey = userAndSessionRelationKey(sessId);
+            const relationKey = createSessionAndUserMappingKey(sessId);
             const relation = await redisClient.get(relationKey);
             expect(relation).toBeNull();
         });
@@ -258,7 +255,7 @@ describe('Sessions Service ', () => {
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
                         // delete session from index
-                        const indexKey = userSessionsSetKey(userId);
+                        const indexKey = createUserSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
                         // check if dangling
                         const isDangling = await sessionsService.isDangling({ userId, sessId });
@@ -274,7 +271,7 @@ describe('Sessions Service ', () => {
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
                         // delete index
-                        const indexKey = userSessionsSetKey(userId);
+                        const indexKey = createUserSessionsSetKey(userId);
                         await redisClient.delete(indexKey);
                         // check if dangling
                         const isDangling = await sessionsService.isDangling({ userId, sessId });
@@ -292,7 +289,7 @@ describe('Sessions Service ', () => {
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
                         // delete user-session relation
-                        const relationKey = userAndSessionRelationKey(sessId);
+                        const relationKey = createSessionAndUserMappingKey(sessId);
                         await redisClient.delete(relationKey);
                         // check if dangling
                         const isDangling = await sessionsService.isDangling({ userId, sessId });
@@ -310,10 +307,10 @@ describe('Sessions Service ', () => {
                         mockRequest.sessionID = sessId;
                         await sessionsService.create(<any>mockRequest, userId);
                         // delete user-session relation
-                        const relationKey = userAndSessionRelationKey(sessId);
+                        const relationKey = createSessionAndUserMappingKey(sessId);
                         await redisClient.delete(relationKey);
                         // delete session from index
-                        const indexKey = userSessionsSetKey(userId);
+                        const indexKey = createUserSessionsSetKey(userId);
                         await redisClient.setRem(indexKey, sessId);
                         // check if dangling
                         const isDangling = await sessionsService.isDangling({ userId, sessId });
@@ -353,7 +350,7 @@ describe('Sessions Service ', () => {
             await sessionsService.create(<any>mockRequest, userId);
 
             // user-sessions index
-            const key = userSessionsSetKey(userId);
+            const key = createUserSessionsSetKey(userId);
             const sessSet = await redisClient.setMembers(key);
             expect(sessSet.length).toBe(1);
             expect(sessSet[0]).toBe(mockRequest.sessionID);
@@ -367,7 +364,7 @@ describe('Sessions Service ', () => {
             await sessionsService.create(<any>mockRequest, userId);
 
             // session-user relation
-            const key = userAndSessionRelationKey(sid);
+            const key = createSessionAndUserMappingKey(sid);
             const sessionOwner = await redisClient.get(key);
             expect(sessionOwner).toBe(userId);
         });
@@ -406,7 +403,7 @@ describe('Sessions Service ', () => {
             // destroy
             await sessionsService.destroy(<any>mockRequest);
             // session not in users's sessions index
-            const indexKey = userSessionsSetKey(userId);
+            const indexKey = createUserSessionsSetKey(userId);
             const inSet = await redisClient.setIsMember(indexKey, sessId);
             expect(inSet).toBeFalsy();
         });
@@ -420,7 +417,7 @@ describe('Sessions Service ', () => {
             // destroy
             await sessionsService.destroy(<any>mockRequest);
             // relation deleted
-            const relationKey = userAndSessionRelationKey(sessId);
+            const relationKey = createSessionAndUserMappingKey(sessId);
             const relation = await redisClient.get(relationKey);
             expect(relation).toBeNull();
         });
@@ -446,22 +443,26 @@ describe('Sessions Service ', () => {
             await sessionsService.create(<any>mockRequest, userId);
 
             // sessions created
-            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess1Id}`)).resolves.not.toBeNull();
-            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess2Id}`)).resolves.not.toBeNull();
+            await expect(redisClient.get(createSessionKey(sess1Id))).resolves.not.toBeNull();
+            await expect(redisClient.get(createSessionKey(sess2Id))).resolves.not.toBeNull();
 
             // sessions deleted
             await sessionsService.destroyAll(<any>mockRequest);
-            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess1Id}`)).resolves.toBeNull();
-            await expect(redisClient.get(`${SESS_REDIS_PREFIX}${sess2Id}`)).resolves.toBeNull();
+            await expect(redisClient.get(createSessionKey(sess1Id))).resolves.toBeNull();
+            await expect(redisClient.get(createSessionKey(sess2Id))).resolves.toBeNull();
 
             // index deleted
-            const indexKey = userSessionsSetKey(userId);
+            const indexKey = createUserSessionsSetKey(userId);
             const index = await redisClient.setMembers(indexKey);
             expect(index.length).toBe(0);
 
             // relations deleted
-            await expect(redisClient.get(userAndSessionRelationKey(sess1Id))).resolves.toBeNull();
-            await expect(redisClient.get(userAndSessionRelationKey(sess2Id))).resolves.toBeNull();
+            await expect(
+                redisClient.get(createSessionAndUserMappingKey(sess1Id)),
+            ).resolves.toBeNull();
+            await expect(
+                redisClient.get(createSessionAndUserMappingKey(sess2Id)),
+            ).resolves.toBeNull();
         });
 
         test('return the number of the deleted sessions', async () => {

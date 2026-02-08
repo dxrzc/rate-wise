@@ -5,8 +5,8 @@ import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { requestSignOutAll } from '@testing/tools/gql-operations/auth/request-sign-out-all.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 
@@ -88,7 +88,7 @@ describe('Gql - requestSignOutAll (public)', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
-                Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+                Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                     testKit.gqlClient
                         .set('X-Forwarded-For', ip)
                         .send(requestSignOutAll({ args: { email: testKit.userSeed.email } })),

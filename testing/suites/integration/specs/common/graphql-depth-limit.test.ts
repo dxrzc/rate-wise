@@ -1,5 +1,5 @@
 import { testKit } from '@integration/utils/test-kit.util';
-import { GRAPHQL_CONSTANTS } from 'src/common/graphql/constants/graphql.constants';
+import { GRAPHQL_RULES } from 'src/common/graphql/graphql.rules';
 
 describe('Gql query depth', () => {
     test('rejects queries exceeding max depth', async () => {
@@ -43,6 +43,6 @@ describe('Gql query depth', () => {
         */
         const errorMessage = res.body.errors[0].message;
         expect(errorMessage).toContain('depth');
-        expect(errorMessage).toContain(String(GRAPHQL_CONSTANTS.depthLimit));
+        expect(errorMessage).toContain(String(GRAPHQL_RULES.depthLimit));
     });
 });

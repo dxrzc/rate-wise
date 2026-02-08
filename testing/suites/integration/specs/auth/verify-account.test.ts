@@ -7,13 +7,13 @@ import { HttpStatus } from '@nestjs/common';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
 import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
+import { createBlacklistTokenKey } from 'src/tokens/keys/create-blacklist-token-key';
 
 const verifyAccountUrl = testKit.endpointsREST.verifyAccount;
 
@@ -32,7 +32,7 @@ describe('GET verify account endpoint with token', () => {
             const { id } = await createAccount();
             const { token, jti } = await testKit.accVerifToken.generate({ id }, { metadata: true });
             const res = await testKit.restClient.get(`${verifyAccountUrl}?token=${token}`);
-            const redisKey = blacklistTokenKey(jti);
+            const redisKey = createBlacklistTokenKey(jti);
             const isBlacklisted = await testKit.tokensRedisClient.get(redisKey);
             expect(res.status).toBe(HttpStatus.OK);
             expect(isBlacklisted).toBe(1);
@@ -141,7 +141,7 @@ describe('GET verify account endpoint with token', () => {
         test('return too many requests status code and too many requests error message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
-            const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                 testKit.restClient
                     .get(`${verifyAccountUrl}?token=${invalidToken}`)
                     .set('X-Forwarded-For', sameIp),

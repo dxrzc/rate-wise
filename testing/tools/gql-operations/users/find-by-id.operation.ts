@@ -1,4 +1,4 @@
-import { UserModel } from 'src/users/models/user.model';
+import { UserModel } from 'src/users/graphql/models/user.model';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 

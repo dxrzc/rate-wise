@@ -4,7 +4,7 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { createItemCacheKey } from 'src/items/cache/create-cache-key';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 

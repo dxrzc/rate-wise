@@ -7,14 +7,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Writable } from '@testing/tools/types/writable.type';
 import { AccountStatusGuard } from 'src/auth/guards/account-status.guard';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import {
     ALL_ACCOUNT_STATUSES,
     RequireAccountStatus,
 } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { Code } from 'src/common/enum/code.enum';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';

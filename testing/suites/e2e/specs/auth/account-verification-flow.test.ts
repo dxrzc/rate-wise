@@ -1,10 +1,10 @@
-import { EmailPaths } from '@e2e/enum/email-paths.enum';
+import { EmailPaths } from '@e2e/enums/email-paths.enum';
 import { e2eKit } from '@e2e/utils/e2e-kit.util';
 import { requestAccountVerification } from '@testing/tools/gql-operations/auth/request-account-verification.operation';
 import { signUp } from '@testing/tools/gql-operations/auth/sign-up.operation';
 import { createItem } from '@testing/tools/gql-operations/items/create-item.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 
 describe('Account verification flow', () => {
     test('prevents item creations until email is verified, then allows them', async () => {

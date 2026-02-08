@@ -2,20 +2,20 @@ import { signOutAll } from '@testing/tools/gql-operations/auth/sign-out-all.oper
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { createAccount } from '@integration/utils/create-account.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 import { testKit } from '@integration/utils/test-kit.util';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { faker } from '@faker-js/faker/.';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { success } from '@integration/utils/no-errors.util';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { getSessionCookie } from '@integration/utils/get-session-cookie.util';
-import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { isSessionCookieCleared } from '@integration/utils/is-session-cookie-cleared.util';
 
 describe('GraphQL - signOutAll', () => {
@@ -76,7 +76,7 @@ describe('GraphQL - signOutAll', () => {
         test('delete user-sessions redis set', async () => {
             const { sessionCookie, password, id } = await createAccount();
             // set exists
-            const redisKey = userSessionsSetKey(id);
+            const redisKey = createUserSessionsSetKey(id);
             await expect(testKit.sessionsRedisClient.exists(redisKey)).resolves.toBeTruthy();
             // sign out all
             await testKit.gqlClient
@@ -95,8 +95,8 @@ describe('GraphQL - signOutAll', () => {
                 .expect(success);
             const sess1ID = getSidFromCookie(sess1Cookie);
             const sess2ID = getSidFromCookie(getSessionCookie(signInRes));
-            const relation1Key = userAndSessionRelationKey(sess1ID);
-            const relation2Key = userAndSessionRelationKey(sess2ID);
+            const relation1Key = createSessionAndUserMappingKey(sess1ID);
+            const relation2Key = createSessionAndUserMappingKey(sess2ID);
             // relations exist in redis
             await expect(testKit.sessionsRedisClient.get(relation1Key)).resolves.not.toBeNull();
             await expect(testKit.sessionsRedisClient.get(relation2Key)).resolves.not.toBeNull();
@@ -135,7 +135,7 @@ describe('GraphQL - signOutAll', () => {
     describe('Password too long', () => {
         test('return unauthorized code and invalid credentials error message', async () => {
             const longPassword = faker.internet.password({
-                length: AUTH_LIMITS.PASSWORD.MAX + 1,
+                length: AUTH_RULES.PASSWORD.MAX + 1,
             });
             const { sessionCookie } = await createAccount();
             const res = await testKit.gqlClient
@@ -158,7 +158,7 @@ describe('GraphQL - signOutAll', () => {
     describe('More than allowed attempts from same ip', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
-            const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                 testKit.gqlClient
                     .set('X-Forwarded-For', ip)
                     .send(signOutAll({ args: { password: testKit.userSeed.password } })),

@@ -4,7 +4,7 @@ import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
 import { signOutAll } from '@testing/tools/gql-operations/auth/sign-out-all.operation';
 import { createItem } from '@testing/tools/gql-operations/items/create-item.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 
 describe('Sign out all flow', () => {
     test('user can not access protected resources after signing out all', async () => {

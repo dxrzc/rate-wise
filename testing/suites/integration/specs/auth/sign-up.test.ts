@@ -5,14 +5,14 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signUp } from '@testing/tools/gql-operations/auth/sign-up.operation';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { HashingService } from 'src/common/services/hashing.service';
-import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
@@ -40,7 +40,7 @@ describe('GraphQL - signUp', () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
-            const key = userSessionsSetKey(res.body.data.signUp.id as string);
+            const key = createUserSessionsSetKey(res.body.data.signUp.id as string);
             const sessSet = await testKit.sessionsRedisClient.setMembers(key);
             expect(sessSet.length).toBe(1);
             expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
@@ -51,7 +51,7 @@ describe('GraphQL - signUp', () => {
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
             const sid = getSidFromCookie(getSessionCookie(res));
-            const redisKey = userAndSessionRelationKey(sid);
+            const redisKey = createSessionAndUserMappingKey(sid);
             const sessionOwner = await testKit.sessionsRedisClient.get(redisKey);
             expect(sessionOwner).toBe(res.body.data.signUp.id);
         });
@@ -159,7 +159,7 @@ describe('GraphQL - signUp', () => {
 
         describe('Username contains leading and trailing white spaces', () => {
             test('spaces are stripped before saving in database', async () => {
-                const name = `  ${faker.string.alpha({ length: AUTH_LIMITS.USERNAME.MIN })} `;
+                const name = `  ${faker.string.alpha({ length: AUTH_RULES.USERNAME.MIN })} `;
                 const res = await testKit.gqlClient
                     .send(
                         signUp({
@@ -203,7 +203,7 @@ describe('GraphQL - signUp', () => {
 
     describe('Password exceeds the max password length', () => {
         test('return bad request code and invalid input error message', async () => {
-            const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
+            const password = faker.internet.password({ length: AUTH_RULES.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signUp({
                     args: { ...testKit.userSeed.signUpInput, password },
@@ -260,7 +260,7 @@ describe('GraphQL - signUp', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
-            const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.CRITICAL.limit }, () =>
                 testKit.gqlClient
                     .set('X-Forwarded-For', ip)
                     .send(signUp({ args: userData, fields: ['id'] })),

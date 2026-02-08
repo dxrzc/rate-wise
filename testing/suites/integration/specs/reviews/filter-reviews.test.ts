@@ -5,7 +5,7 @@ import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { reviewData } from '@testing/tools/gql-operations/factory/models.data';
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { Review } from 'src/reviews/entities/review.entity';
 import { AccountStatus } from 'src/users/enums/account-status.enum';

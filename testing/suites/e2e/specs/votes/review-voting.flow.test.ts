@@ -4,9 +4,9 @@ import { createItem } from '@testing/tools/gql-operations/items/create-item.oper
 import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
 import { createReview } from '@testing/tools/gql-operations/reviews/create-review.operation';
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
-import { ReviewModel } from 'src/reviews/models/review.model';
+import { ReviewModel } from 'src/reviews/graphql/models/review.model';
 import { VoteAction } from 'src/votes/enum/vote.enum';
-import { VotePaginationModel } from 'src/votes/models/pagination.model';
+import { VotePaginationModel } from 'src/votes/graphql/models/pagination.model';
 
 describe('Review voting flow', () => {
     test('voting a review updates the review for the item', async () => {

@@ -17,11 +17,11 @@ import { createLightweightRedisContainer } from '@components/utils/create-lightw
 import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-cookie.util';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
@@ -146,7 +146,7 @@ describe('AuthGuard', () => {
                 const cookie = await generateFullSession(userId);
                 // delete from user's index
                 await sessionService['redisClient'].setRem(
-                    userSessionsSetKey(userId),
+                    createUserSessionsSetKey(userId),
                     extractSessionIdFromCookie(cookie),
                 );
                 // authentication attemp
@@ -164,7 +164,7 @@ describe('AuthGuard', () => {
                 const cookie = await generateFullSession(userId);
                 // delete user-session relation
                 const sessId = extractSessionIdFromCookie(cookie);
-                await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
+                await sessionService['redisClient'].delete(createSessionAndUserMappingKey(sessId));
                 // authentication attemp
                 await request(app.getHttpServer())
                     .post('/graphql')
@@ -186,7 +186,7 @@ describe('AuthGuard', () => {
                 const cookie = await generateFullSession(userId);
                 // delete user-session relation
                 const sessId = extractSessionIdFromCookie(cookie);
-                await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
+                await sessionService['redisClient'].delete(createSessionAndUserMappingKey(sessId));
                 // authentication attemp
                 const res = await request(app.getHttpServer())
                     .post('/graphql')
@@ -206,7 +206,9 @@ describe('AuthGuard', () => {
                     const cookie = await generateFullSession(userId);
                     // delete user-session relation
                     const sessId = extractSessionIdFromCookie(cookie);
-                    await sessionService['redisClient'].delete(userAndSessionRelationKey(sessId));
+                    await sessionService['redisClient'].delete(
+                        createSessionAndUserMappingKey(sessId),
+                    );
                     // mock redis delete method to produce an error
                     const redisDeleteMock = jest
                         .spyOn(RedisClientAdapter.prototype, 'delete')

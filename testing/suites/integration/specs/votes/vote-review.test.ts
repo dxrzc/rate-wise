@@ -4,7 +4,7 @@ import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';

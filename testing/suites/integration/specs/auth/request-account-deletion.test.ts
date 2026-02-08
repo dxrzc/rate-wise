@@ -5,8 +5,8 @@ import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { requestAccountDeletion } from '@testing/tools/gql-operations/auth/request-account-deletion.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
@@ -76,7 +76,7 @@ describe('GraphQL - requestAccountDeletion', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
-                Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+                Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                     testKit.gqlClient.set('X-Forwarded-For', ip).send(requestAccountDeletion()),
                 ),
             );

@@ -6,12 +6,12 @@ import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signOut } from '@testing/tools/gql-operations/auth/sign-out.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 
@@ -51,7 +51,7 @@ describe('GraphQL - signOut', () => {
         test('user-session relation record is removed from redis', async () => {
             const { sessionCookie } = await createAccount();
             const sid = getSidFromCookie(sessionCookie);
-            const relationKey = userAndSessionRelationKey(sid);
+            const relationKey = createSessionAndUserMappingKey(sid);
             // relation exists
             await expect(testKit.sessionsRedisClient.get(relationKey)).resolves.not.toBeNull();
             // sign out
@@ -63,7 +63,7 @@ describe('GraphQL - signOut', () => {
         test('session id is removed from user-sessions redis set', async () => {
             const { sessionCookie, id } = await createAccount();
             const sid = getSidFromCookie(sessionCookie);
-            const setKey = userSessionsSetKey(id);
+            const setKey = createUserSessionsSetKey(id);
             // sid in set
             await expect(
                 testKit.sessionsRedisClient.setIsMember(setKey, sid),
@@ -90,7 +90,7 @@ describe('GraphQL - signOut', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
-                Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
+                Array.from({ length: RATE_LIMIT_PROFILES.CRITICAL.limit }, () =>
                     testKit.gqlClient.set('X-Forwarded-For', ip).send(signOut()),
                 ),
             );

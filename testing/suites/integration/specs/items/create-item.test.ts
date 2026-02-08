@@ -4,7 +4,7 @@ import { testKit } from '@integration/utils/test-kit.util';
 import { createItem } from '@testing/tools/gql-operations/items/create-item.operation';
 import { createItem as createItemUtil } from '@integration/utils/create-item.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';

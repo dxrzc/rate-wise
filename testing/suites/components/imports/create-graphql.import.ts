@@ -1,7 +1,7 @@
 import { ApolloDriver } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import { GraphQLFormattedError } from 'graphql';
-import { handleGqlError } from 'src/common/functions/graphql/handle-gql-error';
+import { handleGqlError } from 'src/common/graphql/handle-gql-error';
 
 export function createGqlImport(customDataGetter?: () => object) {
     return [

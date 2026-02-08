@@ -5,7 +5,7 @@ import { testKit } from '@integration/utils/test-kit.util';
 import { createReview } from '@testing/tools/gql-operations/reviews/create-review.operation';
 import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { Item } from 'src/items/entities/item.entity';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';

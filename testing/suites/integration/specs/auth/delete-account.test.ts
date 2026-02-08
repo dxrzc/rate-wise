@@ -13,19 +13,19 @@ import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.ope
 import { voteReview } from '@testing/tools/gql-operations/votes/vote.operation';
 import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
-import { sessionKey } from 'src/sessions/functions/session-key';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
-import { blacklistTokenKey } from 'src/tokens/functions/blacklist-token-key';
+import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
 import { VoteAction } from 'src/votes/enum/vote.enum';
+import { createSessionKey } from 'src/sessions/keys/create-session-key';
+import { createBlacklistTokenKey } from 'src/tokens/keys/create-blacklist-token-key';
 
 const deleteAccUrl = testKit.endpointsREST.deleteAccount;
 
@@ -78,7 +78,7 @@ describe('GET delete account endpoint with token', () => {
                 { metadata: true },
             );
             await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
-            const redisKey = blacklistTokenKey(jti);
+            const redisKey = createBlacklistTokenKey(jti);
             const tokenInRedis = await testKit.tokensRedisClient.get(redisKey);
             expect(tokenInRedis).not.toBeNull();
         });
@@ -87,7 +87,7 @@ describe('GET delete account endpoint with token', () => {
             const { id } = await createAccount();
             const token = await testKit.accDeletionToken.generate({ id });
             // set exists
-            const redisKey = userSessionsSetKey(id);
+            const redisKey = createUserSessionsSetKey(id);
             await expect(testKit.sessionsRedisClient.exists(redisKey)).resolves.toBeTruthy();
             // delete user
             await testKit.restClient.get(`${deleteAccUrl}?token=${token}`).expect(status2xx);
@@ -123,8 +123,8 @@ describe('GET delete account endpoint with token', () => {
                 .expect(success);
             const sess1ID = getSidFromCookie(sess1Cookie);
             const sess2ID = getSidFromCookie(getSessionCookie(signInRes));
-            const relation1Key = userAndSessionRelationKey(sess1ID);
-            const relation2Key = userAndSessionRelationKey(sess2ID);
+            const relation1Key = createSessionAndUserMappingKey(sess1ID);
+            const relation2Key = createSessionAndUserMappingKey(sess2ID);
             // relations exist in redis
             await expect(testKit.sessionsRedisClient.get(relation1Key)).resolves.not.toBeNull();
             await expect(testKit.sessionsRedisClient.get(relation2Key)).resolves.not.toBeNull();
@@ -349,7 +349,7 @@ describe('GET delete account endpoint with token', () => {
         test('return too many requests status code and too many requests error message', async () => {
             const invalidToken = faker.string.uuid();
             const sameIp = faker.internet.ip();
-            const requests = Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                 testKit.restClient
                     .get(`${deleteAccUrl}?token=${invalidToken}`)
                     .set('X-Forwarded-For', sameIp),
@@ -391,9 +391,9 @@ describe('GET delete account endpoint with token', () => {
             expect(redisMock).toHaveBeenCalledTimes(1);
             // sessions still exist
             const sid = getSidFromCookie(sessionCookie);
-            const indexKey = userSessionsSetKey(id);
-            const relationKey = userAndSessionRelationKey(sid);
-            const sessKey = sessionKey(sid);
+            const indexKey = createUserSessionsSetKey(id);
+            const relationKey = createSessionAndUserMappingKey(sid);
+            const sessKey = createSessionKey(sid);
             const inIndex = await testKit.sessionsRedisClient.setIsMember(indexKey, sid);
             const relation = await testKit.sessionsRedisClient.get(relationKey);
             const session = await testKit.sessionsRedisClient.get(sessKey);

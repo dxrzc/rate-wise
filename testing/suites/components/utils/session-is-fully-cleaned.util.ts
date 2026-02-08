@@ -1,4 +1,4 @@
-import { ISessionDetails } from 'src/sessions/interfaces/session.details.interface';
+import { ISessionDetails } from 'src/sessions/interfaces/session-details.interface';
 import { SessionsService } from 'src/sessions/sessions.service';
 
 /**

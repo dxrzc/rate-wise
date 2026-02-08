@@ -4,10 +4,10 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
+import { UserModel } from 'src/users/graphql/models/user.model';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
-import { UserModel } from 'src/users/models/user.model';
 
 describe('Gql - findUserById', () => {
     describe('Invalid postgres id', () => {
