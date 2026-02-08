@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CommonModule } from 'src/common/common.module';
-import { HashingService } from 'src/auth/hashing/hashing.service';
+import { HashingService } from 'src/security/hashing.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { EmailsModule } from 'src/emails/emails.module';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
@@ -17,9 +17,11 @@ import {
 } from './di/auth.providers';
 import { AuthNotifications } from './notifications/auth.notifications';
 import { UserDeletionModule } from 'src/orchestrators/user-deletion/user-deletion.module';
+import { SecurityModule } from 'src/security/security.module';
 
 @Module({
     imports: [
+        SecurityModule,
         UsersModule,
         UserDeletionModule,
         CommonModule,
@@ -61,7 +63,6 @@ import { UserDeletionModule } from 'src/orchestrators/user-deletion/user-deletio
         }),
     ],
     controllers: [AuthController],
-    exports: [HashingService],
-    providers: [AuthResolver, AuthService, HashingService, AuthNotifications, HashingService],
+    providers: [AuthResolver, AuthService, HashingService, AuthNotifications],
 })
 export class AuthModule {}
