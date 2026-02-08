@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { HealthIndicatorService } from '@nestjs/terminus';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { SESSIONS_REDIS_CONNECTION } from 'src/sessions/di/sessions.providers';
 import { TOKENS_REDIS_CONNECTION } from 'src/tokens/di/tokens.providers';
 import {
