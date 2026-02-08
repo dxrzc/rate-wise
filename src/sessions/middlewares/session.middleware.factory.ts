@@ -7,7 +7,7 @@ import {
     SESSIONS_REDIS_CONNECTION,
     SESS_REDIS_PREFIX,
 } from '../di/sessions.providers';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 
 @Injectable()
 export class SessionMiddlewareFactory {

@@ -9,7 +9,7 @@ import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disab
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';

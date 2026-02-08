@@ -41,12 +41,12 @@ import { ModerationModule } from 'src/moderation/moderation.module';
 import { VotesModule } from 'src/votes/votes.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from 'src/health/health.module';
-import { RedisMonitoringModule } from 'src/redis-monitoring/redis-monitoring.module';
+import { RedisModule } from 'src/redis/redis.module';
 import {
     CACHE_REDIS_STORE,
     QUEUE_REDIS_CONNECTION,
     THROTTLER_REDIS_CONNECTION,
-} from 'src/redis-monitoring/di/redis-monitoring.providers';
+} from 'src/redis/di/redis-monitoring.providers';
 import KeyvRedis from '@keyv/redis';
 import Redis from 'ioredis';
 
@@ -75,7 +75,7 @@ import Redis from 'ioredis';
         EmailsModule,
         CacheModule.registerAsync({
             isGlobal: true,
-            imports: [RedisMonitoringModule],
+            imports: [RedisModule],
             inject: [ServerConfigService, CACHE_REDIS_STORE],
             useFactory: (serverConfig: ServerConfigService, cacheStore: KeyvRedis<unknown>) => ({
                 ttl: serverConfig.cacheTtlSeconds * 1000, // milliseconds
@@ -83,7 +83,7 @@ import Redis from 'ioredis';
             }),
         }),
         ThrottlerModule.forRootAsync({
-            imports: [RedisMonitoringModule],
+            imports: [RedisModule],
             inject: [THROTTLER_REDIS_CONNECTION],
             useFactory: (ioredisClient: Redis) => ({
                 // default policy, overridden by decorators
@@ -103,7 +103,7 @@ import Redis from 'ioredis';
             }),
         }),
         BullModule.forRootAsync({
-            imports: [RedisMonitoringModule],
+            imports: [RedisModule],
             inject: [QUEUE_REDIS_CONNECTION],
             useFactory: (connection: Redis) => ({ connection }),
         }),

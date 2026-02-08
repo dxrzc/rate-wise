@@ -6,9 +6,9 @@ import {
     SIGN_OUT_ALL_TOKEN,
 } from 'src/auth/di/auth.providers';
 import { AuthTokenService } from 'src/auth/types/auth-tokens-service.type';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { Item } from 'src/items/entities/item.entity';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { Review } from 'src/reviews/entities/review.entity';
 import { ItemDataGenerator } from 'src/seed/generators/item-data.generator';
 import { ReviewDataGenerator } from 'src/seed/generators/review-data.generator';

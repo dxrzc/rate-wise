@@ -5,7 +5,7 @@ import { User } from 'src/users/entities/user.entity';
 import { UserDataGenerator } from 'src/seed/generators/user-data.generator';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { Test } from 'supertest';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { RestClient } from './rest-client.interface';
 import { Cache } from '@nestjs/cache-manager';
 import { AuthTokenService } from 'src/auth/types/auth-tokens-service.type';

@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtPayload } from './types/jwt-payload.type';
 import { createBlacklistTokenKey } from './keys/create-blacklist-token-key';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 
 @Injectable()
 export class TokensService<CustomData extends object> {

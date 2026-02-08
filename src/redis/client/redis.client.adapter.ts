@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
-import { IRedisConnectionOptions } from '../interfaces/redis/redis.connection.options.interface';
+import { IRedisConnectionOptions } from '../interfaces/redis-connection-options.interface';
 import { RedisConnection } from './redis.connection';
 
 export class RedisClientAdapter {

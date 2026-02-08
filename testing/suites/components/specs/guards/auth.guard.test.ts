@@ -23,7 +23,7 @@ import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-co
 import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
 import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 
 // Used to test the guard

@@ -1,7 +1,7 @@
 import { createSessionAndUserMappingKey } from '../keys/create-session-and-user-mapping-key';
 import { createUserSessionsSetKey } from '../keys/create-sessions-index-key';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { SESSIONS_REDIS_CONNECTION } from '../di/sessions.providers';
 import { SystemLogger } from 'src/common/logging/system.logger';
 

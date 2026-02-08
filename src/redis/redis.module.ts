@@ -9,8 +9,8 @@ import {
     THROTTLER_REDIS_CONNECTION,
 } from './di/redis-monitoring.providers';
 import { RedisHealthIndicator } from './health/redis.health';
-import { logRedisClientError } from 'src/common/redis/log-redis.client-error';
-import { redisReconnectStrategy } from 'src/common/functions/redis/redis-reconnect-strategy';
+import { logRedisClientError } from 'src/redis/client/log-redis.client-error';
+import { redisReconnectStrategy } from 'src/redis/client/redis-reconnect-strategy';
 import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
 
 /**
@@ -82,7 +82,7 @@ import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
         RedisHealthIndicator,
     ],
 })
-export class RedisMonitoringModule implements OnModuleDestroy {
+export class RedisModule implements OnModuleDestroy {
     constructor(
         @Inject(CACHE_REDIS_STORE) private readonly cacheRedisStore: KeyvRedis<string>,
         @Inject(THROTTLER_REDIS_CONNECTION) private readonly throttlerRedis: Redis,

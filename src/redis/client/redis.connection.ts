@@ -9,9 +9,9 @@
 
 import { createClient } from '@redis/client';
 import { logRedisClientError } from './log-redis.client-error';
-import { IRedisConnectionOptions } from '../interfaces/redis/redis.connection.options.interface';
-import { redisReconnectStrategy } from '../functions/redis/redis-reconnect-strategy';
-import { runSettledOrThrow } from '../utils/run-settled-or-throw.util';
+import { IRedisConnectionOptions } from 'src/redis/interfaces/redis-connection-options.interface';
+import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
+import { redisReconnectStrategy } from 'src/redis/client/redis-reconnect-strategy';
 
 export class RedisConnection {
     private readonly subscribers = new Array<any>();
