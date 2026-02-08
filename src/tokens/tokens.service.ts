@@ -12,7 +12,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtPayload } from './types/jwt-payload.type';
-import { blacklistTokenKey } from './keys/create-blacklist-token-key';
+import { createBlacklistTokenKey } from './keys/create-blacklist-token-key';
 import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
 
 @Injectable()
@@ -40,7 +40,7 @@ export class TokensService<CustomData extends object> {
 
     async blacklist(jti: string, expDateUnix: number): Promise<void> {
         await this.redisClient.store(
-            blacklistTokenKey(jti),
+            createBlacklistTokenKey(jti),
             '1',
             calculateTokenTTLSeconds(expDateUnix),
         );
@@ -58,7 +58,7 @@ export class TokensService<CustomData extends object> {
         if (payload.purpose !== this.tokensOpts.purpose) throw new InvalidTokenPurpose();
 
         // is not blacklisted
-        if (await this.redisClient.get(blacklistTokenKey(payload.jti)))
+        if (await this.redisClient.get(createBlacklistTokenKey(payload.jti)))
             throw new TokenIsBlacklisted();
 
         return payload;
