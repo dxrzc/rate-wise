@@ -1,12 +1,12 @@
 import { Args, ID, Query, Resolver } from '@nestjs/graphql';
 import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
-import { UserModel } from './models/user.model';
+import { UserModel } from './graphql/models/user.model';
 import { UsersService } from './users.service';
 import { Public } from 'src/common/decorators/public.decorator';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
-import { UserPaginationModel } from './models/pagination.model';
-import { findUserByIdDocs } from './docs/findUserById.docs';
-import { findAllUsersDocs } from './docs/findAllUsers.docs';
+import { UserPaginationModel } from './graphql/models/pagination.model';
+import { findUserByIdDocs } from './graphql/docs/findUserById.docs';
+import { findAllUsersDocs } from './graphql/docs/findAllUsers.docs';
 
 @Resolver(() => UserModel)
 export class UsersResolver {
