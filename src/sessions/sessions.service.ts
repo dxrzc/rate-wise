@@ -5,7 +5,7 @@ import { promisify } from 'src/common/utils/promisify.util';
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SESSIONS_REDIS_CONNECTION, SESSIONS_ROOT_OPTIONS } from './di/sessions.providers';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import { createSessionKey } from './keys/create-session-key';
 import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
 import { ISessionDetails } from './interfaces/session-details.interface';

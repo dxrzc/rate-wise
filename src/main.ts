@@ -8,7 +8,7 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import { CACHE_REDIS_STORE } from './redis/di/redis-monitoring.providers';
 import KeyvRedis from '@keyv/redis';
-import { patchRedisStoreSocketClosedUnexpectedly } from './common/functions/redis/patch-redis-store-socket-closed-unexpectedly';
+import { patchRedisStoreSocketClosedUnexpectedly } from './redis/client/patch-redis-store-socket-closed-unexpectedly';
 import { isRecoverableInfraError } from './common/errors/is-recoverable-infra-error';
 
 let app: NestExpressApplication | undefined;
