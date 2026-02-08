@@ -7,7 +7,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { VoteAction } from './enum/vote.enum';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { ReviewService } from 'src/reviews/reviews.service';
-import { ReviewVotesArgs } from './dtos/args/review-votes.args';
+import { ReviewVotesArgs } from './graphql/args/review-votes.args';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 

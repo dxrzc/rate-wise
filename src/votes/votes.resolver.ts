@@ -5,14 +5,14 @@ import { RequireAccountStatus } from 'src/common/decorators/min-account-status.d
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { voteReviewDocs } from './docs/voteReview.docs';
-import { deleteVoteDocs } from './docs/deleteVote.docs';
+import { voteReviewDocs } from './graphql/docs/voteReview.docs';
+import { deleteVoteDocs } from './graphql/docs/deleteVote.docs';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { CreateVoteInput } from './dtos/create-vote.input';
-import { ReviewVotesArgs } from './dtos/args/review-votes.args';
+import { CreateVoteInput } from './graphql/inputs/create-vote.input';
+import { ReviewVotesArgs } from './graphql/args/review-votes.args';
 import { Public } from 'src/common/decorators/public.decorator';
-import { findAllReviewVotesDocs } from './docs/findAllReviewVotes.docs';
-import { VotePaginationModel } from './models/pagination.model';
+import { findAllReviewVotesDocs } from './graphql/docs/findAllReviewVotes.docs';
+import { VotePaginationModel } from './graphql/models/pagination.model';
 
 @Resolver()
 export class VotesResolver {

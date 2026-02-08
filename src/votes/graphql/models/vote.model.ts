@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { VoteAction } from '../enum/vote.enum';
 import { BaseModel } from 'src/common/graphql/base.model';
+import { VoteAction } from 'src/votes/enum/vote.enum';
 
 @ObjectType({
     description: `

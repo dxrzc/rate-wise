@@ -1,7 +1,7 @@
 import { InputType } from '@nestjs/graphql';
 import { Field } from '@nestjs/graphql';
 import { IsDefined, IsString } from 'class-validator';
-import { VoteAction } from '../enum/vote.enum';
+import { VoteAction } from '../../enum/vote.enum';
 
 @InputType({
     description: 'Input data required to create a new vote for a review.',
