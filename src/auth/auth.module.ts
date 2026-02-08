@@ -61,6 +61,7 @@ import { UserDeletionModule } from 'src/orchestrators/user-deletion/user-deletio
         }),
     ],
     controllers: [AuthController],
+    exports: [HashingService],
     providers: [AuthResolver, AuthService, HashingService, AuthNotifications, HashingService],
 })
 export class AuthModule {}
