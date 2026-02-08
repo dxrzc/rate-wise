@@ -5,11 +5,7 @@ import {
     FactoryConfigModuleWithExtraProvider,
 } from 'src/common/types/factory-config.module.type';
 import { EmailClient } from './client/email.client';
-import {
-    EMAILS_FEATURE_OPTIONS,
-    EMAILS_QUEUE,
-    EMAILS_ROOT_OPTIONS,
-} from './di/emails.providers';
+import { EMAILS_FEATURE_OPTIONS, EMAILS_QUEUE, EMAILS_ROOT_OPTIONS } from './di/emails.providers';
 import { EmailsConsumer } from './consumers/emails.consumer';
 import { EmailsService } from './emails.service';
 import { IEmailsFeatureOptions } from './config/emails-feature.options';
