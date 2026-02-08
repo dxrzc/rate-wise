@@ -1,4 +1,4 @@
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
+import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
 
 describe('runSettledOrThrow', () => {
     test('resolves with values when all promises fulfill', async () => {

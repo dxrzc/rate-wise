@@ -1,14 +1,14 @@
 import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AppValidationPipe } from 'src/common/pipes/app-validation.pipe';
-import { UserSeedService } from 'src/seed/services/user-seed.service';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.limits';
-import { SignInInput } from 'src/auth/dtos/sign-in.input';
 import { mock } from 'jest-mock-extended';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
+import { SignInInput } from 'src/auth/graphql/inputs/sign-in.input';
+import { UserDataGenerator } from 'src/seed/generators/user-data.generator';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 
 const pipe = new AppValidationPipe(mock<HttpLoggerService>());
-const userSeed = new UserSeedService();
+const userSeed = new UserDataGenerator();
 const metadata: ArgumentMetadata = {
     type: 'body',
     metatype: SignInInput,
@@ -43,7 +43,7 @@ describe('SignInInput', () => {
         test('do not throw', async () => {
             const data = {
                 email: userSeed.email,
-                password: 'a'.repeat(AUTH_LIMITS.PASSWORD.MAX + 1),
+                password: 'a'.repeat(AUTH_RULES.PASSWORD.MAX + 1),
             };
             await expect(pipe.transform(data, metadata)).resolves.not.toThrow();
         });
@@ -53,7 +53,7 @@ describe('SignInInput', () => {
         test('do not throw', async () => {
             const data = {
                 email: userSeed.email,
-                password: 'a'.repeat(AUTH_LIMITS.PASSWORD.MIN - 1),
+                password: 'a'.repeat(AUTH_RULES.PASSWORD.MIN - 1),
             };
             await expect(pipe.transform(data, metadata)).resolves.not.toThrow();
         });

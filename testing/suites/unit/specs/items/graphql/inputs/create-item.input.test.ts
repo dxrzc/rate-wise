@@ -3,12 +3,12 @@ import { mock } from 'jest-mock-extended';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AppValidationPipe } from 'src/common/pipes/app-validation.pipe';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { ITEMS_LIMITS } from 'src/items/constants/items.constants';
-import { CreateItemInput } from 'src/items/dtos/create-item.input';
-import { ItemsSeedService } from 'src/seed/services/items-seed.service';
+import { CreateItemInput } from 'src/items/graphql/inputs/create-item.input';
+import { ITEM_RULES } from 'src/items/policy/items.rules';
+import { ItemDataGenerator } from 'src/seed/generators/item-data.generator';
 
 const pipe = new AppValidationPipe(mock<HttpLoggerService>());
-const itemsSeed = new ItemsSeedService();
+const itemDataGenerator = new ItemDataGenerator();
 const metadata: ArgumentMetadata = {
     type: 'body',
     metatype: CreateItemInput,
@@ -18,8 +18,8 @@ describe('CreateItemInput', () => {
     describe('Title is too long', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                title: 'a'.repeat(ITEMS_LIMITS.TITLE.MAX + 1),
+                ...itemDataGenerator.itemInput,
+                title: 'a'.repeat(ITEM_RULES.TITLE.MAX + 1),
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -30,8 +30,8 @@ describe('CreateItemInput', () => {
     describe('Title is too short', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                title: 'a'.repeat(ITEMS_LIMITS.TITLE.MIN - 1),
+                ...itemDataGenerator.itemInput,
+                title: 'a'.repeat(ITEM_RULES.TITLE.MIN - 1),
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -42,7 +42,7 @@ describe('CreateItemInput', () => {
     describe('Title is not a string', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
+                ...itemDataGenerator.itemInput,
                 title: 12345,
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
@@ -54,8 +54,8 @@ describe('CreateItemInput', () => {
     describe('Description is too long', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                description: 'a'.repeat(ITEMS_LIMITS.DESCRIPTION.MAX + 1),
+                ...itemDataGenerator.itemInput,
+                description: 'a'.repeat(ITEM_RULES.DESCRIPTION.MAX + 1),
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -66,8 +66,8 @@ describe('CreateItemInput', () => {
     describe('Description is too short', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                description: 'a'.repeat(ITEMS_LIMITS.DESCRIPTION.MIN - 1),
+                ...itemDataGenerator.itemInput,
+                description: 'a'.repeat(ITEM_RULES.DESCRIPTION.MIN - 1),
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -78,7 +78,7 @@ describe('CreateItemInput', () => {
     describe('Description is not a string', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
+                ...itemDataGenerator.itemInput,
                 description: true,
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
@@ -90,8 +90,8 @@ describe('CreateItemInput', () => {
     describe('Category is too long', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                category: 'a'.repeat(ITEMS_LIMITS.CATEGORY.MAX + 1),
+                ...itemDataGenerator.itemInput,
+                category: 'a'.repeat(ITEM_RULES.CATEGORY.MAX + 1),
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -102,8 +102,8 @@ describe('CreateItemInput', () => {
     describe('Category is too short', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                category: 'a'.repeat(ITEMS_LIMITS.CATEGORY.MIN - 1),
+                ...itemDataGenerator.itemInput,
+                category: 'a'.repeat(ITEM_RULES.CATEGORY.MIN - 1),
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -114,7 +114,7 @@ describe('CreateItemInput', () => {
     describe('Category is not a string', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
+                ...itemDataGenerator.itemInput,
                 category: ['invalid'],
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
@@ -126,7 +126,7 @@ describe('CreateItemInput', () => {
     describe('Tags is not an array', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
+                ...itemDataGenerator.itemInput,
                 tags: 'not-an-array',
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
@@ -138,9 +138,9 @@ describe('CreateItemInput', () => {
     describe('Tags array has too many items', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
+                ...itemDataGenerator.itemInput,
                 tags: Array.from(
-                    { length: ITEMS_LIMITS.TAGS.MAX_ARRAY_SIZE + 1 },
+                    { length: ITEM_RULES.TAGS.MAX_ARRAY_SIZE + 1 },
                     (_, i) => `tag${i}`,
                 ),
             };
@@ -153,8 +153,8 @@ describe('CreateItemInput', () => {
     describe('Tag item is too short', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                tags: ['a'.repeat(ITEMS_LIMITS.TAGS.TAG_MIN_LENGTH - 1)],
+                ...itemDataGenerator.itemInput,
+                tags: ['a'.repeat(ITEM_RULES.TAGS.TAG_MIN_LENGTH - 1)],
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -165,8 +165,8 @@ describe('CreateItemInput', () => {
     describe('Tag item is too long', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
-                tags: ['a'.repeat(ITEMS_LIMITS.TAGS.TAG_MAX_LENGTH + 1)],
+                ...itemDataGenerator.itemInput,
+                tags: ['a'.repeat(ITEM_RULES.TAGS.TAG_MAX_LENGTH + 1)],
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(
                 new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
@@ -177,7 +177,7 @@ describe('CreateItemInput', () => {
     describe('Tag item is not a string', () => {
         test('throw BadRequestException and INVALID_INPUT error message', async () => {
             const data = {
-                ...itemsSeed.itemInput,
+                ...itemDataGenerator.itemInput,
                 tags: [123, 456],
             };
             await expect(pipe.transform(data, metadata)).rejects.toThrow(

@@ -1,4 +1,4 @@
-import { encodeCursor } from 'src/pagination/functions/encode-cursor';
+import { encodeCursor } from 'src/pagination/cursor/encode-cursor';
 
 describe('encodeCursor', () => {
     test('encodes a cursor with createdAt and id', () => {

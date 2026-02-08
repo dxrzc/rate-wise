@@ -1,5 +1,5 @@
-import { decodeCursor } from 'src/pagination/functions/decode-cursor';
-import { encodeCursor } from 'src/pagination/functions/encode-cursor';
+import { decodeCursor } from 'src/pagination/cursor/decode-cursor';
+import { encodeCursor } from 'src/pagination/cursor/encode-cursor';
 
 interface IDecodedCursor {
     createdAt: string;
