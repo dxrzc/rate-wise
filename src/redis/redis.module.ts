@@ -82,7 +82,7 @@ import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
         RedisHealthIndicator,
     ],
 })
-export class RedisMonitoringModule implements OnModuleDestroy {
+export class RedisModule implements OnModuleDestroy {
     constructor(
         @Inject(CACHE_REDIS_STORE) private readonly cacheRedisStore: KeyvRedis<string>,
         @Inject(THROTTLER_REDIS_CONNECTION) private readonly throttlerRedis: Redis,
