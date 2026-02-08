@@ -49,6 +49,7 @@ import {
 } from 'src/redis/di/redis-monitoring.providers';
 import KeyvRedis from '@keyv/redis';
 import Redis from 'ioredis';
+import { SecurityModule } from 'src/security/security.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -160,6 +161,7 @@ import Redis from 'ioredis';
         ModerationModule,
         AuthModule,
         ScheduleModule.forRoot(),
+        SecurityModule,
     ],
 })
 export class AppModule implements NestModule {

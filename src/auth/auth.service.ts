@@ -6,7 +6,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
-import { HashingService } from 'src/common/services/hashing.service';
+import { HashingService } from 'src/security/hashing.service';
 import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { SessionsService } from 'src/sessions/sessions.service';

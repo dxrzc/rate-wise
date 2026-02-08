@@ -9,7 +9,7 @@ import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
-import { HashingService } from 'src/common/services/hashing.service';
+import { HashingService } from 'src/security/hashing.service';
 import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
 import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';

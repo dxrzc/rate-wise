@@ -5,8 +5,8 @@ import { User } from 'src/users/entities/user.entity';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { AdminConfigService } from 'src/config/services/admin.config.service';
-import { HashingService } from 'src/common/services/hashing.service';
 import { SystemLogger } from 'src/common/logging/system.logger';
+import { HashingService } from 'src/security/hashing.service';
 
 @Injectable()
 export class AdminInitService implements OnModuleInit {

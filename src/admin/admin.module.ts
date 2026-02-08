@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { CommonModule } from 'src/common/common.module';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import { AdminInitService } from './services/admin-init.service';
+import { AdminInitService } from './admin.service';
+import { SecurityModule } from 'src/security/security.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User]),
-        CommonModule,
+        SecurityModule,
         HttpLoggerModule.forFeature({ context: AdminInitService.name }),
     ],
     providers: [AdminInitService],
