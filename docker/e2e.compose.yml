@@ -8,8 +8,7 @@ services:
     command:
       - "--providers.docker=true"
       - "--entrypoints.websecure.address=:443"    
-    volumes:
-      # In order to avoid mounting the docker socket
+    volumes:      
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
 
