@@ -66,7 +66,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
         const qbAlias = queryBuilder?.sqbAlias || 'e';
 
         let qb = this.repository.createQueryBuilder(qbAlias);
-        qb = qb.select(`${qbAlias}.id`, 'id').addSelect(`${qbAlias}.createdAt`, 'cursor');
+        qb = qb.select(`${qbAlias}.id`, 'id').addSelect(`${qbAlias}.created_at::text`, 'cursor');
         if (queryBuilder) {
             // apply caller's modifier (joins, filters, etc...)
             qb = queryBuilder.sqbModifier(qb);
