@@ -44,12 +44,13 @@ export class EmailsConsumer extends WorkerHost {
     @OnWorkerEvent('active')
     onActive(job: Job<EmailsJobData>) {
         this.runInContext(job.data.requestId, () => {
-            this.logger.debug(`Sending email to ${job.data.to}`);
+            this.logger.info(`Sending email to ${job.data.to}`);
         });
     }
 
     @OnWorkerEvent('failed')
-    onFailed(job: Job<EmailsJobData>) {
+    onFailed(job: Job<EmailsJobData>, err: Error) {
+        SystemLogger.getInstance().logAnyException(err, EmailsConsumer.name);
         this.runInContext(job.data.requestId, () => {
             this.logger.warn(`Email service internal error`);
         });
@@ -57,7 +58,7 @@ export class EmailsConsumer extends WorkerHost {
 
     @OnWorkerEvent('error')
     onError(error: Error) {
-        SystemLogger.getInstance().error(error);
+        SystemLogger.getInstance().logAnyException(error, EmailsConsumer.name);
     }
 
     @OnWorkerEvent('completed')
