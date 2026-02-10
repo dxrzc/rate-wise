@@ -1,6 +1,5 @@
 import * as nodemailer from 'nodemailer';
 import { Inject, Injectable } from '@nestjs/common';
-import { SystemLogger } from 'src/common/logging/system.logger';
 import { EMAILS_ROOT_OPTIONS } from '../di/emails.providers';
 import { IEmailsRootOptions } from '../config/emails.root.options';
 import { IEmailInfo } from '../interface/email-info.interface';
@@ -29,12 +28,8 @@ export class EmailClient {
     }
 
     async sendMail(options: IEmailInfo) {
-        try {
-            await this.transporter.sendMail({
-                ...options,
-            });
-        } catch (error) {
-            SystemLogger.getInstance().error(error);
-        }
+        await this.transporter.sendMail({
+            ...options,
+        });
     }
 }

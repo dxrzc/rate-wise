@@ -16,10 +16,11 @@ import { AuthConfigService } from 'src/config/services/auth.config.service';
 import { AuthTokenService } from '../types/auth-tokens-service.type';
 import { EmailsService } from 'src/emails/emails.service';
 import { signOutAllHtml, signOutAllPlainText } from '../pages/sign-out-all.page';
+import { SmtpConfigService } from 'src/config/services/smtp.config.service';
 
 @Injectable()
 export class AuthNotifications {
-    private readonly from = '"Ratewise" <no-reply@ratewise.app>';
+    private readonly from: string;
 
     constructor(
         @Inject(ACCOUNT_VERIFICATION_TOKEN)
@@ -31,7 +32,10 @@ export class AuthNotifications {
         private readonly emailsService: EmailsService,
         private readonly serverConfig: ServerConfigService,
         private readonly authConfig: AuthConfigService,
-    ) {}
+        private readonly smptConfig: SmtpConfigService,
+    ) {
+        this.from = this.smptConfig.senderAddress;
+    }
 
     private async createAccountVerificationLink(id: string) {
         const token = await this.accountVerificationToken.generate({ id });
