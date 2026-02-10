@@ -1,7 +1,7 @@
 import { IConfigs } from '../interface/config.interface';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 
 @Injectable()
 export class ServerConfigService {
@@ -33,5 +33,9 @@ export class ServerConfigService {
 
     get cacheTtlSeconds(): number {
         return this.configService.get('CACHE_TTL_SECONDS');
+    }
+
+    get trustProxy(): number {
+        return this.configService.get('TRUST_PROXY');
     }
 }

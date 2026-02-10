@@ -1,4 +1,3 @@
-import KeyvRedis from '@keyv/redis';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { BullModule } from '@nestjs/bullmq';
@@ -11,7 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { AuthController } from 'src/auth/auth.controller';
 import { AuthModule } from 'src/auth/auth.module';
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 import { RestLoggingMiddleware } from 'src/common/middlewares/rest.logging.middleware';
 import { RequestContextPlugin } from 'src/common/plugins/request-context.plugin';
 import { ConfigModule } from 'src/config/config.module';
@@ -27,16 +26,30 @@ import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middl
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { TokensModule } from 'src/tokens/tokens.module';
 import { UsersModule } from 'src/users/users.module';
+import { AdminModule } from 'src/admin/admin.module';
 import { GqlConfigService } from './imports/graphql/graphql.import';
 import { HttpLoggerConfigService } from './imports/http-logger/http-logger.import';
 import { TypeOrmConfigService } from './imports/typeorm/typeorm.import';
-import { catchEverythingFiler } from './providers/filters/catch-everything.filter.provider';
+import { catchEverythingFilter } from './providers/filters/catch-everything.filter.provider';
 import { appAccountStatusGuard } from './providers/guards/app-account-status.guard.provider';
 import { appAuthGuard } from './providers/guards/app-auth.guard.provider';
 import { appRolesGuard } from './providers/guards/app-roles.guard.provider';
 import { rateLimiterGuard } from './providers/guards/graphql-throttler.guard.provider';
 import { appValidationPipe } from './providers/pipes/app-validation.pipe.provider';
 import { ReviewsModule } from 'src/reviews/reviews.module';
+import { ModerationModule } from 'src/moderation/moderation.module';
+import { VotesModule } from 'src/votes/votes.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { HealthModule } from 'src/health/health.module';
+import { RedisModule } from 'src/redis/redis.module';
+import {
+    CACHE_REDIS_STORE,
+    QUEUE_REDIS_CONNECTION,
+    THROTTLER_REDIS_CONNECTION,
+} from 'src/redis/di/redis-monitoring.providers';
+import KeyvRedis from '@keyv/redis';
+import Redis from 'ioredis';
+import { SecurityModule } from 'src/security/security.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -50,7 +63,7 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
 @Module({
     providers: [
         RequestContextPlugin,
-        catchEverythingFiler,
+        catchEverythingFilter,
         appValidationPipe,
         rateLimiterGuard,
         appAuthGuard,
@@ -58,22 +71,25 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
         appRolesGuard,
     ],
     imports: [
+        HealthModule,
         ConfigModule,
         EmailsModule,
         CacheModule.registerAsync({
             isGlobal: true,
-            inject: [DbConfigService, ServerConfigService],
-            useFactory: (dbConfig: DbConfigService, serverConfig: ServerConfigService) => ({
+            imports: [RedisModule],
+            inject: [ServerConfigService, CACHE_REDIS_STORE],
+            useFactory: (serverConfig: ServerConfigService, cacheStore: KeyvRedis<unknown>) => ({
                 ttl: serverConfig.cacheTtlSeconds * 1000, // milliseconds
-                stores: [new KeyvRedis(dbConfig.redisCacheUri)],
+                stores: [cacheStore],
             }),
         }),
         ThrottlerModule.forRootAsync({
-            inject: [DbConfigService],
-            useFactory: ({ redisAuthUri }: DbConfigService) => ({
-                // default policy, overrided with decorators
+            imports: [RedisModule],
+            inject: [THROTTLER_REDIS_CONNECTION],
+            useFactory: (ioredisClient: Redis) => ({
+                // default policy, overridden by decorators
                 throttlers: [{ ttl: 10 * minutes(1), limit: 10 * 1000 }],
-                storage: new ThrottlerStorageRedisService(redisAuthUri),
+                storage: new ThrottlerStorageRedisService(ioredisClient),
             }),
         }),
         EmailsModule.forRootAsync({
@@ -88,12 +104,9 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
             }),
         }),
         BullModule.forRootAsync({
-            inject: [DbConfigService],
-            useFactory: (dbConfig: DbConfigService) => ({
-                connection: {
-                    url: dbConfig.redisQueuesUri,
-                },
-            }),
+            imports: [RedisModule],
+            inject: [QUEUE_REDIS_CONNECTION],
+            useFactory: (connection: Redis) => ({ connection }),
         }),
         HttpLoggerModule.forRootAsync({
             useClass: HttpLoggerConfigService,
@@ -118,6 +131,7 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
                 cookieName: authConfig.sessCookieName,
                 cookieSecret: authConfig.sessCookieSecret,
                 secure: serverConfig.isProduction,
+                sameSite: 'strict',
                 connection: {
                     redisUri: dbConfig.redisAuthUri,
                 },
@@ -139,10 +153,15 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
             SeedModule,
             (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.PRODUCTION,
         ),
+        AdminModule,
         UsersModule,
         ItemsModule,
         ReviewsModule,
+        VotesModule,
+        ModerationModule,
         AuthModule,
+        ScheduleModule.forRoot(),
+        SecurityModule,
     ],
 })
 export class AppModule implements NestModule {

@@ -1,11 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { ACCOUNT_STATUS_KEY } from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { IGraphQLContext } from 'src/common/interfaces/graphql/graphql-context.interface';
+import { IGraphQLContext } from 'src/common/graphql/graphql-context.interface';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
-import { isAccountStatusAllowed } from '../functions/is-status-allowed';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { AUTH_MESSAGES } from '../messages/auth.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
@@ -18,23 +17,26 @@ export class AccountStatusGuard implements CanActivate {
     ) {}
 
     canActivate(context: ExecutionContext): boolean {
-        const isPublic = this.reflector.get(Public, context.getHandler());
+        const isPublic = this.reflector.getAllAndOverride(Public, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
         if (isPublic) return true;
         if (context.getType<GqlContextType>() !== 'graphql') {
             throw new Error('Non-gql contexts in AccountStatusGuard not implemented');
         }
-        const minStatusRequired = this.reflector.get(
-            MinAccountStatusRequired,
-            context.getHandler(),
+        const allowedStatuses = this.reflector.getAllAndOverride<AccountStatus[]>(
+            ACCOUNT_STATUS_KEY,
+            [context.getHandler(), context.getClass()],
         );
 
-        if (!minStatusRequired) throw new Error('Min account status not specified');
+        if (!allowedStatuses) throw new Error('Account statuses not specified');
 
         const graphQLContext = GqlExecutionContext.create(context);
         const reqContext = graphQLContext.getContext<IGraphQLContext>();
         const userAccountStatus = reqContext.req.user.status;
         const userId = reqContext.req.user.id;
-        const allowed = isAccountStatusAllowed(minStatusRequired, userAccountStatus);
+        const allowed = allowedStatuses.includes(userAccountStatus);
         if (!allowed) {
             switch (userAccountStatus) {
                 case AccountStatus.PENDING_VERIFICATION: {

@@ -1,10 +1,11 @@
 import { requestAccountVerification } from '@testing/tools/gql-operations/auth/request-account-verification.operation';
 import { faker } from '@faker-js/faker/.';
 import { createAccount } from '@integration/utils/create-account.util';
+import { getEmailSent } from '@integration/utils/get-email-sent.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { success } from '@integration/utils/no-errors.util';
@@ -39,15 +40,14 @@ describe('GraphQL - requestAccountVerification', () => {
     });
 
     describe('Account status is pending verification', () => {
-        test('email is sent to user email address', async () => {
-            const { sessionCookie, email } = await createAccount({
+        test('user can perform this action', async () => {
+            const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
             });
             await testKit.gqlClient
                 .set('Cookie', sessionCookie)
                 .send(requestAccountVerification())
                 .expect(success);
-            await expect(email).emailSentToThisAddress();
         });
     });
 
@@ -62,13 +62,36 @@ describe('GraphQL - requestAccountVerification', () => {
         });
     });
 
-    describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
-        test('email is sent to the user email address', async () => {
-            const { email, sessionCookie } = await createAccount({
-                roles: [role],
+    describe.each(Object.values(UserRole))(
+        'User roles are: [%s] and account status is pending verification',
+        (role: UserRole) => {
+            test('user can perform this action', async () => {
+                const { sessionCookie } = await createAccount({
+                    roles: [role],
+                    status: AccountStatus.PENDING_VERIFICATION,
+                });
+                await testKit.gqlClient
+                    .set('Cookie', sessionCookie)
+                    .send(requestAccountVerification())
+                    .expect(success);
             });
-            await testKit.gqlClient.send(requestAccountVerification()).set('Cookie', sessionCookie);
-            await expect(email).emailSentToThisAddress();
+        },
+    );
+
+    describe('Successful request account verification', () => {
+        test('email is sent to the user email address with correct subject and token', async () => {
+            const { sessionCookie, email, id } = await createAccount({
+                status: AccountStatus.PENDING_VERIFICATION,
+            });
+            await testKit.gqlClient
+                .send(requestAccountVerification())
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            const emailSent = await getEmailSent(email);
+            expect(emailSent.meta.Subject).toBe('Verify your Ratewise account');
+            const token = emailSent.message.Text.match(/token=([a-zA-Z0-9._-]+)/)![1];
+            const payload = await testKit.accVerifToken.verify(token);
+            expect(payload.id).toBe(id);
         });
     });
 
@@ -76,7 +99,7 @@ describe('GraphQL - requestAccountVerification', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             await Promise.all(
-                Array.from({ length: THROTTLE_CONFIG.ULTRA_CRITICAL.limit }, () =>
+                Array.from({ length: RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit }, () =>
                     testKit.gqlClient.set('X-Forwarded-For', ip).send(requestAccountVerification()),
                 ),
             );

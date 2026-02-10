@@ -14,7 +14,7 @@ export async function createManyAccounts(n: number): Promise<string[]> {
                 status: getRandomAccountStatus(),
                 roles: getRandomUserRoles(),
             }),
-        ); // TODO: random role
+        );
     const usersCreated = await Promise.all(promises);
     return usersCreated.map((user) => user.id);
 }

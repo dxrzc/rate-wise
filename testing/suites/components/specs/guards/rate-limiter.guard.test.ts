@@ -7,9 +7,9 @@ import { Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { UltraCriticalThrottle } from 'src/common/decorators/throttling.decorator';
-import { Code } from 'src/common/enum/code.enum';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
+import { Code } from 'src/common/enums/code.enum';
 import { RateLimiterGuard } from 'src/common/guards/rate-limiter.guard';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import request from 'supertest';
@@ -17,7 +17,7 @@ import request from 'supertest';
 @Resolver()
 class TestResolver {
     @Query(() => Boolean)
-    @UltraCriticalThrottle()
+    @RateLimit(RateLimitTier.ULTRA_CRITICAL)
     ultraCriticalQuery() {
         return true;
     }
@@ -63,7 +63,7 @@ describe('RateLimiter Guard', () => {
         describe('Requests from the same ip exceeds the rate limit stablished', () => {
             test('return too many requests code and error message', async () => {
                 const commonReqsIp = faker.internet.ip();
-                for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
+                for (let i = 0; i < RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit; i++) {
                     const req = await request(app.getHttpServer())
                         .post('/graphql')
                         .set('X-Forwarded-For', commonReqsIp)
@@ -83,7 +83,7 @@ describe('RateLimiter Guard', () => {
         describe('Requests coming from different ips exceeds the rate limit stablished', () => {
             test('return too many requests code and error message', async () => {
                 mockReqData.user.id = faker.string.uuid(); // mock authenticated in req (req.user.id)
-                for (let i = 0; i < THROTTLE_CONFIG.ULTRA_CRITICAL.limit; i++) {
+                for (let i = 0; i < RATE_LIMIT_PROFILES.ULTRA_CRITICAL.limit; i++) {
                     const req = await request(app.getHttpServer())
                         .post('/graphql')
                         .set('X-Forwarded-For', faker.internet.ip())

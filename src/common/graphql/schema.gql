@@ -24,15 +24,15 @@ type AccountModel {
 
   "\n            Current status of the user account\n        "
   status: AccountStatus!
-
-  "\n            Reputation score of the user\n        "
-  reputationScore: Float!
 }
 
 """Available roles for a user."""
 enum UserRole {
-  """Regular user with basic permissions."""
-  USER
+  """Regular user who can write reviews and rate items. (Default)"""
+  REVIEWER
+
+  """User who can create new items (businesses/products). (Default)"""
+  CREATOR
 
   """User with moderation capabilities."""
   MODERATOR
@@ -43,13 +43,19 @@ enum UserRole {
 
 """Available statuses for an account."""
 enum AccountStatus {
-  """Account is active and user can log in."""
+  """
+  Account is active and fully verified. User has access to all platform features.
+  """
   ACTIVE
 
-  """Account has been registered but not yet verified their email."""
+  """
+  Account has been registered but has not yet verified their email address.
+  """
   PENDING_VERIFICATION
 
-  """Account has been suspended."""
+  """
+  Account has been suspended by a moderator and has restricted access to platform features.
+  """
   SUSPENDED
 }
 
@@ -88,7 +94,7 @@ type ItemModel {
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): ReviewPaginationModel!
 }
 
@@ -139,16 +145,13 @@ type UserModel {
   "\n            Current status of the user account\n        "
   status: AccountStatus!
 
-  "\n            Reputation score of the user\n        "
-  reputationScore: Float!
-
   """Paginated list of items created by the user."""
   items(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): ItemPaginationModel!
 }
 
@@ -176,6 +179,60 @@ type UserPaginationModel {
   hasNextPage: Boolean!
 }
 
+"\n        Vote model representing a user's vote for a review.\n    "
+type VoteModel {
+  "\n            Unique identifier for the model instance\n        "
+  id: ID!
+
+  "\n            The date and time when the model instance was created\n        "
+  createdAt: Date!
+
+  "\n            The date and time when the model instance was last updated\n        "
+  updatedAt: Date!
+
+  """The action of the vote (UP or DOWN)."""
+  vote: VoteAction!
+
+  """The ID of the user who created this vote."""
+  createdBy: String!
+
+  """The ID of the review this vote is for."""
+  relatedReview: String!
+}
+
+"""Possible actions for voting on a review."""
+enum VoteAction {
+  """An upvote indicating approval of the review."""
+  UP
+
+  """A downvote indicating disapproval of the review."""
+  DOWN
+}
+
+"""Edge type for VoteModel in a paginated list."""
+type VoteModelEdge {
+  "\n                A cursor for pagination pointing to this specific node.\n            "
+  cursor: String!
+
+  "\n                The node of type VoteModel contained in this edge.\n            "
+  node: VoteModel!
+}
+
+"\n        Paginated model for VoteModel representing a paginated list of votes.\n    "
+type VotePaginationModel {
+  "\n                List of edges in the current page, each containing a cursor and a node of type VoteModel.\n            "
+  edges: [VoteModelEdge!]
+
+  "\n                List of VoteModel nodes in the current page.\n            "
+  nodes: [VoteModel!]
+
+  "\n                The total number of items available across all pages.\n            "
+  totalCount: Int!
+
+  "\n                Indicates if there are more items available after the current page.\n            "
+  hasNextPage: Boolean!
+}
+
 "\n        Review model representing a user's review of an item.\n    "
 type ReviewModel {
   "\n            Unique identifier for the model instance\n        "
@@ -193,14 +250,26 @@ type ReviewModel {
   """The rating score given in the review."""
   rating: Int!
 
-  """The number of votes this review has received."""
-  votes: Int!
+  """The number of upvotes for the review"""
+  upVotes: Int!
+
+  """The number of downvotes for the review."""
+  downVotes: Int!
 
   """The ID of the user who created this review."""
   createdBy: String!
 
   """The ID of the item this review is for."""
   relatedItem: String!
+
+  """Paginated list of votes for this review."""
+  votes(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int = 5
+  ): VotePaginationModel!
 }
 
 """Edge type for ReviewModel in a paginated list."""
@@ -231,138 +300,123 @@ type ReviewPaginationModel {
 scalar Date
 
 type Query {
-  "\n        Find a user by their unique identifier.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Caching:** Results are cached for improved performance. Subsequent requests for the same user ID may return cached data.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** User details including ID, username, email, roles, account status, reputation score, and creation/update timestamps\n    "
+  "\nRetrieves reviews with **cursor-based pagination** and optional filtering by creator or related item.\n\n- **Returns:** A paginated response containing:\n  - `edges`: Array of review nodes with their cursors.\n  - `nodes`: Array of review objects (shorthand access).\n  - `totalCount`: Total number of reviews matching the filter criteria.\n  - `hasNextPage`: Boolean indicating if more results exist.\n\n- **Constraints:**\n  - `limit`: Number of reviews per page (min: 1, max: 100, default: 10).\n  - `cursor`: Optional opaque cursor for fetching the next page.\n  - `createdBy`: Optional UUID to filter reviews by author.\n  - `relatedItem`: Optional UUID to filter reviews for a specific item.\n\n- **Side Effects:**\n  - If `createdBy` is provided, user existence is validated first.\n  - If `relatedItem` is provided, item existence is validated first.\n\n- **Pagination Implementation:**\n  - Uses **cursor-based pagination**.\n  - Cursors are opaque base64-encoded strings containing `createdAt` timestamp and `id`.\n  - Results sorted by `createdAt ASC`, then `id ASC` for deterministic ordering.\n  - LIMIT+1 technique used to efficiently detect `hasNextPage`.\n\n- **Filtering:**\n  - Filters are combined with AND logic.\n  - `createdBy`: Filters reviews by author's user ID.\n  - `relatedItem`: Filters reviews for a specific item.\n\n- **Caching Strategy:**\n  - Individual review records leverage the **Redis** cache layer.\n  - Uncached reviews are fetched from PostgreSQL and queued for caching via **BullMQ**.\n  - Batch cache operations (`mget`) minimize Redis round-trips.\n\n- **Rate Limiting:** 100 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Performance:**\n  - Indexed columns: `createdBy`, `relatedItem`, `createdAt`, `id`.\n  - Vote counts (`upvotes`, `downvotes`) are denormalized for fast reads.\n\n- **Possible Errors:**\n  - `NOT_FOUND`: `createdBy` user or `relatedItem` item does not exist OR invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  filterReviews(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int = 5
+
+    """ID of the user who created the review"""
+    createdBy: ID
+
+    """ID of the item being reviewed"""
+    relatedItem: ID
+  ): ReviewPaginationModel!
+
+  "\nRetrieves an item by its unique identifier (UUID).\n\n- **Returns:** Item details.\n\n- **Constraints:**\n  - The `item_id` must be a valid UUID v4 format.\n  - Item must exist in the database.\n\n- **Caching Strategy:**\n  - Results are cached in **Redis** with automatic TTL expiration.\n  - Checks cache first, fetches from PostgreSQL on miss, then caches the result.\n  - Subsequent requests for the same item ID return cached data for improved performance.  \n  - Cache is invalidated when item data is modified.\n\n- **Rate Limiting:** 1000 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Related Fields (GraphQL):**\n  - `averageRating`: Computed dynamically from all reviews.\n  - `reviews`: Paginated list of reviews for this item.\n\n- **Performance:**\n  - UUID validation occurs before database query (early rejection of invalid IDs).\n  - Indexed lookup by primary key ensures O(1) database performance.\n  - Redis caching reduces database load for popular items.\n\n- **Additional Notes:**\n  - Use `filterItems` query to search items by category, tag, or creator.\n  - The `averageRating` field triggers a separate database aggregation query.\n\n- **Possible Errors:**\n  - `NOT_FOUND`: Item with the provided ID does not exist or invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  findItemById(item_id: ID!): ItemModel!
+
+  "\nRetrieves items with **cursor-based pagination** and optional filtering by creator, category, or tag.\n\n- **Returns:** A paginated response containing:\n  - `edges`: Array of item nodes with their cursors.\n  - `nodes`: Array of item objects (shorthand access).\n  - `totalCount`: Total number of items matching the filter criteria.\n  - `hasNextPage`: Boolean indicating if more results exist.\n\n- **Constraints:**\n  - `limit`: Number of items per page (min: 1, max: 100, default: 10).\n  - `cursor`: Optional opaque cursor for fetching the next page.\n  - `createdBy`: Optional UUID to filter items by creator (must be valid user ID).\n  - `category`: Optional string to filter by exact category match.\n  - `tag`: Optional string to filter items containing this tag.\n\n- **Pagination Implementation:**\n  - Uses **cursor-based pagination**.\n  - Cursors are opaque base64-encoded strings containing `createdAt` timestamp and `id`.\n  - Results sorted by `createdAt ASC`, then `id ASC` for deterministic ordering.\n  - LIMIT+1 technique used to efficiently detect `hasNextPage`.\n\n- **Filtering:**\n  - Filters are combined with AND logic.\n  - `category`: Exact match (case-sensitive after normalization).\n  - `tag`: Uses PostgreSQL array containment (`ANY(tags)`).\n  - `createdBy`: Filters by creator's user ID.  \n\n- **Caching Strategy:**\n  - Individual item records leverage the **Redis** cache layer.\n  - Uncached items are fetched from PostgreSQL and queued for caching via **BullMQ**.\n  - Batch cache operations (`mget`) minimize Redis round-trips.\n\n- **Rate Limiting:**100 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Performance:**\n  - Indexed columns: `createdBy`, `category`, `createdAt`, `id`.\n  - GIN index on `tags` array for efficient tag filtering.\n\n- **Possible Errors:**\n  - `NOT_FOUND`: `createdBy` user ID does not exist OR invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  filterItems(
+    "\n            Cursor for pagination to fetch results after this cursor.\n        "
+    cursor: String
+
+    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
+    limit: Int = 5
+
+    """ID of the user who created the item"""
+    createdBy: ID
+
+    """Filter items by category. Minimum length: 3, Maximum length: 40."""
+    category: String
+
+    """Filter items by tag. Minimum length: 2, Maximum length: 20."""
+    tag: String
+  ): ItemPaginationModel!
+
+  "\nRetrieves a user by their unique identifier (UUID).\n\n- **Returns:** User details.\n\n- **Constraints:**\n  - The `user_id` must be a valid UUID.\n  - User must exist in the database.\n\n- **Caching Strategy:**\n  - Results are cached in **Redis** with automatic TTL expiration.\n  - Checks cache first, fetches from PostgreSQL on miss, then caches the result.\n  - Subsequent requests for the same user ID return cached data for improved performance.\n  - Cache is automatically invalidated when user data is modified.\n\n- **Rate Limiting:** 1000 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Performance:**\n  - UUID validation occurs before database query (early rejection of invalid IDs).\n  - Indexed lookup by primary key ensures O(1) database performance.\n  - Redis caching reduces database load for popular users.\n\n- **Additional Notes:**\n  - The cached user object excludes sensitive fields (password).\n  - Use `findAll` for paginated user listing.\n\n- **Possible Errors:**\n  - `NOT_FOUND`: User with the provided ID does not exist or invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
   findUserById(user_id: ID!): UserModel!
 
-  "\n        Find all users with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of users with edges, nodes, total count, and hasNextPage indicator\n    "
+  "\nRetrieves all users with efficient **cursor-based pagination**.\n\n- **Returns:** A paginated response containing:\n  - `edges`: Array of user nodes with their cursors.\n  - `nodes`: Array of user objects (shorthand access).\n  - `totalCount`: Total number of users in the system.\n  - `hasNextPage`: Boolean indicating if more results exist.\n\n- **Constraints:**\n  - `limit`: Number of items per page (min: 1, max: 100, default: 10).\n  - `cursor`: Optional opaque cursor for fetching the next page.\n\n- **Pagination Implementation:**\n  - Uses **cursor-based pagination**.\n  - Cursors are opaque base64-encoded strings containing `createdAt` timestamp and `id`.\n  - Avoids the offset pagination pitfalls (inconsistent results during concurrent writes).\n  - Results are sorted by `createdAt ASC`, then `id ASC` for deterministic ordering.\n  - LIMIT+1 technique used to efficiently detect `hasNextPage`.\n\n- **Caching Strategy:**  \n  - Individual user records leverage the **Redis** cache layer.\n  - Uncached users are fetched from PostgreSQL and then queued for caching via **BullMQ**.\n  - Batch cache operations (`mget`) minimize Redis round-trips.\n\n- **Rate Limiting:** 100 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Performance:**  \n  - Indexed queries on `(createdAt, id)` for optimal keyset pagination.  \n\n- **Additional Notes:**\n  - Password fields are never included in responses.  \n\n- **Possible Errors:**  \n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
   findAllUsers(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
   ): UserPaginationModel!
 
-  "\n        Find an item by its unique identifier.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Caching:** Results are cached for improved performance. Subsequent requests for the same item ID may return cached data.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Item details including ID, timestamps, title, description, category, tags, average rating, and creator ID\n    "
-  findItemById(item_id: ID!): ItemModel!
-
-  "\n        Find all items created by a specific user with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items created by the specified user, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemsByUser(
+  "\nRetrieves all votes for a specific review with **cursor-based pagination**.\n\n- **Returns:** A paginated response containing:\n  - `edges`: Array of vote nodes with their cursors.\n  - `nodes`: Array of vote objects (shorthand access).\n  - `totalCount`: Total number of votes for this review.\n  - `hasNextPage`: Boolean indicating if more results exist.\n\n- **Constraints:**\n  - `reviewId`: Must be a valid UUID referencing an existing review.\n  - `limit`: Number of votes per page (min: 1, max: 100, default: 10).\n  - `cursor`: Optional opaque cursor for fetching the next page.\n\n- **Side Effects:**  \n  - Review existence is validated before fetching votes.\n\n- **Pagination Implementation:**\n  - Uses **cursor-based pagination**.\n  - Cursors are opaque base64-encoded strings containing `createdAt` timestamp and `id`.\n  - Results sorted by `createdAt ASC`, then `id ASC` for deterministic ordering.\n  - LIMIT+1 technique used to efficiently detect `hasNextPage`.\n\n- **Caching Strategy:**\n  - Individual vote records leverage the **Redis** cache layer.\n  - Uncached votes are fetched from PostgreSQL and queued for caching via **BullMQ**.\n  - Batch cache operations (`mget`) minimize Redis round-trips.\n\n- **Rate Limiting:** 100 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Performance:**\n  - Indexed on `relatedReview` for efficient filtering.\n\n- **Possible Errors:**\n  - `NOT_FOUND`: Review with the provided `reviewId` does not exist OR invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  findAllVotesForReview(
     "\n            Cursor for pagination to fetch results after this cursor.\n        "
     cursor: String
 
     "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
+    limit: Int = 5
 
-    """The unique ID of the user whose items to retrieve."""
-    userId: ID!
-  ): ItemPaginationModel!
-
-  "\n        Find all items with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of all items with edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItems(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-  ): ItemPaginationModel!
-
-  "\n        Find all items in a specified category with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Filtering:** Returns only items that belong to the specified category\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items in the specified category, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemsByCategory(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """
-    The category to filter items by. Minimum length: 3, Maximum length: 40.
-    """
-    category: String!
-  ): ItemPaginationModel!
-
-  "\n        Find all items that contain a specified tag with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Filtering:** Returns only items that have the specified tag in their tags array\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of items with the specified tag, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemsByTag(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """The tag to filter items by. Minimum length: 2, Maximum length: 20."""
-    tag: String!
-  ): ItemPaginationModel!
-
-  "\n        Find all reviews created by a specific user with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of reviews created by the specified user, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllReviewsByUser(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """The unique ID of the user whose reviews to retrieve."""
-    userId: ID!
-  ): ReviewPaginationModel!
-
-  "\n        Find all reviews for a specific item with cursor-based pagination.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Pagination:** Uses cursor-based pagination for efficient data retrieval. Supports limit (1-100) and cursor parameters.\n        \n        **Rate Limiting:** Balanced throttle applied\n        \n        **Returns:** Paginated list of reviews for the specified item, including edges, nodes, total count, and hasNextPage indicator\n    "
-  findAllItemReviews(
-    "\n            Cursor for pagination to fetch results after this cursor.\n        "
-    cursor: String
-
-    "\n        Number of items to retrieve per page.                \n        - **Minimum value:** 1.\n        - **Maximum value:** 100.\n        "
-    limit: Int!
-
-    """The unique ID of the item whose reviews to retrieve."""
-    itemId: ID!
-  ): ReviewPaginationModel!
+    """The unique ID of the review for which to fetch votes."""
+    reviewId: ID!
+  ): VotePaginationModel!
 }
 
 type Mutation {
-  """
-  Seed the database with a specified number of test users. Deletes existing users first.
-  """
-  seedUsers(quantity: Int!): Boolean!
+  "\nPopulates the database with lightweight sample data for development.\n- **Returns:** Boolean `true` indicating the seeding process completed successfully.\n\n- **Constraints:**\n  - Can only be executed in non-production environments (development/testing).\n\n- **Side Effects:**\n  - Database is cleared of existing data before seeding (all non-admin users and related data).\n  - Creates a fixed number of sample users with randomized roles and account statuses.\n  - Creates a fixed number of items per user.\n  - Generates reviews:\n    - Each item receives a limited number of randomly selected reviews.\n    - Users do not review their own items.\n  - Generates votes:\n    - Each review receives a limited number of randomly selected votes.\n    - Vote direction (up/down) is randomized.\n  - The admin user is never deleted or modified.\n  - No items, reviews, or votes are created for the admin user.\n\n- **Authentication:** Required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** `ACTIVE`.\n\n    "
+  runSeed: Boolean!
 
-  """
-  Seed the database with a specified number of items per user. Deletes existing items first.
-  """
-  seedItems(items_per_user: Int!): Boolean!
-
-  """
-  Seed the database with a specified number of reviews per item. Deletes existing reviews first.
-  """
-  seedReviews(reviews_per_item: Int!): Boolean!
-
-  "\n        Create a new item to be rated and reviewed by the community.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create items\n        \n        **Effect:** Creates a new item with the provided title, description, category, and optional tags. The item is associated with the authenticated user as the creator.\n        \n        **Rate Limiting:** Balanced throttle applied to prevent spam\n        \n        **Returns:** The created item with ID, timestamps, title, description, category, tags, initial average rating (0), and creator ID\n    "
-  createItem(item_data: CreateItemInput!): ItemModel!
-
-  "\n        Create a new review for an item with a rating and text content.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can create reviews\n        \n        **Effect:** Creates a new review with content (10-2000 characters) and rating (0-10) for the specified item. The review is associated with the authenticated user. The item's average rating is recalculated upon review creation.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** The created review with ID, timestamps, content, rating, initial vote count (0), creator ID, and related item ID\n    "
+  "\nCreates a new review for an item with a rating and text content.\n\n- **Returns:** The created review details.\n\n- **Constraints:**\n  - `content`: 10-2000 characters (trimmed).\n  - `rating`: Integer between 0-10 (inclusive).\n  - `itemId`: Must be a valid UUID referencing an existing item.\n  - Users cannot review their own items (self-review prevention).\n  - One review per user per item (enforced by unique constraint in the database).\n\n- **Side Effects:**\n  - Content is trimmed (whitespace removal).\n  - Review is associated with the authenticated user as `createdBy`.\n  - Review is linked to the specified item as `relatedItem`.\n  - Initial vote counts set to 0.\n\n- **Rate Limiting:** 1000 requests per minute per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** `REVIEWER` role (assigned by default on sign-up).\n\n- **Account Status Required:** `ACTIVE` only — email verification must be completed.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `FORBIDDEN`: Account status is not `ACTIVE` OR user lacks `REVIEWER` role OR user is trying to review their own item.\n  - `NOT_FOUND`: Item with the provided `itemId` does not exist OR invalid UUID format.\n  - `CONFLICT`: User has already reviewed this item.\n  - `BAD_USER_INPUT`: Validation failed (content length, rating range, missing fields).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Business Rules:**\n  - Self-review prevention: creators cannot review their own items to prevent rating manipulation.\n  - One review per user per item: enforced via database unique constraint on `(createdBy, relatedItem)`.\n\n- **Data Integrity:**\n  - Reviews use denormalized vote counters (`upvotes`, `downvotes`) for query performance.\n  - Vote counts are periodically synchronized via a **scheduled cron job**.\n\n- **Additional Notes:**\n  - Item's average rating is computed in real-time from all reviews when queried.\n    "
   createReview(review_data: CreateReviewInput!): ReviewModel!
 
-  "\n        Vote for a review to help highlight helpful reviews to other users.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** ACTIVE - only users with active accounts can vote on reviews\n        \n        **Effect:** Increments the vote count for the specified review by 1. This helps surface the most helpful reviews to other users.\n        \n        **Rate Limiting:** Relaxed throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
-  voteReview(review_id: ID!): Boolean!
+  "\nCreates a new item (product/business/entity) to be rated and reviewed.\n\n- **Returns:** The created item details.\n\n- **Constraints:**\n  - `title`: 5-40 characters (trimmed).\n  - `description`: 5-500 characters (trimmed).\n  - `category`: 3-40 characters (trimmed and lowercased for consistency).\n  - `tags`: Optional array, max 10 tags, each 2-20 characters (trimmed and lowercased).\n  - Title must be unique.\n\n- **Side Effects:**\n  - Title is trimmed (whitespace removal).\n  - Description is trimmed.\n  - Category is normalized: trimmed and converted to lowercase.\n  - Tags array is normalized: each tag trimmed and lowercased, duplicates preserved.\n  - Item is associated with the authenticated user as `createdBy`.\n\n- **Rate Limiting:** 100 requests per minute per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** `CREATOR` role (assigned by default on sign-up).\n\n- **Account Status Required:** `ACTIVE` only — email verification must be completed.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `FORBIDDEN`: Account status is not `ACTIVE` or user lacks `CREATOR` role.\n  - `CONFLICT`: Item with the same title already exists.\n  - `BAD_USER_INPUT`: Validation failed (title/description/category length, tags array size).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Additional Notes:**\n  - Users cannot review their own items (enforced at review creation).\n  - Items can be filtered by category, tag, or creator via the `filterItems` query.\n  - Average rating is computed dynamically from associated reviews.\n    "
+  createItem(item_data: CreateItemInput!): ItemModel!
 
-  "\n        Register a new user account with email and password credentials.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Account Status:** Creates a new account with PENDING_VERIFICATION status\n        \n        **Session:** Upon successful registration, a new user session is created and a session cookie (connect.sid) is set in the response. This cookie is used for authentication in subsequent requests.\n        \n        **Rate Limiting:** Critical throttle applied to prevent abuse\n        \n        **Returns:** Account details including user ID, username, email, roles, account status, and reputation score\n    "
+  "\nCasts an upvote or downvote on a review.\n\n- **Returns:** Boolean `true` indicating the vote was successfully recorded.\n\n- **Constraints:**\n  - `vote`: Must be either `UP` or `DOWN` (VoteAction enum).\n  - `reviewId`: Must be a valid UUID referencing an existing review.\n\n- **Side Effects:**\n  - Vote is recorded in the database with `createdBy` (user) and `relatedReview` (review ID).\n  - If user previously voted differently on this review, the old vote is removed first.\n  - Review's denormalized vote counters (`upvotes`/`downvotes`) are updated atomically.\n  - If user votes with the same action again, operation is **idempotent** (no change).\n\n- **Concurrency Control:**\n  - Uses **pessimistic locking** (`SELECT ... FOR UPDATE`) on the user row.\n  - All vote operations for the same user are serialized (prevents race conditions).\n  - Entire operation runs within a **database transaction** for atomicity.\n  - Prevents duplicate votes or inconsistent counters during rapid voting.\n\n- **Rate Limiting:** 1000 requests per minute per user or IP address.\n\n- **Authentication:** Required — valid session cookie must be present.\n\n- **Roles Required:** `REVIEWER` role (assigned by default on sign-up).\n\n- **Account Status Required:** `ACTIVE` only — email verification must be completed.\n\n- **Data Integrity:**\n  - Vote counters are denormalized on the review for fast read performance.\n  - A **scheduled cron job** (daily at midnight) reconciles counters with actual votes.\n  - Transaction ensures atomic update of both vote record and counters.\n\n- **Additional Notes:**\n  - Use `deleteVote` to remove a vote entirely.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `FORBIDDEN`: Account status is not `ACTIVE` OR user lacks `REVIEWER` role.\n  - `NOT_FOUND`: Review with the provided `reviewId` does not exist or invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  voteReview(vote_data: CreateVoteInput!): Boolean!
+
+  "\nRemoves the authenticated user's vote from a review.\n\n- **Returns:** Boolean — `true` if a vote was removed, `false` if no vote existed.\n\n- **Constraints:**\n  - `reviewId`: Must be a valid UUID referencing an existing review.\n\n- **Side Effects:**\n  - If user has voted on this review, the vote is deleted from the database.\n  - Review's denormalized vote counters (`upvotes`/`downvotes`) are decremented atomically.\n  - If no vote exists, operation completes successfully with `false` return.\n\n- **Concurrency Control:**\n  - Uses **pessimistic locking** (`SELECT ... FOR UPDATE`) on the user row.\n  - All vote operations for the same user are serialized (prevents race conditions).\n  - Entire operation runs within a **database transaction** for atomicity.\n  - Prevents double-deletion or inconsistent counters during rapid operations.\n\n- **Rate Limiting:** 1000 requests per minute per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** `REVIEWER` role (assigned by default on sign-up).\n\n- **Account Status Required:** `ACTIVE` only — email verification must be completed.\n\n- **Data Integrity:**\n  - Vote counters updated within the same transaction as vote deletion.\n  - A **scheduled cron job** (daily at midnight) reconciles counters as backup.\n  - Transaction rollback ensures consistency if any step fails.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED` — Not authenticated (no valid session).\n  - `FORBIDDEN` — Account status is not `ACTIVE` or user lacks `REVIEWER` role.\n  - `NOT_FOUND` — Review with the provided `reviewId` does not exist or invalid UUID format.\n  - `TOO_MANY_REQUESTS` — Rate limit exceeded.\n    "
+  deleteVote(reviewId: String!): Boolean!
+
+  "\nSuspends a user account, restricting their access to protected operations.\n\n- **Returns:** Boolean `true` indicating the account was successfully suspended.\n\n- **Constraints:**\n  - `user_id`: Must be a valid UUID referencing an existing user.\n  - Target user cannot be an `ADMIN` (admins are protected from suspension).\n  - Target user cannot be a `MODERATOR` (moderators are protected from suspension).\n  - Target user cannot already be `SUSPENDED`.\n\n- **Side Effects:**\n  - Target user's account status is changed to `SUSPENDED`.\n  - User cache entry is invalidated in **Redis**.  \n  - Suspended users can still sign in but cannot perform protected operations.\n\n- **Rate Limiting:** 3 requests per minute per user or IP address.\n\n- **Authentication:** Required — valid session cookie must be present.\n\n- **Roles Required:** `MODERATOR` role only.\n\n- **Account Status Required:** `ACTIVE`.\n\n- **Suspension Effects:**\n  - Suspended users can sign in.\n  - Suspended users cannot: create items, write reviews, vote, request verification.\n  - Suspended users CAN: sign out, request account deletion.\n\n- **Security:**\n  - Role hierarchy enforced: moderators cannot suspend equal or higher roles.\n  - All suspension attempts are logged with moderator ID and target ID.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `FORBIDDEN`: Caller lacks `MODERATOR` role or caller's account is not `ACTIVE` or target is `ADMIN`/`MODERATOR`.\n  - `NOT_FOUND`: User with the provided ID does not exist or invalid UUID format.\n  - `CONFLICT`: Target user is already suspended.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  suspendAccount(user_id: ID!): Boolean!
+
+  "\nReactivates a previously suspended user account, restoring access to protected operations.\n\n- **Returns:** Boolean true indicating the account was successfully reactivated.\n\n- **Constraints:**\n  - user_id: Must be a valid UUID referencing an existing user.\n  - Target user cannot be an ADMIN (admins are protected from moderation changes).\n  - Target user cannot be a MODERATOR (moderators are protected from moderation changes).\n  - Target user must currently be SUSPENDED.\n\n- **Side Effects:**\n  - Target user's account status is changed to ACTIVE.\n  - User cache entry is invalidated in Redis.\n  - Reactivated users regain access to protected operations.\n\n- **Rate Limiting:** 3 requests per minute per user or IP address.\n\n- **Authentication:** Required — valid session cookie must be present.\n\n- **Roles Required:** MODERATOR role only.\n\n- **Account Status Required:** ACTIVE.\n\n- **Security:**\n  - Role hierarchy enforced: moderators cannot reactivate equal or higher roles.\n  - All reactivation attempts are logged with moderator ID and target ID.\n\n- **Possible Errors:**\n  - UNAUTHORIZED: Not authenticated (no valid session).\n  - FORBIDDEN: Caller lacks MODERATOR role or caller's account is not ACTIVE or target is ADMIN/MODERATOR.\n  - NOT_FOUND: User with the provided ID does not exist or invalid UUID format.\n  - CONFLICT: Target user is not suspended.\n  - TOO_MANY_REQUESTS: Rate limit exceeded.\n    "
+  reactivateAccount(user_id: ID!): Boolean!
+
+  "\nCreates a new user account with **PENDING_VERIFICATION** status.\n\n- **Returns:** The created user account details.\n\n- **Constraints:**\n  - Email must be unique and in valid email format (max 254 characters).\n  - Username must be unique, between 3-30 characters.\n  - Password must be between 8-60 characters.\n\n- **Side Effects:**\n  - Username is trimmed (leading/trailing whitespace removed).\n  - Password is securely hashed using **Argon2id**.\n  - A server-side session is created and stored in **Redis** with configurable expiration.\n  - Session cookie (`connect.sid`) is set with HttpOnly, Secure, and SameSite flags.\n  - Default roles assigned: `REVIEWER` and `CREATOR`.\n  - Account status set to `PENDING_VERIFICATION`.\n\n- **Rate Limiting:** 3 requests per minute per IP.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Additional Notes:**\n  - The password field is never returned in responses.\n  - To upgrade from `PENDING_VERIFICATION` to `ACTIVE` status, complete email verification via `requestAccountVerification`.\n  - Active status is required to create items, write reviews, and vote.\n\n- **Possible Errors:**\n  - `CONFLICT`: Email or username already exists in the system.\n  - `BAD_REQUEST`: Validation failed (invalid email format, password too short/long, username constraints).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
   signUp(user_data: SignUpInput!): AccountModel!
 
-  "\n        Authenticate a user with email and password credentials.\n        \n        **Authentication:** Not required (public endpoint)\n        \n        **Authorization:** None\n        \n        **Account Status:** Any account status can sign in, but access to other operations may be restricted based on status\n        \n        **Session:** Upon successful authentication, a new user session is created and a session cookie (connect.sid) is set in the response. This cookie is used for authentication in subsequent requests.\n        \n        **Session Limits:** Users are subject to a maximum number of concurrent sessions (hard limit). When this limit is reached, new sign-in attempts will be rejected with a \"Maximum sessions reached\" error. Sessions are NOT automatically evicted - users must explicitly sign out of existing sessions before creating new ones.\n        \n        **Rate Limiting:** Critical throttle applied to prevent brute force attacks\n        \n        **Returns:** Account details including user ID, username, email, roles, account status, and reputation score\n    "
+  "\nAuthenticates a user with email and password credentials.\n\n- **Returns:** Account details.\n\n- **Constraints:**\n  - Email must be provided and in valid format.\n  - Password must match the stored hash.\n  - User must not exceed the maximum concurrent sessions limit.\n\n- **Side Effects:**  \n  - A new server-side session is created and stored in **Redis**.\n  - Session cookie (`connect.sid`) is set with HttpOnly, Secure, and SameSite flags.\n  - Failed login attempts are logged for security monitoring.\n\n- **Rate Limiting:** 3 requests per minute per IP. \n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** Any status can sign in, but protected operations may be restricted based on status (e.g., `SUSPENDED` accounts have limited access).\n\n- **Session Management:**\n  - Maximum concurrent sessions are enforced (hard limit configured server-side).\n  - Sessions are NOT automatically evicted — users must explicitly sign out.\n  - Each session is stored in Redis with automatic expiration.\n\n- **Security Features:**\n  - Password length is validated before database lookup (early rejection of obviously invalid attempts).\n  - Generic \"Invalid credentials\" message for both wrong email and wrong password (prevents user enumeration).\n  - All authentication attempts are logged.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Invalid credentials — email not found or password incorrect (same response prevents user enumeration).\n  - `FORBIDDEN`: Maximum concurrent sessions reached. User must sign out from another session or sign out all sessions.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
   signIn(credentials: SignInInput!): AccountModel!
 
-  "\n        Send an account verification email to the authenticated user's email address.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** PENDING_VERIFICATION - only users with pending verification status can request verification\n        \n        **Effect:** Sends a verification email with a confirmation link. Upon successful email verification, the account status is updated to ACTIVE, allowing full access to the platform.\n        \n        **Rate Limiting:** Ultra-critical throttle applied to prevent email spam\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  "\nSends an account verification email to the authenticated user's email address.\n\n- **Returns:** Boolean `true` indicating the verification email was successfully queued.\n\n- **Constraints:**\n  - User must be authenticated.\n  - Account status must be `PENDING_VERIFICATION` (already verified accounts cannot request verification).\n\n- **Side Effects:**\n  - A cryptographically secure **JWT token** is generated with the user's ID and a unique JTI (JWT ID).\n  - Verification email is queued via **BullMQ** job queue for reliable delivery.\n  - Email contains a one-time verification link that, when clicked, activates the account.\n  - Upon successful verification, account status changes from `PENDING_VERIFICATION` to `ACTIVE`.\n  - Used tokens are blacklisted to prevent replay attacks.\n\n- **Rate Limiting:** 3 requests per 20 minutes per user per IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** Any role (`REVIEWER`, `CREATOR`, `MODERATOR`, `ADMIN`).\n\n- **Account Status Required:** `PENDING_VERIFICATION` only.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `CONFLICT`: Account is already verified (`ACTIVE` status).\n  - `FORBIDDEN`: Account is `SUSPENDED` (not allowed to request verification).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Additional Notes:**\n  - Verification link expires after a configurable time period.\n  - Each token can only be used once (JTI blacklisting).\n  - Active account status unlocks full platform features: creating items, writing reviews, and voting.\n    "
   requestAccountVerification: Boolean!
 
-  "\n        Send an account deletion confirmation email to the authenticated user.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Effect:** Sends a confirmation email with a deletion link. The user must confirm the deletion via the email link for the account to be permanently deleted. This is a two-step process for security.\n        \n        **Rate Limiting:** Critical throttle applied to prevent abuse\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  "\nSends an account deletion confirmation email to the authenticated user.\n\n- **Returns:** Boolean `true` indicating the deletion confirmation email was successfully queued.\n\n- **Constraints:**\n  - User must be authenticated with a valid session.\n\n- **Side Effects:**\n  - A cryptographically secure **JWT token** is generated with the user's ID and a unique JTI.\n  - Deletion confirmation email is queued via **BullMQ** job queue for reliable delivery.\n  - Email contains a one-time deletion link that, when clicked, permanently deletes the account.\n  - Upon clicking the link, the following cascade occurs:\n    - User account is permanently deleted from the database.\n    - All user sessions are destroyed from Redis.\n    - Associated data (items, reviews, votes) is handled according to cascade rules.\n  - Used tokens are blacklisted to prevent replay attacks.\n\n- **Rate Limiting:** 3 requests per 20 minutes per user per IP address.\n\n- **Authentication:** Required — valid session cookie must be present.\n\n- **Roles Required:** Any role (`REVIEWER`, `CREATOR`, `MODERATOR`, `ADMIN`).\n\n- **Account Status Required:** Any status (`ACTIVE`, `PENDING_VERIFICATION`, `SUSPENDED`).\n\n- **Data Handling:**\n  - Account deletion is performed within a **database transaction** for data integrity.\n  - Related entities are handled via TypeORM cascade delete rules.\n  - User cache entries are invalidated upon deletion.\n\n- **Security Features:**\n  - Two-step process: request email → confirm via link.\n  - Each token can only be used once (JTI blacklisting).\n\n- **Additional Notes:**\n  - This action is **irreversible**. All user data will be permanently deleted.\n  - The deletion link expires after a configurable time period.\n  - Suspended accounts can also request deletion.\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
   requestAccountDeletion: Boolean!
 
-  "\n        Sign out the authenticated user from the current session.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Session:** Destroys the current user session on the server and clears the session cookie (connect.sid) from the client. The user will need to sign in again to access protected endpoints.\n        \n        **Effect:** Only signs out from the current session. Other active sessions on different devices/browsers remain active. Use signOutAll to terminate all sessions.\n        \n        **Rate Limiting:** Critical throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  "\nSends a sign-out-all confirmation email to the provided address for **remote session termination**.\n\n- **Returns:** A generic confirmation message: *\"An email has been sent to your email address if it exists in our system.\"* (same response regardless of email existence to prevent user enumeration).\n\n- **Constraints:**\n  - Email must be provided.\n  - If the email exists and account is not suspended, a sign-out email is queued.\n\n- **Side Effects:**\n  - If the email exists and account is `ACTIVE` or `PENDING_VERIFICATION`:\n    - A cryptographically secure **JWT token** is generated.\n    - Sign-out-all email is queued via **BullMQ** job queue.\n    - Email contains a one-time link that terminates all sessions.\n  - If email doesn't exist or account is `SUSPENDED`:\n    - Operation silently completes (no email sent).\n    - Same response returned (prevents user enumeration).\n  - Upon clicking the link, all user sessions are destroyed from Redis.\n  - Used tokens are blacklisted to prevent replay attacks.\n\n- **Rate Limiting:** 3 requests per 20 minutes per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** `ACTIVE` or `PENDING_VERIFICATION` (for email to be sent). `SUSPENDED` accounts are silently ignored for security.\n\n- **Security Features:**\n  - **User enumeration prevention:** Same response for existing/non-existing emails.\n  - **Suspended account protection:** Suspended accounts don't receive emails.\n  - Allows users to revoke all sessions remotely without being logged in.\n\n- **Additional Notes:**\n  - This is the unauthenticated alternative to `signOutAll`.\n  - Sign-out link expires after a configurable time period.\n  - Each token can only be used once (JTI blacklisting).\n\n- **Possible Errors:**\n  - `BAD_REQUEST`: Invalid email format provided.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
+  requestSignOutAll(input: RequestSignOutAllInput!): String!
+
+  "\nSigns out the authenticated user from the current session.\n\n- **Returns:** Boolean `true` indicating successful sign-out.\n\n- **Constraints:**\n  - User must be authenticated with a valid session.\n\n- **Side Effects:**\n  - Current session is destroyed from the **Redis** session store.\n  - Session cookie is cleared from the client.\n  - Sign-out event is logged for audit purposes.\n\n- **Rate Limiting:** 3 requests per minute per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** Any role (`REVIEWER`, `CREATOR`, `MODERATOR`, `ADMIN`).\n\n- **Account Status Required:** Any status (`ACTIVE`, `PENDING_VERIFICATION`, `SUSPENDED`).\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated (no valid session).\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Additional Notes:**\n  - Use `signOutAll` to terminate all sessions.\n    "
   signOut: Boolean!
 
-  "\n        Sign out the authenticated user from all active sessions across all devices.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** All roles allowed (USER, MODERATOR, ADMIN)\n        \n        **Account Status Required:** Any status (ACTIVE, PENDING_VERIFICATION, SUSPENDED)\n        \n        **Re-authentication:** Requires the user's password to be provided for security verification before terminating all sessions\n        \n        **Session:** Destroys all active user sessions on the server and clears the session cookie (connect.sid) from the current client. The user will be signed out from all devices and browsers and will need to sign in again.\n        \n        **Effect:** This is a security feature to revoke access from all devices. Useful if the user suspects their account has been compromised or wants to sign out from all locations remotely.\n        \n        **Rate Limiting:** Ultra-critical throttle applied to prevent abuse\n        \n        **Returns:** Boolean indicating success (true)\n    "
+  "\nSigns out the authenticated user from **all active sessions** across all devices.\n\n- **Returns:** Boolean `true` indicating all sessions were successfully terminated.\n\n- **Constraints:**\n  - User must be authenticated with a valid session.\n  - Re-authentication required: current password must be provided for security verification.\n\n- **Side Effects:**\n  - All user sessions are destroyed from the **Redis** session store.\n  - Session cookie is cleared from the current client.\n  - Security event is logged for audit trail.\n\n- **Rate Limiting:** 3 requests per 20 minutes per user or IP address.\n\n- **Authentication:** Required.\n\n- **Roles Required:** Any role (`REVIEWER`, `CREATOR`, `MODERATOR`, `ADMIN`).\n\n- **Account Status Required:** Any status (`ACTIVE`, `PENDING_VERIFICATION`, `SUSPENDED`).\n\n- **Possible Errors:**\n  - `UNAUTHORIZED`: Not authenticated or re-authentication password is incorrect.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n\n- **Additional Notes:**\n  - For remote sign-out without being logged in, use `requestSignOutAll` instead.\n    "
   signOutAll(credentials: ReAuthenticationInput!): Boolean!
+}
 
-  "\n        Suspend a user account, preventing them from accessing protected endpoints.\n        \n        **Authentication:** Required - user must be authenticated\n        \n        **Authorization:** Restricted to ADMIN and MODERATOR roles only\n        \n        **Account Status Required:** ACTIVE - the calling user must have an active account\n        \n        **Effect:** Changes the target user's account status to SUSPENDED, preventing them from accessing most endpoints. Suspended users can still sign in but will have limited access.\n        \n        **Restrictions:** ADMIN accounts cannot be suspended. This prevents accidental or malicious suspension of administrator accounts.\n        \n        **Rate Limiting:** Critical throttle applied\n        \n        **Returns:** Boolean indicating success (true)\n    "
-  suspendAccount(user_id: ID!): Boolean!
+"""Input data required to create a new review for an item."""
+input CreateReviewInput {
+  """
+  The text content of the review. Minimum length: 10, Maximum length: 2000.
+  """
+  content: String!
+
+  """The rating score. Minimum: 0, Maximum: 10."""
+  rating: Int!
+
+  """The unique ID of the item being reviewed."""
+  itemId: String!
 }
 
 """Input type for creating a new item"""
@@ -384,29 +438,24 @@ input CreateItemInput {
   tags: [String!] = []
 }
 
-"""Input data required to create a new review for an item."""
-input CreateReviewInput {
-  """
-  The text content of the review. Minimum length: 10, Maximum length: 2000.
-  """
-  content: String!
+"""Input data required to create a new vote for a review."""
+input CreateVoteInput {
+  """The action of the vote, either UP or DOWN."""
+  vote: VoteAction!
 
-  """The rating score. Minimum: 0, Maximum: 10."""
-  rating: Int!
-
-  """The unique ID of the item being reviewed."""
-  itemId: String!
+  """The unique ID of the review being voted on."""
+  reviewId: String!
 }
 
 """Input data required for user sign-up."""
 input SignUpInput {
-  "              \n        - **Maximum length:** 30 characters.\n        - **Minimum length:** 3 characters.        \n        "
+  "\n            The username for the account.\n            - **Minimum length:** 3 characters.\n            - **Maximum length:** 30 characters.\n        "
   username: String!
 
-  "        \n        - **Valid email format.**\n        - **Maximum length:** 45 characters.\n        "
+  "\n            The email address for the account.\n            - **Must be a valid email format.**\n        "
   email: String!
 
-  "        \n        - **Minimum length:** 8 characters.\n        - **Maximum length:** 60 characters.        \n        "
+  "\n            The password for the account.\n            - **Minimum length:** 8 characters.\n            - **Maximum length:** 60 characters.\n        "
   password: String!
 }
 
@@ -417,6 +466,12 @@ input SignInInput {
 
   """The password of the user."""
   password: String!
+}
+
+"""Input type for requesting sign out from all sessions"""
+input RequestSignOutAllInput {
+  """The email address of the user."""
+  email: String!
 }
 
 """Input type for re-authentication using password"""

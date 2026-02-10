@@ -1,28 +1,26 @@
-import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ReviewService } from './reviews.service';
-import { BalancedThrottle, RelaxedThrottle } from 'src/common/decorators/throttling.decorator';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import { RateLimit, RateLimitTier } from 'src/common/decorators/throttling.decorator';
+import { RequireAccountStatus } from 'src/common/decorators/min-account-status.decorator';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { CreateReviewInput } from './dtos/create-review.input';
-import { ReviewModel } from './models/review.model';
-import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
+import { ReviewModel } from './graphql/models/review.model';
 import { Public } from 'src/common/decorators/public.decorator';
-import { ReviewPaginationModel } from './models/pagination.model';
-import { ReviewsByUserArgs } from './dtos/args/reviews-by-user.args';
-import { ItemReviewsArgs } from './dtos/args/item-reviews.args';
-import { createReviewDocs } from './docs/createReview.docs';
-import { findAllReviewsByUserDocs } from './docs/findAllReviewsByUser.docs';
-import { findAllItemReviewsDocs } from './docs/findAllItemReviews.docs';
-import { voteReviewDocs } from './docs/voteReview.docs';
+import { ReviewPaginationModel } from './graphql/models/pagination.model';
+import { createReviewDocs } from './graphql/docs/createReview.docs';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from 'src/users/enums/user-role.enum';
+import { filterReviewsDocs } from './graphql/docs/filterReviews.docs';
+import { CreateReviewInput } from './graphql/inputs/create-review.input';
+import { ReviewFiltersArgs } from './graphql/args/review-filters.args';
 
-@Resolver()
+@Resolver(() => ReviewModel)
 export class ReviewResolver {
     constructor(private readonly reviewService: ReviewService) {}
 
-    @RelaxedThrottle()
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @AllRolesAllowed()
+    @RateLimit(RateLimitTier.RELAXED)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
+    @Roles(UserRole.REVIEWER)
     @Mutation(() => ReviewModel, createReviewDocs)
     async createOne(
         @Args('review_data') review: CreateReviewInput,
@@ -32,28 +30,9 @@ export class ReviewResolver {
     }
 
     @Public()
-    @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, findAllReviewsByUserDocs)
-    async findAllReviewsByUser(@Args() args: ReviewsByUserArgs) {
-        return this.reviewService.findAllByUser(args);
-    }
-
-    @Public()
-    @BalancedThrottle()
-    @Query(() => ReviewPaginationModel, findAllItemReviewsDocs)
-    async findAllItemReviews(@Args() args: ItemReviewsArgs) {
-        return await this.reviewService.findAllItemReviews(args);
-    }
-
-    @RelaxedThrottle()
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
-    @AllRolesAllowed()
-    @Mutation(() => Boolean, voteReviewDocs)
-    async voteReview(
-        @Args('review_id', { type: () => ID }) reviewId: string,
-        @Context('req') req: RequestContext,
-    ) {
-        await this.reviewService.voteReview(reviewId, req.user);
-        return true;
+    @RateLimit(RateLimitTier.BALANCED)
+    @Query(() => ReviewPaginationModel, filterReviewsDocs)
+    async filterReviews(@Args() filters: ReviewFiltersArgs) {
+        return await this.reviewService.filterReviews(filters);
     }
 }

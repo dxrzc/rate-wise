@@ -1,0 +1,90 @@
+services:
+  app:        
+    restart: always
+    pull_policy: never
+    init: true
+    depends_on:      
+      migrate:
+        condition: service_completed_successfully          
+      redis_auth:
+        condition: service_started   
+      redis_queues: 
+        condition: service_started   
+      mailpit:
+        condition: service_started      
+    environment:      
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise   
+      REDIS_AUTH_URI: redis://redis_auth:6379
+      REDIS_QUEUES_URI: redis://redis_queues:6378
+      REDIS_CACHE_URI: redis://redis_cache:6380
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_USER: dev
+      SMTP_PASS: devPass            
+
+  postgres:
+    image: postgres:17.5-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: ratewise
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d ratewise"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  redis_queues:
+    image: redis:8.0-alpine
+    restart: always
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6378"]
+    volumes:
+      - /data
+      - ../redis/redis-queues.conf:/usr/local/etc/redis/redis.conf
+
+  redis_auth:
+    image: redis:8.0-alpine
+    restart: always
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - /data
+      - ../redis/redis-auth.conf:/usr/local/etc/redis/redis.conf
+
+
+  redis_cache:
+    image: redis:8.0-alpine
+    restart: always
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "6380"]
+    volumes:
+      - /data
+      - ../redis/redis-cache.conf:/usr/local/etc/redis/redis.conf      
+
+  mailpit:
+    image: axllent/mailpit:v1.27.6
+    restart: always
+    volumes:
+      - /data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+      MP_SEND_API_AUTH_ACCEPT_ANY: 1
+
+  migrate:    
+    image: ratewise:migrate
+    restart: no
+    pull_policy: never
+    build:
+      context: ..
+      target: development   
+    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
+    volumes:
+      - ../db:/usr/src/app/db
+    depends_on:
+      postgres:
+        condition: service_healthy  
+    environment:
+      POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise         

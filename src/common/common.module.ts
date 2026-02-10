@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { HashingService } from './services/hashing.service';
-import { DateScalar } from './graphql/scalars/date-scalar.scalar';
+import { DateScalar } from './graphql/date-scalar.scalar';
 
 @Module({
-    providers: [HashingService, DateScalar],
-    exports: [HashingService],
+    providers: [DateScalar],
+    exports: [],
 })
 export class CommonModule {}

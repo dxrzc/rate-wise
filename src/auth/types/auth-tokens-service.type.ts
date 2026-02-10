@@ -1,4 +1,6 @@
 import { TokensService } from 'src/tokens/tokens.service';
 
-// All the tokens used in authentication contain the user id in payload
+/**
+ * Defines a token service containing the user id in paylaod
+ */
 export type AuthTokenService = TokensService<{ id: string }>;

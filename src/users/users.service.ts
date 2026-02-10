@@ -1,19 +1,19 @@
-import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
-import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
-import { SignUpInput } from 'src/auth/dtos/sign-up.input';
+import { validUUID } from 'src/common/utils/valid-uuid.util';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { USER_MESSAGES } from './messages/user.messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createUserCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
+import { ICreateUserData } from './interfaces/create-user-data.interface';
+import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
+import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 
 @Injectable()
 export class UsersService {
@@ -26,18 +26,17 @@ export class UsersService {
         private readonly logger: HttpLoggerService,
     ) {}
 
-    /**
-     * Deletes user in redis cache
-     */
-    private async deleteUserFromCache(id: string): Promise<void> {
+    private handleNonExistingUser(id: string): never {
+        this.logger.error(`User with id ${id} not found`);
+        throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+    }
+
+    async deleteUserFromCache(id: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
     }
 
-    /**
-     * Validates uuid or throws.
-     */
     private validUuidOrThrow(id: string) {
         if (!validUUID(id)) {
             this.logger.error('Invalid UUID');
@@ -61,10 +60,14 @@ export class UsersService {
      */
     async findOneByIdOrThrow(id: string) {
         const userFound = await this.findOneById(id);
-        if (!userFound) {
-            this.logger.error(`Item with id ${id} not found`);
-            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
-        }
+        if (!userFound) this.handleNonExistingUser(id);
+        return userFound;
+    }
+
+    async findOneByIdOrThrowTx(id: string, manager: EntityManager): Promise<User> {
+        this.validUuidOrThrow(id);
+        const userFound = await manager.withRepository(this.userRepository).findOneBy({ id });
+        if (!userFound) this.handleNonExistingUser(id);
         return userFound;
     }
 
@@ -90,7 +93,7 @@ export class UsersService {
             const userFound = await this.findOneByIdOrThrow(id);
             await this.cacheManager.set(cacheKey, {
                 ...userFound,
-                password: undefined,
+                passwordHash: undefined,
             });
             this.logger.info(`User with id ${id} cached`);
             return userFound;
@@ -98,15 +101,17 @@ export class UsersService {
         return userInCache;
     }
 
-    /**
-     * - Find all users using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
     async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<User>> {
         return await this.paginationService.create({
             ...paginationArgs,
             cache: true,
         });
+    }
+
+    async existsOrThrow(id: string): Promise<void> {
+        this.validUuidOrThrow(id);
+        const exists = await this.userRepository.existsBy({ id });
+        if (!exists) this.handleNonExistingUser(id);
     }
 
     async saveOne(user: User) {
@@ -117,7 +122,7 @@ export class UsersService {
             return saved;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
@@ -134,28 +139,25 @@ export class UsersService {
             return updated;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }
     }
 
-    async deleteOne(id: string): Promise<void> {
-        const userToDelete = await this.findOneByIdOrThrow(id);
-        await this.userRepository.remove(userToDelete);
-        this.logger.info(`User with id ${id} deleted from database`);
-        await this.deleteUserFromCache(id);
+    async deleteOneTx(user: User, manager: EntityManager): Promise<void> {
+        await manager.withRepository(this.userRepository).remove(user);
     }
 
-    async createOne(user: SignUpInput): Promise<User> {
+    async createOne(user: ICreateUserData): Promise<User> {
         try {
             const created = await this.userRepository.save(user);
             this.logger.info(`User created in database`);
             return created;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(USER_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);

@@ -1,8 +1,8 @@
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
-import { ItemModel } from 'src/items/models/item.model';
+import { ItemModel } from 'src/items/graphql/models/item.model';
 
-export function findItemById({ args, fields }: IOperation<string, ItemModel>) {
+export function findItemById({ args, fields, append }: IOperation<string, ItemModel>) {
     return operationFactory(
         {
             operationName: 'findItemById',
@@ -14,6 +14,7 @@ export function findItemById({ args, fields }: IOperation<string, ItemModel>) {
         {
             args,
             fields,
+            append,
         },
     );
 }

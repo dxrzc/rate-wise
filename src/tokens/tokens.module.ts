@@ -1,19 +1,19 @@
 import { DynamicModule, Module, OnApplicationShutdown } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { RedisConnection } from 'src/common/redis/redis.connection';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
 import {
     FactoryConfigModule,
     FactoryConfigModuleWithCustomToken,
-} from 'src/common/types/modules/factory-config.module.type';
+} from 'src/common/types/factory-config.module.type';
 import {
     TOKENS_FEATURE_OPTIONS,
     TOKENS_REDIS_CONNECTION,
     TOKENS_ROOT_OPTIONS,
-} from './constants/tokens.constants';
-import { ITokensFeatureOptions } from './interfaces/tokens.feature.options.interface';
-import { ITokensRootOptions } from './interfaces/tokens.root.options.interface';
+} from './di/tokens.providers';
+import { ITokensFeatureOptions } from './config/tokens-feature.options';
+import { ITokensRootOptions } from './config/tokens-root.options';
 import { TokensService } from './tokens.service';
+import { RedisConnection } from 'src/redis/client/redis.connection';
 
 @Module({})
 export class TokensModule implements OnApplicationShutdown {
@@ -37,8 +37,11 @@ export class TokensModule implements OnApplicationShutdown {
                 {
                     provide: TOKENS_REDIS_CONNECTION,
                     useFactory: async (moduleOpts: ITokensRootOptions) => {
-                        const redisUri = moduleOpts.connection.redisUri;
-                        const redisClient = new RedisClientAdapter(redisUri, 'Tokens');
+                        const redisClient = new RedisClientAdapter({
+                            redisUri: moduleOpts.connection.redisUri,
+                            context: TokensModule.name,
+                            disableOfflineQueue: true,
+                        });
                         TokensModule.redisConnection = redisClient.connection;
                         await redisClient.connection.connect();
                         return redisClient;

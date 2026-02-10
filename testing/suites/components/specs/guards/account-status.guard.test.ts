@@ -5,13 +5,16 @@ import { APP_GUARD } from '@nestjs/core';
 import { Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Writable } from '@testing/tools/types/writable.type';
 import { AccountStatusGuard } from 'src/auth/guards/account-status.guard';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { AllAccountStatusesAllowed } from 'src/common/decorators/all-account-statuses-allowed.decorator';
-import { MinAccountStatusRequired } from 'src/common/decorators/min-account-status.decorator';
+import {
+    ALL_ACCOUNT_STATUSES,
+    RequireAccountStatus,
+} from 'src/common/decorators/min-account-status.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { Code } from 'src/common/enum/code.enum';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
@@ -30,19 +33,19 @@ export class TestResolver {
         return true;
     }
 
-    @MinAccountStatusRequired(AccountStatus.ACTIVE)
+    @RequireAccountStatus(AccountStatus.ACTIVE)
     @Query(() => Boolean)
     activeOnly(): boolean {
         return true;
     }
 
-    @MinAccountStatusRequired(AccountStatus.PENDING_VERIFICATION)
+    @RequireAccountStatus(AccountStatus.PENDING_VERIFICATION, AccountStatus.ACTIVE)
     @Query(() => Boolean)
-    pendingVerOnly(): boolean {
+    pendingVerOrActive(): boolean {
         return true;
     }
 
-    @AllAccountStatusesAllowed()
+    @RequireAccountStatus(ALL_ACCOUNT_STATUSES)
     @Query(() => Boolean)
     allAllowed(): boolean {
         return true;
@@ -52,7 +55,7 @@ export class TestResolver {
 describe('AccountStatus Guard', () => {
     let testingModule: TestingModule;
     let app: NestExpressApplication;
-    let mockReqData: { user: Partial<AuthenticatedUser> };
+    let mockReqData: { user: Partial<Writable<AuthenticatedUser>> };
     const resolver = TestResolver.prototype;
 
     beforeAll(async () => {
@@ -74,7 +77,7 @@ describe('AccountStatus Guard', () => {
                 status: AccountStatus.PENDING_VERIFICATION,
                 email: 'user@gmail.com',
                 username: 'TestUser',
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER, UserRole.CREATOR],
                 id: '12345',
             },
         };
@@ -110,10 +113,10 @@ describe('AccountStatus Guard', () => {
         });
     });
 
-    describe('Account status required is "PENDING_VERIFICATION"', () => {
+    describe('Account status required is "PENDING_VERIFICATION" or "ACTIVE"', () => {
         describe('User account status is "SUSPENDED"', () => {
             test('return forbidden code and account is suspended error message', async () => {
-                const query = generateGqlQuery(resolver.pendingVerOnly.name);
+                const query = generateGqlQuery(resolver.pendingVerOrActive.name);
                 mockReqData.user.status = AccountStatus.SUSPENDED;
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
                 expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.ACCOUNT_IS_SUSPENDED);
@@ -121,7 +124,7 @@ describe('AccountStatus Guard', () => {
         });
     });
 
-    describe('Graphql operation contains the @AllStatusesAllowed decorator', () => {
+    describe('Graphql operation contains ALL_ACCOUNT_STATUSES', () => {
         describe('User account status is "SUSPENDED"', () => {
             test('guard grant access', async () => {
                 const query = generateGqlQuery(resolver.allAllowed.name);

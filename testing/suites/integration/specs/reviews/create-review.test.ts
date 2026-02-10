@@ -3,16 +3,17 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { createReview } from '@testing/tools/gql-operations/reviews/create-review.operation';
+import { findItemById } from '@testing/tools/gql-operations/items/find-by-id.operation';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { Code } from 'src/common/enum/code.enum';
-import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
+import { Code } from 'src/common/enums/code.enum';
 import { Item } from 'src/items/entities/item.entity';
 import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 import { REVIEW_MESSAGES } from 'src/reviews/messages/reviews.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('Gql - createReview', () => {
-    async function createItemForOtherAccount(): Promise<Item> {
+    async function createItemFromNewAccount(): Promise<Item> {
         const { id } = await createAccount({ status: AccountStatus.ACTIVE });
         return await createItem(id);
     }
@@ -26,8 +27,29 @@ describe('Gql - createReview', () => {
         });
     });
 
+    describe('User reviews the same item twice', () => {
+        test('return conflict code and item already reviewed error message', async () => {
+            const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: itemId } = await createItemFromNewAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            // review 1st time
+            await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            // review again
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).toFailWith(Code.CONFLICT, REVIEW_MESSAGES.ALREADY_REVIEWED);
+        });
+    });
+
     describe('Invalid item id provided', () => {
-        test('return bad request code and invalid input error message', async () => {
+        test('return not found code and item not found error message', async () => {
             const { sessionCookie } = await createAccount({ status: AccountStatus.ACTIVE });
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
@@ -36,16 +58,16 @@ describe('Gql - createReview', () => {
             const response = await testKit.gqlClient
                 .send(createReview({ args: reviewData, fields: ['id'] }))
                 .set('Cookie', sessionCookie);
-            expect(response).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+            expect(response).toFailWith(Code.NOT_FOUND, ITEMS_MESSAGES.NOT_FOUND);
         });
     });
 
-    describe('Pending verification attempts to create a review', () => {
+    describe('User with account status "pending verification" attempts to create a review', () => {
         test('return forbidden code and account is not active error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.PENDING_VERIFICATION,
             });
-            const { id: validItemId } = await createItemForOtherAccount();
+            const { id: validItemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: validItemId,
@@ -57,12 +79,12 @@ describe('Gql - createReview', () => {
         });
     });
 
-    describe('Suspended account attempts to create a review', () => {
+    describe('User with account status "suspended" attempts to create a review', () => {
         test('return forbidden code and account is suspended error message', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.SUSPENDED,
             });
-            const { id: validItemId } = await createItemForOtherAccount();
+            const { id: validItemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: validItemId,
@@ -109,12 +131,51 @@ describe('Gql - createReview', () => {
         });
     });
 
+    describe('User with account status "active" and role "reviewer" attempts to create a review', () => {
+        test('create review successfully', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.REVIEWER],
+            });
+            const { id: itemId } = await createItemFromNewAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const response = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(response).notToFail();
+        });
+    });
+
+    describe.each([UserRole.CREATOR, UserRole.MODERATOR, UserRole.ADMIN])(
+        'Users with account status "active" and role "%s" attempt to create a review',
+        (role) => {
+            test('return forbidden code and forbidden error message', async () => {
+                const { sessionCookie } = await createAccount({
+                    status: AccountStatus.ACTIVE,
+                    roles: [role],
+                });
+                const { id: itemId } = await createItemFromNewAccount();
+                const reviewData = {
+                    ...testKit.reviewSeed.reviewInput,
+                    itemId: itemId,
+                };
+                const response = await testKit.gqlClient
+                    .send(createReview({ args: reviewData, fields: ['id'] }))
+                    .set('Cookie', sessionCookie);
+                expect(response).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
+            });
+        },
+    );
+
     describe('Review created successfully', () => {
-        test('votes should be 0 by default', async () => {
+        test('upVotes should be 0 by default', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
-            const { id: itemId } = await createItemForOtherAccount();
+            const { id: itemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: itemId,
@@ -125,14 +186,32 @@ describe('Gql - createReview', () => {
                 .expect(success);
             const reviewId = body.data.createReview.id;
             const reviewInDb = await testKit.reviewRepos.findOneBy({ id: reviewId });
-            expect(reviewInDb!.votes).toBe(0);
+            expect(reviewInDb!.upVotes).toBe(0);
+        });
+
+        test('downVotes should be 0 by default', async () => {
+            const { sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+            });
+            const { id: itemId } = await createItemFromNewAccount();
+            const reviewData = {
+                ...testKit.reviewSeed.reviewInput,
+                itemId: itemId,
+            };
+            const { body } = await testKit.gqlClient
+                .send(createReview({ args: reviewData, fields: ['id'] }))
+                .set('Cookie', sessionCookie)
+                .expect(success);
+            const reviewId = body.data.createReview.id;
+            const reviewInDb = await testKit.reviewRepos.findOneBy({ id: reviewId });
+            expect(reviewInDb!.downVotes).toBe(0);
         });
 
         test('rating should be the value provided by the user', async () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
-            const { id: itemId } = await createItemForOtherAccount();
+            const { id: itemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: itemId,
@@ -150,7 +229,7 @@ describe('Gql - createReview', () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
-            const { id: itemId } = await createItemForOtherAccount();
+            const { id: itemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: itemId,
@@ -168,7 +247,7 @@ describe('Gql - createReview', () => {
             const { id: userId, sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
-            const { id: itemId } = await createItemForOtherAccount();
+            const { id: itemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: itemId,
@@ -186,7 +265,7 @@ describe('Gql - createReview', () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
-            const { id: itemId } = await createItemForOtherAccount();
+            const { id: itemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: itemId,
@@ -204,7 +283,7 @@ describe('Gql - createReview', () => {
             const { sessionCookie } = await createAccount({
                 status: AccountStatus.ACTIVE,
             });
-            const { id: itemId } = await createItemForOtherAccount();
+            const { id: itemId } = await createItemFromNewAccount();
             const reviewData = {
                 ...testKit.reviewSeed.reviewInput,
                 itemId: itemId,
@@ -229,7 +308,7 @@ describe('Gql - createReview', () => {
                     const { sessionCookie } = await createAccount({
                         status: AccountStatus.ACTIVE,
                     });
-                    const { id: itemId } = await createItemForOtherAccount();
+                    const { id: itemId } = await createItemFromNewAccount();
                     const reviewData = {
                         ...testKit.reviewSeed.reviewInput,
                         itemId,
@@ -239,34 +318,75 @@ describe('Gql - createReview', () => {
                         .send(createReview({ args: reviewData, fields: ['id'] }))
                         .set('Cookie', sessionCookie)
                         .expect(success);
-                    const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
-                    expect(itemInDb!.averageRating).toBe(reviewData.rating);
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
+                    expect(body.data.findItemById.averageRating).toBe(reviewData.rating);
                 });
             });
 
-            describe('Five reviews created for item', () => {
-                test('item average should be the average of the five reviews', async () => {
-                    const { sessionCookie } = await createAccount({
-                        status: AccountStatus.ACTIVE,
-                    });
-                    const { id: itemId } = await createItemForOtherAccount();
-                    const ratings = [5, 4, 3, 2, 1];
+            describe('Multiple reviews created for item', () => {
+                test('item average should be an integer value when ratings sum evenly', async () => {
+                    const { id: itemId } = await createItemFromNewAccount();
+                    const ratings = [10, 10, 10, 10];
                     for (const rating of ratings) {
+                        const { sessionCookie } = await createAccount({
+                            status: AccountStatus.ACTIVE,
+                        });
                         const reviewData = {
                             ...testKit.reviewSeed.reviewInput,
-                            itemId: itemId,
+                            itemId,
                             rating,
                         };
-                        // create five reviews for item
+                        // create reviews for item using different users
                         await testKit.gqlClient
                             .send(createReview({ args: reviewData, fields: ['id'] }))
                             .set('Cookie', sessionCookie)
                             .expect(success);
                     }
-                    const itemInDb = await testKit.itemRepos.findOneBy({ id: itemId });
-                    const expectedAverage =
-                        ratings.reduce((sum, curr) => sum + curr, 0) / ratings.length;
-                    expect(itemInDb!.averageRating).toBe(expectedAverage);
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
+                    expect(body.data.findItemById.averageRating).toBe(10);
+                });
+
+                test('item average should support decimal values when ratings do not sum evenly', async () => {
+                    const { id: itemId } = await createItemFromNewAccount();
+                    const ratings = [10, 9, 9, 10];
+                    for (const rating of ratings) {
+                        const { sessionCookie } = await createAccount({
+                            status: AccountStatus.ACTIVE,
+                        });
+                        const reviewData = {
+                            ...testKit.reviewSeed.reviewInput,
+                            itemId,
+                            rating,
+                        };
+                        // create reviews for item using different users
+                        await testKit.gqlClient
+                            .send(createReview({ args: reviewData, fields: ['id'] }))
+                            .set('Cookie', sessionCookie)
+                            .expect(success);
+                    }
+                    const { body } = await testKit.gqlClient
+                        .send(
+                            findItemById({
+                                args: itemId,
+                                fields: ['averageRating'],
+                            }),
+                        )
+                        .expect(success);
+                    expect(body.data.findItemById.averageRating).toBe(9.5);
                 });
             });
         });

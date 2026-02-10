@@ -4,10 +4,10 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
-import { Code } from 'src/common/enum/code.enum';
+import { Code } from 'src/common/enums/code.enum';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
+import { UserModel } from 'src/users/graphql/models/user.model';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
-import { UserModel } from 'src/users/models/user.model';
 
 describe('Gql - findUserById', () => {
     describe('Invalid postgres id', () => {
@@ -80,14 +80,14 @@ describe('Gql - findUserById', () => {
             const cacheKey = createUserCacheKey(id);
             // trigger cache
             await testKit.gqlClient.send(findUserById({ fields: ['id'], args: id }));
-            const userInCache = await testKit.cacheManager.get<{ password: string }>(cacheKey);
-            expect(userInCache!.password).toBeUndefined();
+            const userInCache = await testKit.cacheManager.get<{ passwordHash: string }>(cacheKey);
+            expect(userInCache!.passwordHash).toBeUndefined();
         });
 
         test('return user in database without password', async () => {
             const { id } = await createAccount();
             const userInDb = (await testKit.userRepos.findOneBy({ id })) as any;
-            delete userInDb.password;
+            delete userInDb.passwordHash;
             delete userInDb.items;
             const res = await testKit.gqlClient
                 .send(findUserById({ fields: 'ALL', args: id }))
@@ -118,7 +118,7 @@ describe('Gql - findUserById', () => {
         test('return user in database without password', async () => {
             const { id } = await createAccount();
             const userInDb = (await testKit.userRepos.findOneBy({ id })) as any;
-            delete userInDb.password;
+            delete userInDb.passwordHash;
             delete userInDb.items;
             // trigger cache
             const cacheKey = createUserCacheKey(id);

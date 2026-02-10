@@ -5,13 +5,13 @@ import { APP_GUARD } from '@nestjs/core';
 import { Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Writable } from '@testing/tools/types/writable.type';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { AllRolesAllowed } from 'src/common/decorators/all-roles-allowed.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Code } from 'src/common/enum/code.enum';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
+import { ALL_ROLES, Roles } from 'src/common/decorators/roles.decorator';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
@@ -24,19 +24,19 @@ export class TestResolver {
         return true;
     }
 
-    @Roles([UserRole.ADMIN])
+    @Roles(UserRole.ADMIN)
     @Query(() => Boolean)
     adminRoleApplied(): boolean {
         return true;
     }
 
-    @Roles([UserRole.USER])
+    @Roles(UserRole.REVIEWER)
     @Query(() => Boolean)
     userRoleApplied(): boolean {
         return true;
     }
 
-    @Roles([UserRole.USER, UserRole.ADMIN])
+    @Roles(UserRole.REVIEWER, UserRole.ADMIN)
     @Query(() => Boolean)
     userAndminRolesApplied(): boolean {
         return true;
@@ -48,7 +48,7 @@ export class TestResolver {
         return true;
     }
 
-    @AllRolesAllowed()
+    @Roles(...ALL_ROLES)
     @Query(() => Boolean)
     allRoles(): boolean {
         return true;
@@ -58,7 +58,7 @@ export class TestResolver {
 describe('Roles Guard', () => {
     let testingModule: TestingModule;
     let app: NestExpressApplication;
-    let mockReqData: { user: Partial<AuthenticatedUser> };
+    let mockReqData: { user: Partial<Writable<AuthenticatedUser>> };
     const resolver = TestResolver.prototype;
 
     beforeEach(() => {
@@ -67,7 +67,7 @@ describe('Roles Guard', () => {
                 status: AccountStatus.PENDING_VERIFICATION,
                 email: 'user@gmail.com',
                 username: 'TestUser',
-                roles: [UserRole.USER],
+                roles: [UserRole.REVIEWER],
                 id: '12345',
             },
         };
@@ -109,7 +109,7 @@ describe('Roles Guard', () => {
     describe('Operation has the admin role applied', () => {
         describe('User does not have admin role in their roles', () => {
             test('return forbidden code and forbidden error message', async () => {
-                mockReqData.user.roles = [UserRole.USER, UserRole.MODERATOR];
+                mockReqData.user.roles = [UserRole.REVIEWER, UserRole.MODERATOR];
                 const query = generateGqlQuery(resolver.adminRoleApplied.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
                 expect(res).toFailWith(Code.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
@@ -131,7 +131,7 @@ describe('Roles Guard', () => {
     describe('Operation has the user and admin role applied', () => {
         describe('User has the user role', () => {
             test('guard grant access', async () => {
-                mockReqData.user.roles = [UserRole.USER];
+                mockReqData.user.roles = [UserRole.REVIEWER];
                 const query = generateGqlQuery(resolver.userAndminRolesApplied.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
                 expect(res).notToFail();
@@ -139,10 +139,10 @@ describe('Roles Guard', () => {
         });
     });
 
-    describe('Operation has the @AllRolesAllowed decorator applied', () => {
+    describe('Operation has the ALL_ROLES applied', () => {
         describe('User has all the roles', () => {
             test('guard grant access', async () => {
-                mockReqData.user.roles = [UserRole.ADMIN, UserRole.USER, UserRole.MODERATOR];
+                mockReqData.user.roles = [UserRole.ADMIN, UserRole.REVIEWER, UserRole.MODERATOR];
                 const query = generateGqlQuery(resolver.allRoles.name);
                 const res = await request(app.getHttpServer()).post('/graphql').send({ query });
                 expect(res).notToFail();

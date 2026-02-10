@@ -1,13 +1,13 @@
 import { DynamicModule, Global, Module, OnApplicationShutdown } from '@nestjs/common';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { FactoryConfigModule } from 'src/common/types/modules/factory-config.module.type';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
+import { FactoryConfigModule } from 'src/common/types/factory-config.module.type';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import { SESSIONS_ROOT_OPTIONS, SESSIONS_REDIS_CONNECTION } from './constants/sessions.constants';
+import { SESSIONS_ROOT_OPTIONS, SESSIONS_REDIS_CONNECTION } from './di/sessions.providers';
 import { SessionsEvents } from './events/sessions.events';
-import { ISessionsRootOptions } from './interfaces/sessions.root.options.interface';
+import { ISessionsRootOptions } from './config/sessions-root.interface';
 import { SessionMiddlewareFactory } from './middlewares/session.middleware.factory';
 import { SessionsService } from './sessions.service';
-import { RedisConnection } from 'src/common/redis/redis.connection';
+import { RedisConnection } from 'src/redis/client/redis.connection';
 
 @Global()
 @Module({})
@@ -34,8 +34,11 @@ export class SessionsModule implements OnApplicationShutdown {
                 {
                     provide: SESSIONS_REDIS_CONNECTION,
                     useFactory: async (moduleOpts: ISessionsRootOptions) => {
-                        const redisUri = moduleOpts.connection.redisUri;
-                        const redisClient = new RedisClientAdapter(redisUri, SessionsModule.name);
+                        const redisClient = new RedisClientAdapter({
+                            context: SessionsModule.name,
+                            redisUri: moduleOpts.connection.redisUri,
+                            disableOfflineQueue: true,
+                        });
                         SessionsModule.redisConnection = redisClient.connection;
                         await redisClient.connection.connect();
                         return redisClient;
@@ -46,7 +49,7 @@ export class SessionsModule implements OnApplicationShutdown {
                 SessionMiddlewareFactory,
                 SessionsEvents,
             ],
-            exports: [SessionsService, SessionMiddlewareFactory],
+            exports: [SessionsService, SessionMiddlewareFactory, SESSIONS_REDIS_CONNECTION],
         };
     }
 }

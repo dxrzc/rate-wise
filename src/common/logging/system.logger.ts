@@ -1,4 +1,4 @@
-import { Environment } from '../enum/environment.enum';
+import { Environment } from '../enums/environment.enum';
 import { ConsoleLogger } from '@nestjs/common';
 import * as winston from 'winston';
 
@@ -35,6 +35,23 @@ export class SystemLogger extends ConsoleLogger {
             SystemLogger.instance = new SystemLogger();
         }
         return SystemLogger.instance;
+    }
+
+    /**
+     * Logs the following types of exceptions: Error, AggregateError and unknown
+     * @param exception exception to log
+     * @param context context where the error was thrown
+     */
+    logAnyException(exception: unknown, context: string) {
+        if (exception instanceof Error) {
+            this.error(exception.message, exception.stack, context);
+        } else if (exception instanceof AggregateError) {
+            exception.errors.forEach((e) => {
+                this.error(e, context);
+            });
+        } else {
+            this.error(exception);
+        }
     }
 
     error(...args: Parameters<ConsoleLogger['error']>) {

@@ -3,25 +3,26 @@ import { Item } from 'src/items/entities/item.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { AccountStatus } from '../enums/account-status.enum';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 import { Review } from 'src/reviews/entities/review.entity';
+import { Vote } from 'src/votes/entities/vote.entity';
 
 @Entity('account')
 export class User extends BaseEntity {
-    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.USERNAME.MAX })
+    @Column({ type: 'varchar', unique: true, length: AUTH_RULES.USERNAME.MAX })
     username!: string;
 
-    @Column({ type: 'varchar', unique: true, length: AUTH_LIMITS.EMAIL.MAX })
+    @Column({ type: 'varchar', unique: true, length: AUTH_RULES.EMAIL.MAX })
     email!: string;
 
-    @Column({ type: 'varchar', length: AUTH_LIMITS.PASSWORD.MAX })
-    password!: string;
+    @Column({ type: 'text', name: 'password_hash' })
+    passwordHash!: string;
 
     @Column({
         type: 'enum',
         enum: UserRole,
         enumName: 'account_role_enum',
-        default: [UserRole.USER],
+        default: [UserRole.REVIEWER, UserRole.CREATOR],
         array: true,
     })
     roles!: UserRole[];
@@ -34,12 +35,12 @@ export class User extends BaseEntity {
     })
     status!: AccountStatus;
 
-    @Column('integer', { default: 0, name: 'reputation_score' })
-    reputationScore!: number;
-
     @OneToMany(() => Item, (item) => item.user)
     items!: Item[];
 
     @OneToMany(() => Review, (review) => review.user)
     reviews!: Review[];
+
+    @OneToMany(() => Vote, (vote) => vote.user)
+    votes!: Vote[];
 }

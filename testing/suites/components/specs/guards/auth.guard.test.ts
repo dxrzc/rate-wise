@@ -5,19 +5,28 @@ import { Query, Resolver } from '@nestjs/graphql';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { seconds } from '@nestjs/throttler';
-import session from 'express-session';
-import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { RequestContext } from 'src/auth/types/request-context.type';
-import { Code } from 'src/common/enum/code.enum';
 import request from 'supertest';
 import { Query as RestQuery } from '@nestjs/common';
 import { Public } from 'src/common/decorators/public.decorator';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { UsersService } from 'src/users/users.service';
+import { SessionsModule } from 'src/sessions/sessions.module';
+import { createLightweightRedisContainer } from '@components/utils/create-lightweight-redis.util';
+import { SessionMiddlewareFactory } from 'src/sessions/middlewares/session.middleware.factory';
+import { SessionsService } from 'src/sessions/sessions.service';
+import { User } from 'src/users/entities/user.entity';
+import { Code } from 'src/common/enums/code.enum';
+import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
+import { extractSessionIdFromCookie } from '@testing/tools/utils/get-sid-from-cookie.util';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
+import { sessionIsFullyCleaned } from '@components/utils/session-is-fully-cleaned.util';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
+import { disableSystemErrorLoggingForThisTest } from '@testing/tools/utils/disable-system-error-logging.util';
 
-// Test AuthGuard in isolation
-
+// Used to test the guard
 @Resolver()
 export class TestResolver {
     @Query(() => Boolean, { name: 'testQuery' })
@@ -25,82 +34,82 @@ export class TestResolver {
         return true;
     }
 }
-
-@Controller('test')
-export class TestController {
-    // Generates a valid session cookie
-    @Public()
-    @Get()
-    createCookie(@Req() req: RequestContext, @RestQuery('userId') userId: string) {
-        req.session.userId = userId;
-    }
-}
-
 const testOperation = `
 query MyQuery {
     testQuery
 }`;
 
+// Used to generate a valid session cookie
+@Controller('session')
+export class SessionGeneratorController {
+    constructor(private readonly sessionService: SessionsService) {}
+
+    @Public()
+    @Get()
+    async createCookie(@Req() req: RequestContext, @RestQuery('userId') userId: string) {
+        await this.sessionService.create(req, userId);
+    }
+}
+
 describe('AuthGuard', () => {
     let testingModule: TestingModule;
-    let userFound: any = {};
+    let sessionService: SessionsService;
+    let userFound: Partial<User> | undefined = {};
     const usersService = { findOneById: () => userFound };
-
+    const sessionCookieName = 'sess';
     let app: NestExpressApplication;
-    const sessCookieName = 'sess';
 
     beforeAll(async () => {
+        const redisUrl = await createLightweightRedisContainer();
         testingModule = await Test.createTestingModule({
-            imports: [...createDisabledLoggerImport(), ...createGqlImport()],
+            imports: [
+                ...createDisabledLoggerImport(),
+                ...createGqlImport(),
+                SessionsModule.forRootAsync({
+                    useFactory: () => ({
+                        connection: { redisUri: redisUrl },
+                        cookieMaxAgeMs: seconds(3),
+                        cookieName: sessionCookieName,
+                        cookieSecret: '123',
+                        secure: false,
+                        sameSite: 'strict',
+                    }),
+                }),
+            ],
             providers: [{ provide: APP_GUARD, useClass: AuthGuard }, TestResolver, UsersService],
-            controllers: [TestController],
+            controllers: [SessionGeneratorController],
         })
             .overrideProvider(UsersService)
             .useValue(usersService)
             .compile();
         app = testingModule.createNestApplication({});
         app.useLogger(false);
-        app.use(
-            // in-memory
-            session({
-                saveUninitialized: false,
-                name: sessCookieName,
-                unset: 'destroy',
-                resave: false,
-                secret: '123',
-                rolling: true,
-                cookie: {
-                    maxAge: seconds(1),
-                    httpOnly: true,
-                    secure: false,
-                },
-            }),
-        );
+        app.use(app.get(SessionMiddlewareFactory).create());
         await app.init();
+        sessionService = app.get(SessionsService);
     });
 
     afterAll(async () => {
         await testingModule.close();
     });
 
-    async function getSessionCookie(id: string) {
-        const res = await request(app.getHttpServer()).get(`/test?userId=${id}`);
+    async function generateFullSession(userId: string) {
+        const res = await request(app.getHttpServer()).get(`/session?userId=${userId}`);
         const cookie = res.headers['set-cookie'][0];
         return cookie;
     }
 
-    describe('Session cookie provided', () => {
-        describe('User exists', () => {
-            test('guard allows access successfully', async () => {
-                // mock existing user
-                userFound = { user: 'test' };
-                const cookie = await getSessionCookie('test-id');
-                const res = await request(app.getHttpServer())
-                    .post('/graphql')
-                    .set('Cookie', cookie)
-                    .send({ query: testOperation });
-                expect(res).notToFail();
-            });
+    describe('Valid session cookie and user exists', () => {
+        test('guard allows access successfully', async () => {
+            // mock existing user
+            const userId = '123';
+            userFound = { id: userId };
+            const cookie = await generateFullSession(userId);
+            const res = await request(app.getHttpServer())
+                .post('/graphql')
+                .set('Cookie', cookie)
+                .send({ query: testOperation });
+            expect(res).notToFail();
         });
     });
 
@@ -108,7 +117,18 @@ describe('AuthGuard', () => {
         describe('User exists', () => {
             test('return unauthorized code and unauthorized error message', async () => {
                 // mock existing user
-                userFound = { user: 'test' };
+                userFound = { id: '123' };
+                const res = await request(app.getHttpServer())
+                    .post('/graphql') // sess cookie not set
+                    .send({ query: testOperation });
+                expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+        });
+
+        describe('User does not exist', () => {
+            test('return unauthorized code and unauthorized error message', async () => {
+                // mock existing user
+                userFound = undefined;
                 const res = await request(app.getHttpServer())
                     .post('/graphql') // sess cookie not set
                     .send({ query: testOperation });
@@ -117,16 +137,163 @@ describe('AuthGuard', () => {
         });
     });
 
-    describe('User in cookie not found', () => {
-        test('return unauthorized code and unauthorized error message', async () => {
-            // mock non-existing user
-            userFound = null;
-            const cookie = await getSessionCookie('test-id');
-            const res = await request(app.getHttpServer())
-                .post('/graphql')
-                .set('Cookie', cookie)
-                .send({ query: testOperation });
-            expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+    describe('Session is dangling', () => {
+        describe('User found', () => {
+            test('return unauthorized code and unauthorized error message', async () => {
+                // mock existing user
+                const userId = '123';
+                userFound = { id: userId };
+                const cookie = await generateFullSession(userId);
+                // delete from user's index
+                await sessionService['redisClient'].setRem(
+                    createUserSessionsSetKey(userId),
+                    extractSessionIdFromCookie(cookie),
+                );
+                // authentication attemp
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+
+            test('cleanup session in redis', async () => {
+                // mock existing user
+                const userId = '123';
+                userFound = { id: userId };
+                const cookie = await generateFullSession(userId);
+                // delete user-session relation
+                const sessId = extractSessionIdFromCookie(cookie);
+                await sessionService['redisClient'].delete(createSessionAndUserMappingKey(sessId));
+                // authentication attemp
+                await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // session should be fully cleaned
+                const isFullyCleaned = await sessionIsFullyCleaned({
+                    sessId,
+                    userId,
+                    sessionsService: sessionService,
+                });
+                expect(isFullyCleaned).toBeTruthy();
+            });
+
+            test('dangling session is fully destroyed', async () => {
+                // mock existing user
+                const userId = '123';
+                userFound = { id: userId };
+                const cookie = await generateFullSession(userId);
+                // delete user-session relation
+                const sessId = extractSessionIdFromCookie(cookie);
+                await sessionService['redisClient'].delete(createSessionAndUserMappingKey(sessId));
+                // authentication attemp
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // cookie cleared in response
+                const setCookieHeader = res.header['set-cookie'];
+                expect(setCookieHeader).toBeUndefined();
+            });
+
+            describe('Session cleanup fails', () => {
+                test('return unauthorized code and unauthorized error message', async () => {
+                    disableSystemErrorLoggingForThisTest();
+                    // mock existing user
+                    const userId = '123';
+                    userFound = { id: userId };
+                    const cookie = await generateFullSession(userId);
+                    // delete user-session relation
+                    const sessId = extractSessionIdFromCookie(cookie);
+                    await sessionService['redisClient'].delete(
+                        createSessionAndUserMappingKey(sessId),
+                    );
+                    // mock redis delete method to produce an error
+                    const redisDeleteMock = jest
+                        .spyOn(RedisClientAdapter.prototype, 'delete')
+                        .mockRejectedValueOnce(() => new Error());
+                    disableSystemErrorLoggingForThisTest();
+                    // authentication attemp
+                    const res = await request(app.getHttpServer())
+                        .post('/graphql')
+                        .set('Cookie', cookie)
+                        .send({ query: testOperation });
+                    expect(redisDeleteMock).toHaveBeenCalled();
+                    expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+                });
+            });
+        });
+    });
+
+    describe('Valid session cookie', () => {
+        describe('User not found', () => {
+            test('return unauthorized code and unauthorized error message', async () => {
+                // mock non-existing user
+                userFound = undefined;
+                const cookie = await generateFullSession('test-id');
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+            });
+
+            test('cleanup session in redis', async () => {
+                // mock non-existing user
+                userFound = undefined;
+                const deletedUserId = 'test-id';
+                const cookie = await generateFullSession(deletedUserId);
+                // authentication attemp
+                await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // session should be fully cleaned
+                const isFullyCleaned = await sessionIsFullyCleaned({
+                    userId: deletedUserId,
+                    sessId: extractSessionIdFromCookie(cookie),
+                    sessionsService: sessionService,
+                });
+                expect(isFullyCleaned).toBeTruthy();
+            });
+
+            test('zombie session is fully destroyed', async () => {
+                // mock non-existing user
+                userFound = undefined;
+                const deletedUserId = 'test-id';
+                const cookie = await generateFullSession(deletedUserId);
+                // authentication attemp
+                const res = await request(app.getHttpServer())
+                    .post('/graphql')
+                    .set('Cookie', cookie)
+                    .send({ query: testOperation });
+                // cookie cleared in response
+                const setCookieHeader = res.header['set-cookie'];
+                expect(setCookieHeader).toBeUndefined();
+            });
+
+            describe('Session cleanup fails', () => {
+                test('return unauthorized code and unauthorized error message', async () => {
+                    disableSystemErrorLoggingForThisTest();
+                    // mock non-existing user and generate valid session (zombie session)
+                    userFound = undefined;
+                    const deletedUserId = 'test-id';
+                    const cookie = await generateFullSession(deletedUserId);
+                    // mock redis delete method to produce an error
+                    const redisDeleteMock = jest
+                        .spyOn(RedisClientAdapter.prototype, 'delete')
+                        .mockRejectedValueOnce(() => new Error());
+                    disableSystemErrorLoggingForThisTest();
+                    // authentication attemp
+                    const res = await request(app.getHttpServer())
+                        .post('/graphql')
+                        .set('Cookie', cookie)
+                        .send({ query: testOperation });
+                    expect(redisDeleteMock).toHaveBeenCalled();
+                    expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
+                });
+            });
         });
     });
 });

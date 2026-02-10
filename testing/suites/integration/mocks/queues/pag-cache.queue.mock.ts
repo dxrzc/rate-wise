@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TestingModule } from '@nestjs/testing';
-import { PaginationCacheConsumer } from 'src/pagination/queues/pagination.cache.consumer';
+import { PaginationCacheConsumer } from 'src/pagination/queues/pagination-cache.consumer';
 
 export class PaginationCacheQueueMock {
     public paginationCacheConsumer!: PaginationCacheConsumer;

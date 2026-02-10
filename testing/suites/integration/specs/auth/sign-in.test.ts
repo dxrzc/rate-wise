@@ -5,13 +5,13 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signIn } from '@testing/tools/gql-operations/auth/sign-in.operation';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
 
 describe('GraphQL - signIn', () => {
     describe('Successful sign in', () => {
@@ -28,7 +28,7 @@ describe('GraphQL - signIn', () => {
             const res = await testKit.gqlClient
                 .send(signIn({ args: { email, password }, fields: ['id'] }))
                 .expect(success);
-            const key = userSessionsSetKey(res.body.data.signIn.id);
+            const key = createUserSessionsSetKey(res.body.data.signIn.id);
             const sessId = getSidFromCookie(getSessionCookie(res));
             const sessSet = await testKit.sessionsRedisClient.setMembers(key);
             expect(sessSet.length).toBe(2); // signUp and signIn
@@ -41,7 +41,7 @@ describe('GraphQL - signIn', () => {
                 .send(signIn({ args: { email, password }, fields: ['id'] }))
                 .expect(success);
             const sid = getSidFromCookie(getSessionCookie(res));
-            const key = userAndSessionRelationKey(sid);
+            const key = createSessionAndUserMappingKey(sid);
             const sessionOwner = await testKit.sessionsRedisClient.get(key);
             expect(sessionOwner).toBe(res.body.data.signIn.id);
         });
@@ -54,7 +54,6 @@ describe('GraphQL - signIn', () => {
             const userDb = await testKit.userRepos.findOneByOrFail({ id });
             expect(res.body.data.signIn).toStrictEqual({
                 username: userDb?.username,
-                reputationScore: userDb?.reputationScore,
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
@@ -80,7 +79,7 @@ describe('GraphQL - signIn', () => {
 
     describe('Password is too long', () => {
         test('return unauthorized code and invalid credentials error message', async () => {
-            const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
+            const password = faker.internet.password({ length: AUTH_RULES.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signIn({
                     args: { email: testKit.userSeed.email, password: password },
@@ -101,6 +100,42 @@ describe('GraphQL - signIn', () => {
                 }),
             );
             expect(res).toFailWith(Code.UNAUTHORIZED, AUTH_MESSAGES.INVALID_CREDENTIALS);
+        });
+    });
+
+    describe('Email not provided', () => {
+        test('return bad user input code', async () => {
+            const res = await testKit.gqlClient.send(
+                signIn({
+                    args: { password: testKit.userSeed.password, email: undefined as any },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining('email'));
+        });
+    });
+
+    describe('Invalid email format', () => {
+        test('return bad user input code', async () => {
+            const res = await testKit.gqlClient.send(
+                signIn({
+                    args: { email: 'invalid-email-format', password: testKit.userSeed.password },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+        });
+    });
+
+    describe('Password not provided', () => {
+        test('return bad user input code', async () => {
+            const res = await testKit.gqlClient.send(
+                signIn({
+                    args: { email: testKit.userSeed.email, password: undefined as any },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining('password'));
         });
     });
 
@@ -133,20 +168,23 @@ describe('GraphQL - signIn', () => {
         });
     });
 
-    describe('Attempt to provide password as a gql field ', () => {
+    describe('Attempt to fetch password', () => {
         test('return graphql validation failed code', async () => {
             const { email, password } = await createAccount();
             const res = await testKit.gqlClient.send(
                 signIn({ args: { email, password }, fields: ['password' as any] }),
             );
-            expect(res).toFailWith(Code.GRAPHQL_VALIDATION_FAILED, <string>expect.any(String));
+            expect(res).toFailWith(
+                Code.GRAPHQL_VALIDATION_FAILED,
+                expect.stringContaining('password'),
+            );
         });
     });
 
     describe('More than allowed attempts from same ip', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
-            const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.CRITICAL.limit }, () =>
                 testKit.gqlClient
                     .set('X-Forwarded-For', ip)
                     .send(signIn({ args: { email: '', password: '' }, fields: ['id'] })),

@@ -5,14 +5,14 @@ import { getSidFromCookie } from '@integration/utils/get-sid-from-cookie.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { signUp } from '@testing/tools/gql-operations/auth/sign-up.operation';
-import { AUTH_LIMITS } from 'src/auth/constants/auth.constants';
-import { THROTTLE_CONFIG } from 'src/common/constants/throttle.config.constants';
-import { Code } from 'src/common/enum/code.enum';
+import { AUTH_RULES } from 'src/auth/policy/auth.rules';
+import { Code } from 'src/common/enums/code.enum';
 import { COMMON_MESSAGES } from 'src/common/messages/common.messages';
-import { HashingService } from 'src/common/services/hashing.service';
-import { SESS_REDIS_PREFIX } from 'src/sessions/constants/sessions.constants';
-import { userSessionsSetKey } from 'src/sessions/functions/sessions-index-key';
-import { userAndSessionRelationKey } from 'src/sessions/functions/user-session-relation-key';
+import { RATE_LIMIT_PROFILES } from 'src/common/rate-limit/rate-limit.profiles';
+import { HashingService } from 'src/security/hashing.service';
+import { SESS_REDIS_PREFIX } from 'src/sessions/di/sessions.providers';
+import { createSessionAndUserMappingKey } from 'src/sessions/keys/create-session-and-user-mapping-key';
+import { createUserSessionsSetKey } from 'src/sessions/keys/create-sessions-index-key';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { USER_MESSAGES } from 'src/users/messages/user.messages';
@@ -26,22 +26,32 @@ describe('GraphQL - signUp', () => {
             expect(res).toContainCookie(testKit.authConfig.sessCookieName);
         });
 
-        test('set in Redis storing user sessions is created', async () => {
+        test('session is stored in redis', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
-            const key = userSessionsSetKey(res.body.data.signUp.id as string);
+            const sid = getSidFromCookie(getSessionCookie(res));
+            const redisKey = `${SESS_REDIS_PREFIX}${sid}`;
+            const sessionInRedis = await testKit.sessionsRedisClient.get(redisKey);
+            expect(sessionInRedis).not.toBeNull();
+        });
+
+        test('user sessions redis set is created containing the new session', async () => {
+            const res = await testKit.gqlClient
+                .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
+                .expect(success);
+            const key = createUserSessionsSetKey(res.body.data.signUp.id as string);
             const sessSet = await testKit.sessionsRedisClient.setMembers(key);
             expect(sessSet.length).toBe(1);
             expect(sessSet[0]).toBe(getSidFromCookie(getSessionCookie(res)));
         });
 
-        test('"user-session" record is created in Redis', async () => {
+        test('user-session relation record is created in Redis', async () => {
             const res = await testKit.gqlClient
                 .send(signUp({ args: testKit.userSeed.signUpInput, fields: ['id'] }))
                 .expect(success);
             const sid = getSidFromCookie(getSessionCookie(res));
-            const redisKey = userAndSessionRelationKey(sid);
+            const redisKey = createSessionAndUserMappingKey(sid);
             const sessionOwner = await testKit.sessionsRedisClient.get(redisKey);
             expect(sessionOwner).toBe(res.body.data.signUp.id);
         });
@@ -64,14 +74,14 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test('default user roles are user', async () => {
+        test('default user roles are reviewer and creator', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
                 .expect(success);
             const userId = res.body.data.signUp.id;
             const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.roles).toStrictEqual([UserRole.USER]);
+            expect(userDB.roles).toStrictEqual([UserRole.REVIEWER, UserRole.CREATOR]);
         });
 
         test('default account status is pending verification', async () => {
@@ -96,25 +106,15 @@ describe('GraphQL - signUp', () => {
             });
         });
 
-        test('default reputation score is 0', async () => {
-            const user = testKit.userSeed.signUpInput;
-            const res = await testKit.gqlClient
-                .send(signUp({ args: user, fields: ['id'] }))
-                .expect(success);
-            const userId = res.body.data.signUp.id;
-            const userDB = await testKit.userRepos.findOneByOrFail({ id: userId });
-            expect(userDB.reputationScore).toBe(0);
-        });
-
         test('user password is hashed in database', async () => {
             const user = testKit.userSeed.signUpInput;
             const res = await testKit.gqlClient
                 .send(signUp({ args: user, fields: ['id'] }))
                 .expect(success);
             const userId = res.body.data.signUp.id;
-            const { password } = await testKit.userRepos.findOneByOrFail({ id: userId });
+            const { passwordHash } = await testKit.userRepos.findOneByOrFail({ id: userId });
             const hashingSvc = testKit.app.get(HashingService);
-            const match = await hashingSvc.compare(user.password, password);
+            const match = await hashingSvc.compare(user.password, passwordHash);
             expect(match).toBe(true);
         });
 
@@ -148,7 +148,6 @@ describe('GraphQL - signUp', () => {
             const userDb = await testKit.userRepos.findOneByOrFail({ id: responseData.id });
             expect(responseData).toStrictEqual({
                 username: userDb?.username,
-                reputationScore: userDb?.reputationScore,
                 createdAt: userDb?.createdAt.toISOString(),
                 updatedAt: userDb?.updatedAt.toISOString(),
                 email: userDb?.email,
@@ -160,7 +159,7 @@ describe('GraphQL - signUp', () => {
 
         describe('Username contains leading and trailing white spaces', () => {
             test('spaces are stripped before saving in database', async () => {
-                const name = `  ${faker.string.alpha({ length: AUTH_LIMITS.USERNAME.MIN })} `;
+                const name = `  ${faker.string.alpha({ length: AUTH_RULES.USERNAME.MIN })} `;
                 const res = await testKit.gqlClient
                     .send(
                         signUp({
@@ -204,7 +203,7 @@ describe('GraphQL - signUp', () => {
 
     describe('Password exceeds the max password length', () => {
         test('return bad request code and invalid input error message', async () => {
-            const password = faker.internet.password({ length: AUTH_LIMITS.PASSWORD.MAX + 1 });
+            const password = faker.internet.password({ length: AUTH_RULES.PASSWORD.MAX + 1 });
             const res = await testKit.gqlClient.send(
                 signUp({
                     args: { ...testKit.userSeed.signUpInput, password },
@@ -228,7 +227,7 @@ describe('GraphQL - signUp', () => {
         });
     });
 
-    describe('Attempt to provide password as a gql field', () => {
+    describe('Attempt fetch password in gql', () => {
         test('return graphql validation failed code', async () => {
             const res = await testKit.gqlClient.send(
                 signUp({
@@ -243,11 +242,25 @@ describe('GraphQL - signUp', () => {
         });
     });
 
+    describe.each(['password', 'email', 'username'])('Property %s not provided', (prop: string) => {
+        test('return bad user input code', async () => {
+            const args: any = { ...testKit.userSeed.signUpInput };
+            delete args[prop];
+            const res = await testKit.gqlClient.send(
+                signUp({
+                    args,
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_USER_INPUT, expect.stringContaining(prop));
+        });
+    });
+
     describe('More than allowed attempts from same ip', () => {
         test('return too many requests code and too many requests error message', async () => {
             const ip = faker.internet.ip();
             const userData = testKit.userSeed.signUpInput;
-            const requests = Array.from({ length: THROTTLE_CONFIG.CRITICAL.limit }, () =>
+            const requests = Array.from({ length: RATE_LIMIT_PROFILES.CRITICAL.limit }, () =>
                 testKit.gqlClient
                     .set('X-Forwarded-For', ip)
                     .send(signUp({ args: userData, fields: ['id'] })),

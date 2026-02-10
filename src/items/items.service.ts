@@ -2,22 +2,21 @@ import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common
 import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateItemInput } from './dtos/create-item.input';
-import { validUUID } from 'src/common/functions/utils/valid-uuid.util';
-import { isDuplicatedKeyError } from 'src/common/functions/error/is-duplicated-key-error';
+import { CreateItemInput } from './graphql/inputs/create-item.input';
+import { validUUID } from 'src/common/utils/valid-uuid.util';
+import { isDuplicatedKeyError } from 'src/common/errors/is-duplicated-key-error';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { GqlHttpError } from 'src/common/errors/graphql-http.error';
 import { ITEMS_MESSAGES } from './messages/items.messages';
-import { getDuplicatedErrorKeyDetail } from 'src/common/functions/error/get-duplicated-key-error-detail';
-import { AuthenticatedUser } from 'src/common/interfaces/user/authenticated-user.interface';
-import { ItemModel } from './models/item.model';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
+import { ItemModel } from './graphql/models/item.model';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { createItemCacheKey } from './cache/create-cache-key';
-import { deserializeItem } from './functions/deserialize-item.entity';
+import { deserializeItem } from './cache/deserialize-item-entity';
 import { PaginationService } from 'src/pagination/pagination.service';
-import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
-import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
 import { UsersService } from 'src/users/users.service';
+import { ItemFiltersArgs } from './graphql/args/item-filters.args';
+import { getDuplicatedErrorKeyDetails } from 'src/common/errors/get-duplicated-key-error-details';
 
 @Injectable()
 export class ItemsService {
@@ -38,63 +37,30 @@ export class ItemsService {
         }
     }
 
-    async findAllByUser(
-        userId: string,
-        pagArgs: PaginationArgs,
-    ): Promise<IPaginatedType<ItemModel>> {
-        await this.usersService.findOneByIdOrThrow(userId);
+    async filterItems(filters: ItemFiltersArgs) {
+        if (filters.createdBy) await this.usersService.findOneByIdOrThrow(filters.createdBy);
         const sqbAlias = 'item';
         return await this.paginationService.create({
-            ...pagArgs,
+            cursor: filters.cursor,
+            limit: filters.limit,
             cache: true,
             queryBuilder: {
-                sqbModifier: (qb) => qb.where(`${sqbAlias}.account_id = :userId`, { userId }),
-                sqbAlias,
-            },
-        });
-    }
-
-    /**
-     * - Find all items using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
-    async findAll(paginationArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
-        return await this.paginationService.create({
-            ...paginationArgs,
-            cache: true,
-        });
-    }
-
-    /**
-     * - Find all items by category using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
-    async findAllByCategory(
-        category: string,
-        pagArgs: PaginationArgs,
-    ): Promise<IPaginatedType<ItemModel>> {
-        const sqbAlias = 'item';
-        return await this.paginationService.create({
-            ...pagArgs,
-            cache: true,
-            queryBuilder: {
-                sqbModifier: (qb) => qb.where(`${sqbAlias}.category = :category`, { category }),
-                sqbAlias,
-            },
-        });
-    }
-
-    /**
-     * - Find all items that contain the specified tag using provided limit and cursor
-     * - Attempts to fetch from cache first.
-     */
-    async findAllByTag(tag: string, pagArgs: PaginationArgs): Promise<IPaginatedType<ItemModel>> {
-        const sqbAlias = 'item';
-        return await this.paginationService.create({
-            ...pagArgs,
-            cache: true,
-            queryBuilder: {
-                sqbModifier: (qb) => qb.where(`:tag = ANY(${sqbAlias}.tags)`, { tag }),
+                sqbModifier: (qb) => {
+                    if (filters.createdBy) {
+                        qb.andWhere(`${sqbAlias}.createdBy = :createdBy`, {
+                            createdBy: filters.createdBy,
+                        });
+                    }
+                    if (filters.category) {
+                        qb.andWhere(`${sqbAlias}.category = :category`, {
+                            category: filters.category,
+                        });
+                    }
+                    if (filters.tag) {
+                        qb.andWhere(`:tag = ANY(${sqbAlias}.tags)`, { tag: filters.tag });
+                    }
+                    return qb;
+                },
                 sqbAlias,
             },
         });
@@ -134,20 +100,14 @@ export class ItemsService {
         try {
             const created = await this.itemRepository.save({ ...item, createdBy: user.id });
             this.logger.info(`Item with id ${created.id} by user ${user.id} created`);
-            return created;
+            // Type assertion needed: averageRating is computed by GraphQL @ResolveField, not stored in DB
+            return created as unknown as ItemModel;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
-                this.logger.error(getDuplicatedErrorKeyDetail(error));
+                this.logger.error(getDuplicatedErrorKeyDetails(error));
                 throw GqlHttpError.Conflict(ITEMS_MESSAGES.ALREADY_EXISTS);
             }
             throw new InternalServerErrorException(error);
         }
-    }
-
-    async updateItemAvgRating(item: Item, newAvg: number): Promise<Item> {
-        item.averageRating = newAvg;
-        await this.itemRepository.save(item);
-        this.logger.info(`Item with id ${item.id} avg rating updated to ${newAvg}`);
-        return item;
     }
 }

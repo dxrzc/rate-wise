@@ -3,25 +3,23 @@ import { DynamicModule, Module } from '@nestjs/common';
 import {
     FactoryConfigModule,
     FactoryConfigModuleWithExtraProvider,
-} from 'src/common/types/modules/factory-config.module.type';
-import { EmailsClient } from './client/emails.client';
-import {
-    EMAILS_FEATURE_OPTIONS,
-    EMAILS_QUEUE,
-    EMAILS_ROOT_OPTIONS,
-} from './constants/emails.constants';
+} from 'src/common/types/factory-config.module.type';
+import { EmailClient } from './client/email.client';
+import { EMAILS_FEATURE_OPTIONS, EMAILS_QUEUE, EMAILS_ROOT_OPTIONS } from './di/emails.providers';
 import { EmailsConsumer } from './consumers/emails.consumer';
 import { EmailsService } from './emails.service';
-import { IEmailsFeatureOptions } from './interface/emails.feature.options.interface';
+import { IEmailsFeatureOptions } from './config/emails-feature.options';
 import { HttpLoggerModule } from 'src/http-logger/http-logger.module';
-import { IEmailsRootOptions } from './interface/emails.root.options.interface';
+import { IEmailsRootOptions } from './config/emails.root.options';
+import { EmailHealthIndicator } from './health/email.health';
+import { TerminusModule } from '@nestjs/terminus';
 
 @Module({})
 export class EmailsModule {
     static forRootAsync(options: FactoryConfigModule<IEmailsRootOptions>): DynamicModule {
         return {
             module: EmailsModule,
-            imports: options.imports || [],
+            imports: [...(options.imports || []), TerminusModule],
             global: true,
             providers: [
                 {
@@ -29,9 +27,10 @@ export class EmailsModule {
                     useFactory: options.useFactory,
                     inject: options.inject,
                 },
-                EmailsClient,
+                EmailClient,
+                EmailHealthIndicator,
             ],
-            exports: [EmailsClient],
+            exports: [EmailClient, EmailHealthIndicator],
         };
     }
 

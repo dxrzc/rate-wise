@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 
 config({ path: `${process.cwd()}/.env.defaults` });
 config({ path: `${process.cwd()}/.env.test`, override: true });

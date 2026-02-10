@@ -1,4 +1,4 @@
-import { Environment } from 'src/common/enum/environment.enum';
+import { Environment } from 'src/common/enums/environment.enum';
 import { IConfigs } from '../interface/config.interface';
 import * as Joi from 'joi';
 
@@ -13,11 +13,12 @@ export const envSchema = Joi.object<IConfigs, true>({
     SESS_COOKIE_MAX_AGE_MS: Joi.number().integer().positive().required(),
     SESS_COOKIE_NAME: Joi.string().required(),
     MAX_USER_SESSIONS: Joi.number().integer().positive().required(),
-    PASSWORD_SALT_ROUNDS: Joi.number().integer().positive().required(),
     ACCOUNT_VERIFICATION_TOKEN_EXP: Joi.string().required(),
     ACCOUNT_VERIFICATION_TOKEN_SECRET: Joi.string().required(),
     ACCOUNT_DELETION_TOKEN_EXP: Joi.string().required(),
     ACCOUNT_DELETION_TOKEN_SECRET: Joi.string().required(),
+    SIGN_OUT_ALL_TOKEN_EXP: Joi.string().required(),
+    SIGN_OUT_ALL_TOKEN_SECRET: Joi.string().required(),
     // SMTP
     SMTP_HOST: Joi.string().hostname().required(),
     SMTP_PORT: Joi.number().port().required(),
@@ -30,4 +31,9 @@ export const envSchema = Joi.object<IConfigs, true>({
         .required(),
     API_BASE_URL: Joi.string().uri().required(),
     CACHE_TTL_SECONDS: Joi.number().positive().required(),
+    TRUST_PROXY: Joi.number().positive().less(3).default(1),
+    // Admin
+    ADMIN_USERNAME: Joi.string().required(),
+    ADMIN_EMAIL: Joi.string().email().required(),
+    ADMIN_PASSWORD: Joi.string().required(),
 });

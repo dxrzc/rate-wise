@@ -1,8 +1,9 @@
-import { userAndSessionRelationKey } from '../functions/user-session-relation-key';
-import { userSessionsSetKey } from '../functions/sessions-index-key';
+import { createSessionAndUserMappingKey } from '../keys/create-session-and-user-mapping-key';
+import { createUserSessionsSetKey } from '../keys/create-sessions-index-key';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { RedisClientAdapter } from 'src/common/redis/redis.client.adapter';
-import { SESSIONS_REDIS_CONNECTION } from '../constants/sessions.constants';
+import { RedisClientAdapter } from 'src/redis/client/redis.client.adapter';
+import { SESSIONS_REDIS_CONNECTION } from '../di/sessions.providers';
+import { SystemLogger } from 'src/common/logging/system.logger';
 
 @Injectable()
 export class SessionsEvents implements OnModuleInit {
@@ -13,10 +14,7 @@ export class SessionsEvents implements OnModuleInit {
 
     async onModuleInit() {
         const listener = (key: string) => this.handleRemovedSession(key);
-        await Promise.all([
-            this.redisClient.connection.addSubscriber('__keyevent@0__:del', listener),
-            this.redisClient.connection.addSubscriber('__keyevent@0__:expired', listener),
-        ]);
+        await this.redisClient.connection.addSubscriber('__keyevent@0__:expired', listener);
     }
 
     async handleRemovedSession(key: string): Promise<void> {
@@ -25,16 +23,23 @@ export class SessionsEvents implements OnModuleInit {
         const sessionId = key.split(':').at(1);
         if (!sessionId) throw new Error(`Invalid session key format`);
 
-        const userSessionRelationKey = userAndSessionRelationKey(sessionId);
+        const userSessionRelationKey = createSessionAndUserMappingKey(sessionId);
         const userId = await this.redisClient.get<string>(userSessionRelationKey);
+        const sysLogger = SystemLogger.getInstance();
 
         if (userId) {
-            await Promise.all([
-                // remove session-userId relation record
-                this.redisClient.delete(userSessionRelationKey),
-                // remove from set
-                this.redisClient.setRem(userSessionsSetKey(userId), sessionId),
-            ]);
+            this.redisClient.delete(userSessionRelationKey).catch((err) => {
+                sysLogger.error(
+                    `Failed to delete user-session record: ${String(err)}`,
+                    SessionsEvents.name,
+                );
+            });
+            this.redisClient.setRem(createUserSessionsSetKey(userId), sessionId).catch((err) => {
+                sysLogger.error(
+                    `Failed to delete session from user's sessions index: ${String(err)}`,
+                    SessionsEvents.name,
+                );
+            });
         }
     }
 }

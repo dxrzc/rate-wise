@@ -1,7 +1,7 @@
+import { CreateReviewInput } from 'src/reviews/graphql/inputs/create-review.input';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
-import { ReviewModel } from 'src/reviews/models/review.model';
-import { CreateReviewInput } from 'src/reviews/dtos/create-review.input';
+import { ReviewModel } from 'src/reviews/graphql/models/review.model';
 
 export function createReview({ args, fields }: IOperation<CreateReviewInput, ReviewModel>) {
     return operationFactory(

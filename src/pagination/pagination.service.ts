@@ -1,8 +1,8 @@
-import { IPaginationModuleOptions } from './interfaces/pagination.module-options.interface';
-import { runSettledOrThrow } from 'src/common/functions/utils/run-settled-or-throw.util';
-import { PAGINATION_MODULE_OPTIONS_TOKEN } from './module/config.module-definition';
-import { PaginationOptionsType, QueryBuilder } from './types/pagination.options.type';
-import { PaginationCacheProducer } from './queues/pagination.cache.producer';
+import { IPaginationOptions } from './config/pagination.options';
+import { runSettledOrThrow } from 'src/common/utils/run-settled-or-throw.util';
+import { PAGINATION_MODULE_OPTIONS_TOKEN } from './config/config.module-definition';
+import { CreatePagination, QueryBuilder } from './types/create-pagination.type';
+import { PaginationCacheProducer } from './queues/pagination-cache.producer';
 import { IDecodedCursor } from './interfaces/decoded-cursor.interface';
 import { IPaginatedType } from './interfaces/paginated-type.interface';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
@@ -11,8 +11,8 @@ import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { IEdgeType } from './interfaces/edge-type.interface';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
-import { encodeCursor } from './functions/encode-cursor';
-import { decodeCursor } from './functions/decode-cursor';
+import { encodeCursor } from './cursor/encode-cursor';
+import { decodeCursor } from './cursor/decode-cursor';
 import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
 
     constructor(
         @Inject(PAGINATION_MODULE_OPTIONS_TOKEN)
-        private readonly options: IPaginationModuleOptions,
+        private readonly options: IPaginationOptions,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
         private readonly cacheProducer: PaginationCacheProducer,
@@ -72,13 +72,13 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
             qb = queryBuilder.sqbModifier(qb);
         }
         if (decodedCursor) {
-            qb = qb.andWhere(`(${qbAlias}.created_at, ${qbAlias}.id) > (:date, :id)`, {
+            qb = qb.andWhere(`(${qbAlias}.createdAt, ${qbAlias}.id) > (:date, :id)`, {
                 date: decodedCursor.createdAt,
                 id: decodedCursor.id,
             });
         }
         qb = qb
-            .orderBy(`${qbAlias}.created_at`, 'ASC')
+            .orderBy(`${qbAlias}.createdAt`, 'ASC')
             .addOrderBy(`${qbAlias}.id`, 'ASC')
             .limit(limit + 1);
         const idsAndCursors = await qb.getRawMany<{ id: string; cursor: string }>();
@@ -208,7 +208,7 @@ export class PaginationService<T extends BaseEntity> implements OnModuleInit {
      * @param options Pagination options.
      * @returns edges, nodes, totalCount and hasNextPage.
      */
-    async create(options: PaginationOptionsType<T>): Promise<IPaginatedType<T>> {
+    async create(options: CreatePagination<T>): Promise<IPaginatedType<T>> {
         return options.cache
             ? await this.createPaginationCached(options.limit, options.cursor, options.queryBuilder)
             : await this.createPagination(options.limit, options.cursor, options.queryBuilder);

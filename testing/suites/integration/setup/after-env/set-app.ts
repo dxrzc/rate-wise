@@ -5,17 +5,24 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SystemLogger } from 'src/common/logging/system.logger';
-import { EMAILS_QUEUE } from 'src/emails/constants/emails.constants';
 import { EmailsConsumer } from 'src/emails/consumers/emails.consumer';
-import { PAGINATION_CACHE_QUEUE } from 'src/pagination/constants/pagination.constants';
-import { PaginationCacheConsumer } from 'src/pagination/queues/pagination.cache.consumer';
+import { EMAILS_QUEUE } from 'src/emails/di/emails.providers';
+import { PAGINATION_CACHE_QUEUE } from 'src/pagination/di/pagination.providers';
+import { PaginationCacheConsumer } from 'src/pagination/queues/pagination-cache.consumer';
 
 let nestApp: NestExpressApplication;
+
+beforeEach(() => {
+    // Disable for every test. Necessary since "restoreMocks" is enabled in the config
+    jest.spyOn(SystemLogger.getInstance(), 'debug').mockImplementation();
+    jest.spyOn(SystemLogger.getInstance(), 'log').mockImplementation();
+});
 
 beforeAll(async () => {
     try {
         // Disable debug logs
         jest.spyOn(SystemLogger.getInstance(), 'debug').mockImplementation();
+        jest.spyOn(SystemLogger.getInstance(), 'log').mockImplementation();
 
         // Application
         const testingModule: TestingModule = await Test.createTestingModule({
