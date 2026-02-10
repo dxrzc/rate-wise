@@ -1,17 +1,22 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=22.21.1-alpine3.22@sha256:b2358485e3e33bc3a33114d2b1bdb18cdbe4df01bd2b257198eb51beb1f026c5
 
+# --legacy-peer-deps is required due to an upstream peer-dependency conflict:
+# @nestjs/apollo still pulls a deprecated Apollo v4 GraphQL Playground plugin,
+# which conflicts with Apollo Server v5 during npm ci. 
+# Issue: https://github.com/nestjs/graphql/issues/3804
+
 FROM node:${NODE_VERSION} AS base
 WORKDIR /usr/src/app
 EXPOSE 3000
 
 FROM base AS dev-deps
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci --legacy-peer-deps
 
 FROM base AS prod-deps
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts
+RUN --mount=type=cache,target=/root/.npm npm ci --legacy-peer-deps --omit=dev --ignore-scripts
 
 FROM base AS builder
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules

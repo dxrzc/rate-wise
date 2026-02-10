@@ -1,5 +1,10 @@
 name: CI Validate
 
+# --legacy-peer-deps is required due to an upstream peer-dependency conflict:
+# @nestjs/apollo still pulls a deprecated Apollo v4 GraphQL Playground plugin,
+# which conflicts with Apollo Server v5 during npm ci. 
+# Issue: https://github.com/nestjs/graphql/issues/3804
+
 on:
   pull_request:
     branches:
@@ -23,7 +28,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: npm
-      - run: npm ci      
+      - run: npm ci --legacy-peer-deps      
       - uses: reviewdog/action-eslint@2fee6dd72a5419ff4113f694e2068d2a03bb35dd
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -47,7 +52,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run unit tests
         run: npm run test:unit -- --maxWorkers=100% --coverage=false
 
@@ -66,7 +71,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run integration tests
         run: npm run test:integration -- --maxWorkers=100% --coverage=false
 
@@ -85,7 +90,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run components tests
         run: npm run test:components -- --maxWorkers=100% --coverage=false
         
@@ -104,6 +109,6 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run e2e tests
         run: npm run test:e2e -- --maxWorkers=100%          
