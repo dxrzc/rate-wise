@@ -24,6 +24,7 @@ export const envSchema = Joi.object<IConfigs, true>({
     SMTP_PORT: Joi.number().port().required(),
     SMTP_USER: Joi.string().required(),
     SMTP_PASS: Joi.string().required(),
+    EMAIL_SENDER_ADDRESS: Joi.string().required(),
     // App
     PORT: Joi.number().port().default(3000),
     NODE_ENV: Joi.string()

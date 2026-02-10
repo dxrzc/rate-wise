@@ -21,4 +21,8 @@ export class SmtpConfigService {
     get pass(): string {
         return this.configService.get('SMTP_PASS');
     }
+
+    get senderAddress(): string {
+        return this.configService.get('EMAIL_SENDER_ADDRESS');
+    }
 }
