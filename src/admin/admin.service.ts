@@ -7,9 +7,11 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { AdminConfigService } from 'src/config/services/admin.config.service';
 import { SystemLogger } from 'src/common/logging/system.logger';
 import { HashingService } from 'src/security/hashing.service';
+import { SeedService } from 'src/seed/seed.service';
+import { ServerConfigService } from 'src/config/services/server.config.service';
 
 @Injectable()
-export class AdminInitService implements OnModuleInit {
+export class AdminService implements OnModuleInit {
     private readonly sysLogger = SystemLogger.getInstance();
 
     constructor(
@@ -17,10 +19,25 @@ export class AdminInitService implements OnModuleInit {
         private readonly userRepository: Repository<User>,
         private readonly adminConfig: AdminConfigService,
         private readonly hashingService: HashingService,
+        private readonly seedService: SeedService,
+        private readonly serverConfig: ServerConfigService,
     ) {}
 
     async onModuleInit() {
         await this.createAdminIfNotExists();
+        await this.seedProd();
+    }
+
+    async seedProd() {
+        if (this.serverConfig.isProduction) {
+            await this.seedService.runSeed({
+                USERS: 4,
+                ITEMS_PER_USER: 2,
+                MAX_REVIEWS: 5,
+                MAX_VOTES: 5,
+            });
+            this.sysLogger.log('Seed executed successfully');
+        }
     }
 
     private async createAdminIfNotExists(): Promise<void> {
