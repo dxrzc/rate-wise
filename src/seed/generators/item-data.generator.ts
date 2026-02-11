@@ -17,7 +17,11 @@ export class ItemDataGenerator {
     }
 
     get description(): string {
-        return faker.lorem.paragraphs(2);
+        return `
+        ${faker.commerce.productName()} is designed for ${faker.commerce.department().toLowerCase()} needs. Perfect for ${faker.helpers.arrayElement(
+            ['everyday use', 'professionals', 'enthusiasts', 'modern workflows', 'home setups'],
+        )}.        
+    `.trim();
     }
 
     get category(): string {
