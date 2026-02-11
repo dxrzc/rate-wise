@@ -16,6 +16,7 @@ export interface IConfigs {
     readonly SMTP_PORT: number;
     readonly SMTP_USER: string;
     readonly SMTP_PASS: string;
+    readonly EMAIL_SENDER_ADDRESS: string;
     readonly API_BASE_URL: string;
     readonly ACCOUNT_VERIFICATION_TOKEN_EXP: string;
     readonly ACCOUNT_VERIFICATION_TOKEN_SECRET: string;

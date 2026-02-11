@@ -9,9 +9,7 @@ import { IAls } from 'src/common/types/async-local-storage.type';
 import { IEmailInfo } from '../interface/email-info.interface';
 import { EmailsJobData } from '../types/emails-job-data.type';
 
-@Processor(EMAILS_QUEUE, {
-    concurrency: 100,
-})
+@Processor(EMAILS_QUEUE, { concurrency: 5 })
 export class EmailsConsumer extends WorkerHost {
     constructor(
         private readonly client: EmailClient,
@@ -46,12 +44,13 @@ export class EmailsConsumer extends WorkerHost {
     @OnWorkerEvent('active')
     onActive(job: Job<EmailsJobData>) {
         this.runInContext(job.data.requestId, () => {
-            this.logger.debug(`Sending email to ${job.data.to}`);
+            this.logger.info(`Sending email to ${job.data.to}`);
         });
     }
 
     @OnWorkerEvent('failed')
-    onFailed(job: Job<EmailsJobData>) {
+    onFailed(job: Job<EmailsJobData>, err: Error) {
+        SystemLogger.getInstance().logAnyException(err, EmailsConsumer.name);
         this.runInContext(job.data.requestId, () => {
             this.logger.warn(`Email service internal error`);
         });
@@ -59,7 +58,7 @@ export class EmailsConsumer extends WorkerHost {
 
     @OnWorkerEvent('error')
     onError(error: Error) {
-        SystemLogger.getInstance().error(error);
+        SystemLogger.getInstance().logAnyException(error, EmailsConsumer.name);
     }
 
     @OnWorkerEvent('completed')
