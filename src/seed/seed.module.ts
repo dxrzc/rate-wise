@@ -25,5 +25,6 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
         ItemDataGenerator,
         ReviewDataGenerator,
     ],
+    exports: [SeedService],
 })
 export class SeedModule {}
