@@ -3,4 +3,5 @@ export const COMMON_MESSAGES = {
     TOO_MANY_REQUESTS: 'Too many requests, try again later',
     INTERNAL_SERVER_ERROR: 'Internal server error',
     SERVICE_UNAVAILABLE: 'Service Unavailable',
+    REQUEST_ABORTED: 'Client disconnected before request finished',
 };
