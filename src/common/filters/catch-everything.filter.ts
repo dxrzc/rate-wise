@@ -7,6 +7,7 @@ import { COMMON_MESSAGES } from '../messages/common.messages';
 import { GqlHttpError } from '../errors/graphql-http.error';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { isServiceUnavailableError } from '../errors/is-service-unavailable-error';
+import { isRequestAbortedError } from '../errors/is-request-aborted-error';
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
@@ -33,11 +34,13 @@ export class CatchEverythingFilter implements ExceptionFilter {
     }
 
     /**
-     * Works because a GqlHttpError can be converted to HttpException
+     * Catch and normalize known errors
      */
     private normalizeGqlError(exception: unknown): unknown {
-        if (exception instanceof Error && isServiceUnavailableError(exception)) {
-            return GqlHttpError.ServiceUnavailable();
+        if (exception instanceof Error) {
+            if (isServiceUnavailableError(exception)) return GqlHttpError.ServiceUnavailable();
+            if (isRequestAbortedError(exception))
+                return GqlHttpError.BadRequest(COMMON_MESSAGES.REQUEST_ABORTED);
         }
         if (exception instanceof AggregateError) {
             exception.errors.forEach((e) => {
@@ -85,6 +88,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
     }
 
     catch(exception: unknown, host: ArgumentsHost) {
+        // Works because a GqlHttpError can be converted to HttpException
         exception = this.normalizeGqlError(exception);
         switch (host.getType<GqlContextType>()) {
             case 'http': {
