@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { SystemLogger } from './common/logging/system.logger';
@@ -6,56 +5,16 @@ import { ServerConfigService } from './config/services/server.config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import hpp from 'hpp';
-import { CACHE_REDIS_STORE } from './redis/di/redis-monitoring.providers';
-import KeyvRedis from '@keyv/redis';
-import { patchRedisStoreSocketClosedUnexpectedly } from './redis/client/patch-redis-store-socket-closed-unexpectedly';
-import { isRecoverableInfraError } from './common/errors/is-recoverable-infra-error';
+import { handleFatalError } from './common/errors/handle-fatal-error';
 
 let app: NestExpressApplication | undefined;
 
-function tryToCloseApp(app: INestApplication, context: string) {
-    const logger = SystemLogger.getInstance();
-    logger.warn('Closing nest application...', context);
-    app.close()
-        .finally(() => process.exit(1))
-        .then(() => {
-            logger.warn('Application closed', context);
-        })
-        .catch((err: Error) => {
-            logger.error(`Error closing nest application: ${err.message}`, err.stack, context);
-        });
-}
-
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-process.on('uncaughtException', async (error: Error) => {
-    SystemLogger.getInstance().error(error.message, error.stack, 'uncaughtException');
-    if (isRecoverableInfraError(error)) {
-        if (app && error.message.includes('Socket closed unexpectedly')) {
-            console.log('Trying reconneciton');
-            const keyVRedis = app.get<KeyvRedis<unknown>>(CACHE_REDIS_STORE);
-            await patchRedisStoreSocketClosedUnexpectedly(keyVRedis);
-        }
-        return;
-    }
-    if (app) {
-        tryToCloseApp(app, 'uncaughtException');
-        return;
-    }
-    process.exit(1);
+process.on('uncaughtException', (error: Error) => {
+    handleFatalError('uncaughtException', error, app);
 });
 
 process.on('unhandledRejection', (reason: unknown) => {
-    const logger = SystemLogger.getInstance();
-    if (reason instanceof Error) {
-        logger.error(reason.message, reason.stack, 'unhandledRejection');
-    } else {
-        logger.error(String(reason), 'unhandledRejection');
-    }
-    if (app) {
-        tryToCloseApp(app, 'unhandledRejection');
-        return;
-    }
-    process.exit(1);
+    handleFatalError('unhandledRejection', reason, app);
 });
 
 async function bootstrap() {
