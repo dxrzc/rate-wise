@@ -2,6 +2,7 @@ import { IConfigs } from '../interface/config.interface';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { Environment } from 'src/common/enums/environment.enum';
+import { EmailProvider } from 'src/emails/enum/email-provider.enum';
 
 @Injectable()
 export class ServerConfigService {
@@ -41,5 +42,9 @@ export class ServerConfigService {
 
     get brevoApiKey(): string {
         return this.configService.get('BREVO_API_KEY');
+    }
+
+    get emailProvider(): EmailProvider {
+        return this.configService.get('EMAIL_PROVIDER');
     }
 }

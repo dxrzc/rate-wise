@@ -1,6 +1,7 @@
 import { Environment } from 'src/common/enums/environment.enum';
 import { IConfigs } from '../interface/config.interface';
 import * as Joi from 'joi';
+import { EmailProvider } from 'src/emails/enum/email-provider.enum';
 export const envSchema = Joi.object<IConfigs, true>({
     // Db
     POSTGRES_URI: Joi.string().uri().required(),
@@ -25,6 +26,9 @@ export const envSchema = Joi.object<IConfigs, true>({
     SMTP_PASS: Joi.string().optional(),
     EMAIL_SENDER_ADDRESS: Joi.string().optional(),
     BREVO_API_KEY: Joi.string().optional(), // currently, only for prod
+    EMAIL_PROVIDER: Joi.string()
+        .valid(...Object.values(EmailProvider))
+        .required(),
     // App
     PORT: Joi.number().port().default(3000),
     NODE_ENV: Joi.string()
