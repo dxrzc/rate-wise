@@ -1,4 +1,5 @@
 import { Environment } from 'src/common/enums/environment.enum';
+import { EmailProvider } from 'src/emails/enum/email-provider.enum';
 
 export interface IConfigs {
     readonly NODE_ENV: Environment;
@@ -28,4 +29,6 @@ export interface IConfigs {
     readonly ADMIN_USERNAME: string;
     readonly ADMIN_EMAIL: string;
     readonly ADMIN_PASSWORD: string;
+    readonly BREVO_API_KEY: string;
+    readonly EMAIL_PROVIDER: EmailProvider;
 }
