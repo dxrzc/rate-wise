@@ -1,7 +1,6 @@
 import { Environment } from 'src/common/enums/environment.enum';
 import { IConfigs } from '../interface/config.interface';
 import * as Joi from 'joi';
-
 export const envSchema = Joi.object<IConfigs, true>({
     // Db
     POSTGRES_URI: Joi.string().uri().required(),
@@ -20,11 +19,12 @@ export const envSchema = Joi.object<IConfigs, true>({
     SIGN_OUT_ALL_TOKEN_EXP: Joi.string().required(),
     SIGN_OUT_ALL_TOKEN_SECRET: Joi.string().required(),
     // SMTP
-    SMTP_HOST: Joi.string().hostname().required(),
-    SMTP_PORT: Joi.number().port().required(),
-    SMTP_USER: Joi.string().required(),
-    SMTP_PASS: Joi.string().required(),
-    EMAIL_SENDER_ADDRESS: Joi.string().required(),
+    SMTP_HOST: Joi.string().hostname().optional(),
+    SMTP_PORT: Joi.number().port().optional(),
+    SMTP_USER: Joi.string().optional(),
+    SMTP_PASS: Joi.string().optional(),
+    EMAIL_SENDER_ADDRESS: Joi.string().optional(),
+    BREVO_API_KEY: Joi.string().optional(), // currently, only for prod
     // App
     PORT: Joi.number().port().default(3000),
     NODE_ENV: Joi.string()

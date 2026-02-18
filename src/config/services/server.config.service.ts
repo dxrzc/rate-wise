@@ -38,4 +38,8 @@ export class ServerConfigService {
     get trustProxy(): number {
         return this.configService.get('TRUST_PROXY');
     }
+
+    get brevoApiKey(): string {
+        return this.configService.get('BREVO_API_KEY');
+    }
 }
