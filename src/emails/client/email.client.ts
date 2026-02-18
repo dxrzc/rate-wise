@@ -5,6 +5,7 @@ import { IEmailsRootOptions } from '../config/emails.root.options';
 import { IEmailInfo } from '../interface/email-info.interface';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { SendSmtpEmail, TransactionalEmailsApi } from '@getbrevo/brevo';
+import { EmailProvider } from '../enum/email-provider.enum';
 
 @Injectable()
 export class EmailClient {
@@ -28,6 +29,10 @@ export class EmailClient {
         });
     }
 
+    private isBrevoEnabled(): boolean {
+        return this.serverConfig.emailProvider === EmailProvider.BREVO;
+    }
+
     private async sendWithBrevo(options: IEmailInfo) {
         const message = new SendSmtpEmail();
         message.subject = options.subject;
@@ -39,12 +44,12 @@ export class EmailClient {
     }
 
     async verifyOrThrow() {
-        if (this.serverConfig.isProduction) await this.emailAPI.getSmtpTemplates();
+        if (this.isBrevoEnabled()) await this.emailAPI.getSmtpTemplates();
         else await this.transporter.verify();
     }
 
     async sendMail(options: IEmailInfo) {
-        if (this.serverConfig.isProduction) {
+        if (this.isBrevoEnabled()) {
             await this.sendWithBrevo(options);
         } else {
             await this.transporter.sendMail({
