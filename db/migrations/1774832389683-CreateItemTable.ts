@@ -1,4 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { query } from 'winston';
 
 export class CreateItemTable1774832389683 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -26,19 +27,28 @@ export class CreateItemTable1774832389683 implements MigrationInterface {
             ); 
         `);
 
+        // for global feed (no filters)
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_item_created_at_id 
             ON item (created_at, id);
         `);
 
+        // for tag filtering (will require a memory sort, but fetching is fast)
         await queryRunner.query(`
             CREATE INDEX idx_item_tags_gin 
             ON item USING GIN (tags);
         `);
 
+        // for category feed
         await queryRunner.query(`
-            CREATE INDEX idx_item_category 
-            ON item (category);
+            CREATE INDEX idx_item_category_date 
+            ON item (category, created_at, id);
+        `);
+
+        // for created by user feed
+        await queryRunner.query(`
+            CREATE INDEX idx_item_owner_date 
+            ON item (created_by, created_at, id);
         `);
 
         await queryRunner.query(`
