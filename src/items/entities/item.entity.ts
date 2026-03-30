@@ -20,11 +20,8 @@ export class Item extends BaseEntity {
     @OneToMany(() => Review, (review) => review.item)
     reviews!: Review[];
 
-    @ManyToOne(() => User, (user) => user.items, {
-        nullable: false,
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'account_id' })
+    @ManyToOne(() => User, (user) => user.items, {})
+    @JoinColumn({ name: 'created_by' })
     user!: User;
 
     @Column({ name: 'created_by' })
