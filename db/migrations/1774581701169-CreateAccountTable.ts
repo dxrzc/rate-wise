@@ -38,8 +38,7 @@ export class AddAccountTable1774581701169 implements MigrationInterface {
                 CONSTRAINT account_valid_username_chk CHECK (username ~ '^[a-z0-9_]+$'),
                 CONSTRAINT account_email_lowercase_chk CHECK(email = LOWER(email)),
                 CONSTRAINT account_email_len_chk CHECK (LENGTH(email) <= 254),
-                CONSTRAINT account_email_format_chk CHECK (email LIKE '%@%'),
-                CONSTRAINT account_password_len_chk CHECK (LENGTH(password_hash) BETWEEN 8 AND 60)
+                CONSTRAINT account_email_format_chk CHECK (email LIKE '%@%')
             )
         `);
 
@@ -48,7 +47,7 @@ export class AddAccountTable1774581701169 implements MigrationInterface {
             CREATE INDEX IF NOT EXISTS idx_account_created_at_id 
             ON account (created_at, id);
         `);
-        
+
         // Update the updated_at timestamp on every update
         await queryRunner.query(`
             CREATE TRIGGER set_timestamp_on_account
