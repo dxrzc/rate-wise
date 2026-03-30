@@ -20,7 +20,7 @@ export class CreateVoteTable1774836425457 implements MigrationInterface {
 
         // For fetching votes for a review + delete cascade
         await queryRunner.query(`
-            CREATE INDEX IF NOT EXISTS idx_vote_review_date.
+            CREATE INDEX IF NOT EXISTS idx_vote_review_date
             ON vote (related_review, created_at, id);
         `);
 
