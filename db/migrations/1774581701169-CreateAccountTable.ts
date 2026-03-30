@@ -2,6 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddAccountTable1774581701169 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        // Reusable function to set the updated_at timestamp on updates
         await queryRunner.query(`
             CREATE OR REPLACE FUNCTION trigger_set_timestamp()
             RETURNS TRIGGER AS $$
@@ -42,11 +43,13 @@ export class AddAccountTable1774581701169 implements MigrationInterface {
             )
         `);
 
+        // For global pagination
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_account_created_at_id 
             ON account (created_at, id);
         `);
-
+        
+        // Update the updated_at timestamp on every update
         await queryRunner.query(`
             CREATE TRIGGER set_timestamp_on_account
             BEFORE UPDATE ON account

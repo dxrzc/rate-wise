@@ -3,6 +3,7 @@ import { query } from 'winston';
 
 export class CreateItemTable1774832389683 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        // Domain for item tags to enforce length constraints
         await queryRunner.query(`
             CREATE DOMAIN item_tag_type AS TEXT
             CHECK (LENGTH(VALUE) BETWEEN 2 AND 20);
@@ -27,30 +28,31 @@ export class CreateItemTable1774832389683 implements MigrationInterface {
             ); 
         `);
 
-        // for global feed (no filters)
+        // For global pagination
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_item_created_at_id 
             ON item (created_at, id);
         `);
 
-        // for tag filtering (will require a memory sort, but fetching is fast)
+        // For tag filtering (will require a memory sort, but fetching is fast)
         await queryRunner.query(`
             CREATE INDEX idx_item_tags_gin 
             ON item USING GIN (tags);
         `);
 
-        // for category feed
+        // For category filtering
         await queryRunner.query(`
             CREATE INDEX idx_item_category_date 
             ON item (category, created_at, id);
         `);
 
-        // for created by user feed
+        // For fetching a user's items + delete cascade
         await queryRunner.query(`
             CREATE INDEX idx_item_owner_date 
             ON item (created_by, created_at, id);
         `);
 
+        // Update the updated_at timestamp on every update
         await queryRunner.query(`
             CREATE TRIGGER set_timestamp_on_item
             BEFORE UPDATE ON item

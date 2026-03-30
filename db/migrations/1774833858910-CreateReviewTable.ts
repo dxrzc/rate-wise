@@ -23,21 +23,25 @@ export class CreateReviewTable1774833858910 implements MigrationInterface {
             );
         `);
 
+        // For global pagination
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_review_created_at_id 
             ON review (created_at, id);
         `);
 
+        // For fetching reviews for a specific item + delete cascade
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_review_related_item_date 
             ON review (related_item, created_at, id);
         `);
 
+        // For fetching reviews by user + delete cascade
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_review_owner_date 
             ON review (created_by, created_at, id);
         `);
 
+        // Update the updated_at timestamp on every update
         await queryRunner.query(`
             CREATE TRIGGER set_timestamp_on_review
             BEFORE UPDATE ON review
