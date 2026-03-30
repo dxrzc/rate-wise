@@ -6,7 +6,7 @@ import { VoteAction } from '../enum/vote.enum';
 
 @Entity()
 export class Vote extends BaseEntity {
-    @Column({ type: 'enum', enum: VoteAction })
+    @Column({ type: 'enum', enum: VoteAction, name: 'action' })
     vote!: VoteAction;
 
     @ManyToOne(() => Review, (review) => review.votes)
