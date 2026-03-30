@@ -46,11 +46,11 @@ export class ReviewService {
         await this.reviewRepository.query(`
             WITH actual AS (
                 SELECT
-                  r.id AS review_id,
+                  r.id AS related_review,
                   COUNT(v.id) FILTER (WHERE v.vote = 'up')   AS up,
                   COUNT(v.id) FILTER (WHERE v.vote = 'down') AS down
                 FROM review r
-                LEFT JOIN vote v ON v.review_id = r.id
+                LEFT JOIN vote v ON v.related_review = r.id
                 GROUP BY r.id
             )
             UPDATE review r
@@ -58,7 +58,7 @@ export class ReviewService {
               upvotes = a.up,
               downvotes = a.down
             FROM actual a
-            WHERE r.id = a.review_id
+            WHERE r.id = a.related_review
               AND (r.upvotes != a.up OR r.downvotes != a.down);
         `);
         SystemLogger.getInstance().log('Review votes refreshed via cron job');
