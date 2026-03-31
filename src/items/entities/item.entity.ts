@@ -2,6 +2,7 @@ import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entites/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Review } from 'src/reviews/entities/review.entity';
+import { customArrayTransformer } from 'src/common/db/transformers/array.transformer';
 
 @Entity()
 export class Item extends BaseEntity {
@@ -14,7 +15,7 @@ export class Item extends BaseEntity {
     @Column('text')
     category!: string;
 
-    @Column('text', { array: true })
+    @Column('text', { array: true, transformer: customArrayTransformer })
     tags!: string[];
 
     @OneToMany(() => Review, (review) => review.item)
