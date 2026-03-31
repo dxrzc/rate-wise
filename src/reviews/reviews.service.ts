@@ -47,8 +47,8 @@ export class ReviewService {
             WITH actual AS (
                 SELECT
                   r.id AS related_review,
-                  COUNT(v.id) FILTER (WHERE v.vote = 'up')   AS up,
-                  COUNT(v.id) FILTER (WHERE v.vote = 'down') AS down
+                  COUNT(v.id) FILTER (WHERE v.action = 'up')   AS up,
+                  COUNT(v.id) FILTER (WHERE v.action = 'down') AS down
                 FROM review r
                 LEFT JOIN vote v ON v.related_review = r.id
                 GROUP BY r.id
