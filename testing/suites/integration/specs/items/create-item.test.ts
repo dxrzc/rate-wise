@@ -7,6 +7,7 @@ import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
 import { Code } from 'src/common/enums/code.enum';
 import { AccountStatus } from 'src/users/enums/account-status.enum';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { ITEMS_MESSAGES } from 'src/items/messages/items.messages';
 
 describe('Gql - createItem', () => {
     describe('Session cookie not provided', () => {
@@ -116,6 +117,24 @@ describe('Gql - createItem', () => {
                 )
                 .set('Cookie', sessionCookie);
             expect(res).notToFail();
+        });
+    });
+
+    describe("Item's title exists and belongs to the same user", () => {
+        test('return 409 CONFLICT and already exists error message', async () => {
+            const { id: userId, sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
+            const { title } = await createItemUtil(userId);
+            const itemData = { ...testKit.itemSeed.itemInput, title };
+            const res = await testKit.gqlClient
+                .send(createItem({ args: itemData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(res).toFailWith(
+                Code.CONFLICT,
+                expect.stringContaining(ITEMS_MESSAGES.ALREADY_EXISTS),
+            );
         });
     });
 
