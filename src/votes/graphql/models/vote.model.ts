@@ -9,7 +9,7 @@ import { VoteAction } from 'src/votes/enum/vote.enum';
 })
 export class VoteModel extends BaseModel {
     @Field(() => VoteAction, { description: 'The action of the vote (UP or DOWN).' })
-    vote!: VoteAction;
+    action!: VoteAction;
 
     @Field(() => String, {
         description: 'The ID of the user who created this vote.',
