@@ -7,19 +7,28 @@ import { AccountStatus } from 'src/users/enums/account-status.enum';
 
 @Injectable()
 export class UserDataGenerator {
+    /**
+     * @returns random username respecting constraints with no white spaces
+     */
     get username(): string {
         const randomNumber = faker.number.int({ max: 100 });
         const baseUsername =
             randomNumber % 2 === 0
                 ? `${faker.person.firstName()}_${randomNumber}${faker.person.lastName()}`
                 : `${faker.person.lastName()}_${randomNumber}${faker.person.firstName()}`;
-
         // Ensure username does not exceed AUTH_RULES.USERNAME.MAX
-        return baseUsername.slice(0, AUTH_RULES.USERNAME.MAX);
+        const finalUsername = baseUsername
+            .slice(0, AUTH_RULES.USERNAME.MAX)
+            .toLowerCase()
+            .replace(/[ '-]/g, (c) => (c === '-' ? '_' : ''));
+        return finalUsername;
     }
 
+    /**
+     * @returns random email in lowercase
+     */
     get email(): string {
-        return faker.internet.email();
+        return faker.internet.email().toLowerCase();
     }
 
     get role(): UserRole {

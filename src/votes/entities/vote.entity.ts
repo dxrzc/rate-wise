@@ -6,26 +6,20 @@ import { VoteAction } from '../enum/vote.enum';
 
 @Entity()
 export class Vote extends BaseEntity {
-    @Column({ type: 'enum', enum: VoteAction })
-    vote!: VoteAction;
+    @Column({ type: 'enum', enum: VoteAction, name: 'action' })
+    action!: VoteAction;
 
-    @ManyToOne(() => Review, (review) => review.votes, {
-        nullable: false,
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'review_id' })
+    @ManyToOne(() => Review, (review) => review.votes)
+    @JoinColumn({ name: 'related_review' })
     review!: Review;
 
-    @ManyToOne(() => User, (user) => user.votes, {
-        nullable: false,
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'account_id' })
+    @Column({ name: 'related_review' })
+    relatedReview!: string;
+
+    @ManyToOne(() => User, (user) => user.votes)
+    @JoinColumn({ name: 'created_by' })
     user!: User;
 
-    @Column({ name: 'account_id' })
+    @Column({ name: 'created_by' })
     createdBy!: string;
-
-    @Column({ name: 'review_id' })
-    relatedReview!: string;
 }

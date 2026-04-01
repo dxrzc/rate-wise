@@ -151,7 +151,7 @@ describe('Gql - voteReview', () => {
                     where: { review: { id: reviewId } },
                 });
                 expect(votes).toHaveLength(1);
-                expect(votes[0].vote).toBe(VoteAction.UP);
+                expect(votes[0].action).toBe(VoteAction.UP);
             });
 
             test('review counts should be consistent: downvotes 0, upvotes 1', async () => {
@@ -201,7 +201,7 @@ describe('Gql - voteReview', () => {
                     where: { review: { id: reviewId } },
                 });
                 expect(votes).toHaveLength(1);
-                expect(votes[0].vote).toBe(VoteAction.DOWN);
+                expect(votes[0].action).toBe(VoteAction.DOWN);
             });
 
             test('review counts should remain consistent: downvotes 1, upvotes 0', async () => {
@@ -253,7 +253,7 @@ describe('Gql - voteReview', () => {
                     where: { review: { id: reviewId } },
                 });
                 expect(votes).toHaveLength(1);
-                expect(votes[0].vote).toBe(VoteAction.DOWN);
+                expect(votes[0].action).toBe(VoteAction.DOWN);
             });
 
             test('review counts should be consistent: downvotes 1, upvotes 0', async () => {
@@ -303,7 +303,7 @@ describe('Gql - voteReview', () => {
                     where: { review: { id: reviewId } },
                 });
                 expect(votes).toHaveLength(1);
-                expect(votes[0].vote).toBe(VoteAction.UP);
+                expect(votes[0].action).toBe(VoteAction.UP);
             });
 
             test('review counts should remain consistent: downvotes 0, upvotes 1', async () => {
@@ -353,7 +353,7 @@ describe('Gql - voteReview', () => {
                 where: { review: { id: reviewId } },
             });
             expect(votes).toHaveLength(1);
-            expect(votes[0].vote).toBe(VoteAction.UP);
+            expect(votes[0].action).toBe(VoteAction.UP);
             // verify review counts
             const review = await testKit.reviewRepos.findOne({
                 where: { id: reviewId },
@@ -382,7 +382,7 @@ describe('Gql - voteReview', () => {
                 where: { review: { id: reviewId } },
             });
             expect(votes).toHaveLength(1);
-            expect(votes[0].vote).toBe(VoteAction.DOWN);
+            expect(votes[0].action).toBe(VoteAction.DOWN);
             // verify review counts
             const review = await testKit.reviewRepos.findOne({
                 where: { id: reviewId },
@@ -417,7 +417,7 @@ describe('Gql - voteReview', () => {
                 where: { review: { id: reviewId } },
             });
             expect(userVotes).toHaveLength(1);
-            expect(userVotes[0].vote).toBe(VoteAction.DOWN);
+            expect(userVotes[0].action).toBe(VoteAction.DOWN);
             // verify review counts
             const review = await testKit.reviewRepos.findOne({
                 where: { id: reviewId },
@@ -473,7 +473,7 @@ describe('Gql - voteReview', () => {
                 where: { review: { id: reviewId } },
             });
             expect(userVotes).toHaveLength(1);
-            expect(userVotes[0].vote).toBe(VoteAction.UP);
+            expect(userVotes[0].action).toBe(VoteAction.UP);
             // verify review counts
             const review = await testKit.reviewRepos.findOne({
                 where: { id: reviewId },

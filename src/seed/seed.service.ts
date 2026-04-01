@@ -151,7 +151,7 @@ export class SeedService {
             const vote = this.voteRepository.create({
                 relatedReview: reviewId,
                 createdBy: userId,
-                vote: Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN,
+                action: Math.random() < 0.5 ? VoteAction.UP : VoteAction.DOWN,
             });
             await this.voteRepository.save(vote);
             count++;

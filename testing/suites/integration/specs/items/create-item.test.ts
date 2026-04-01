@@ -94,8 +94,8 @@ describe('Gql - createItem', () => {
         });
     });
 
-    describe("Item's title already exists", () => {
-        test('return 409 CONFLICT and already exists error message', async () => {
+    describe("Item's title already exists but belongs to a different user", () => {
+        test('request does not fail', async () => {
             const { id: userId } = await createAccount({
                 status: AccountStatus.ACTIVE,
                 roles: [UserRole.CREATOR],
@@ -116,7 +116,25 @@ describe('Gql - createItem', () => {
                     }),
                 )
                 .set('Cookie', sessionCookie);
-            expect(res).toFailWith(Code.CONFLICT, ITEMS_MESSAGES.ALREADY_EXISTS);
+            expect(res).notToFail();
+        });
+    });
+
+    describe("Item's title exists and belongs to the same user", () => {
+        test('return 409 CONFLICT and already exists error message', async () => {
+            const { id: userId, sessionCookie } = await createAccount({
+                status: AccountStatus.ACTIVE,
+                roles: [UserRole.CREATOR],
+            });
+            const { title } = await createItemUtil(userId);
+            const itemData = { ...testKit.itemSeed.itemInput, title };
+            const res = await testKit.gqlClient
+                .send(createItem({ args: itemData, fields: ['id'] }))
+                .set('Cookie', sessionCookie);
+            expect(res).toFailWith(
+                Code.CONFLICT,
+                expect.stringContaining(ITEMS_MESSAGES.ALREADY_EXISTS),
+            );
         });
     });
 

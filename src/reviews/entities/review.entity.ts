@@ -9,8 +9,8 @@ export class Review extends BaseEntity {
     @Column('text')
     content!: string;
 
-    @Column('integer', { default: 0 })
-    rating!: number; // 0–10 enforced by DB
+    @Column('integer')
+    rating!: number;
 
     @Column('integer', { name: 'upvotes', default: 0 })
     upVotes!: number;
@@ -18,26 +18,20 @@ export class Review extends BaseEntity {
     @Column('integer', { name: 'downvotes', default: 0 })
     downVotes!: number;
 
-    @ManyToOne(() => User, (user) => user.reviews, {
-        nullable: false,
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'account_id' })
+    @ManyToOne(() => User, (user) => user.reviews)
+    @JoinColumn({ name: 'created_by' })
     user!: User;
 
-    @ManyToOne(() => Item, (item) => item.reviews, {
-        nullable: false,
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'item_id' })
+    @Column({ name: 'created_by' })
+    createdBy!: string;
+
+    @ManyToOne(() => Item, (item) => item.reviews)
+    @JoinColumn({ name: 'related_item' })
     item!: Item;
+
+    @Column({ name: 'related_item' })
+    relatedItem!: string;
 
     @OneToMany(() => Vote, (vote) => vote.review)
     votes!: Vote[];
-
-    @Column({ name: 'account_id' })
-    createdBy!: string;
-
-    @Column({ name: 'item_id' })
-    relatedItem!: string;
 }

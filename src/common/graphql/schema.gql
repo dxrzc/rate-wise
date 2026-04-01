@@ -191,7 +191,7 @@ type VoteModel {
   updatedAt: Date!
 
   """The action of the vote (UP or DOWN)."""
-  vote: VoteAction!
+  action: VoteAction!
 
   """The ID of the user who created this vote."""
   createdBy: String!
