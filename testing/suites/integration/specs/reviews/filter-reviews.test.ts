@@ -276,7 +276,7 @@ describe('Gql - filterReviews', () => {
                                 totalCount
                                 hasNextPage
                                 nodes {
-                                  vote
+                                  action
                                   createdBy
                                   relatedReview
                                 }
@@ -300,12 +300,12 @@ describe('Gql - filterReviews', () => {
                 expect.arrayContaining([
                     expect.objectContaining({
                         createdBy: upvoterId,
-                        vote: inputVotes.UP,
+                        action: inputVotes.UP,
                         relatedReview: reviewId,
                     }),
                     expect.objectContaining({
                         createdBy: downvoterId,
-                        vote: inputVotes.DOWN,
+                        action: inputVotes.DOWN,
                         relatedReview: reviewId,
                     }),
                 ]),
