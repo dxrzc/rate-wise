@@ -159,7 +159,7 @@ describe('GraphQL - signUp', () => {
 
         describe('Username contains leading and trailing white spaces', () => {
             test('spaces are stripped before saving in database', async () => {
-                const name = `  ${faker.string.alpha({ length: AUTH_RULES.USERNAME.MIN })} `;
+                const name = `  ${testKit.userSeed.username} `;
                 const res = await testKit.gqlClient
                     .send(
                         signUp({
