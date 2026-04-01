@@ -20,9 +20,7 @@ export class UserDataGenerator {
         const finalUsername = baseUsername
             .slice(0, AUTH_RULES.USERNAME.MAX)
             .toLowerCase()
-            .replace(' ', '')
-            .replace("'", '')
-            .replace('-', '_');
+            .replace(/[ '-]/g, (c) => (c === '-' ? '_' : ''));
         return finalUsername;
     }
 
