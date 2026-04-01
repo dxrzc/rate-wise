@@ -41,7 +41,7 @@ export class VotesService {
         manager: EntityManager,
     ) {
         await manager.withRepository(this.voteRepository).delete({ id: vote.id });
-        await this.reviewService.deleteVoteTx(reviewId, vote.vote, manager);
+        await this.reviewService.deleteVoteTx(reviewId, vote.action, manager);
     }
 
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
@@ -52,12 +52,12 @@ export class VotesService {
                 where: { relatedReview: reviewId, createdBy: user.id },
             });
             if (previousVote) {
-                if (previousVote.vote === action) return;
+                if (previousVote.action === action) return;
                 await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, manager);
             }
             // add vote
             await manager.withRepository(this.voteRepository).save({
-                vote: action,
+                action,
                 createdBy: user.id,
                 relatedReview: reviewId,
             });
@@ -102,10 +102,10 @@ export class VotesService {
     async subtractUserVotesFromReviews(userId: string, manager: EntityManager): Promise<void> {
         const votes = await manager.withRepository(this.voteRepository).find({
             where: { createdBy: userId },
-            select: ['relatedReview', 'vote'],
+            select: ['relatedReview', 'action'],
         });
-        const upVotes = votes.filter((v) => v.vote === VoteAction.UP);
-        const downVotes = votes.filter((v) => v.vote === VoteAction.DOWN);
+        const upVotes = votes.filter((v) => v.action === VoteAction.UP);
+        const downVotes = votes.filter((v) => v.action === VoteAction.DOWN);
         await this.reviewService.deleteVoteInMultipleReviews(
             upVotes.map((v) => v.relatedReview),
             VoteAction.UP,
