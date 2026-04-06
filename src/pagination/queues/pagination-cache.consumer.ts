@@ -6,7 +6,12 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
 
-@Processor(PAGINATION_CACHE_QUEUE, { concurrency: 7 })
+@Processor(PAGINATION_CACHE_QUEUE, {
+    metrics: { maxDataPoints: 0 },
+    stalledInterval: 300000,
+    drainDelay: 60,
+    concurrency: 1,
+})
 export class PaginationCacheConsumer extends WorkerHost {
     private readonly context = PaginationCacheConsumer.name;
 
