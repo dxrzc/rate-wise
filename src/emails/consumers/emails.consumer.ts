@@ -9,7 +9,12 @@ import { IAls } from 'src/common/types/async-local-storage.type';
 import { IEmailInfo } from '../interface/email-info.interface';
 import { EmailsJobData } from '../types/emails-job-data.type';
 
-@Processor(EMAILS_QUEUE, { concurrency: 5 })
+@Processor(EMAILS_QUEUE, {
+    metrics: { maxDataPoints: 0 },
+    stalledInterval: 300000,
+    drainDelay: 60,
+    concurrency: 1,
+})
 export class EmailsConsumer extends WorkerHost {
     constructor(
         private readonly client: EmailClient,
