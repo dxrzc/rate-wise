@@ -8,7 +8,7 @@ const config: Config = {
 
     roots: ['<rootDir>/testing/suites/integration/specs'],
     globalSetup: '<rootDir>/testing/suites/integration/setup/global/setup.ts',
-    globalTeardown: '<rootDir>/testing/suites/integration/setup/global/teardown.ts',
+    // globalTeardown: '<rootDir>/testing/suites/integration/setup/global/teardown.ts',
     setupFilesAfterEnv: [
         '<rootDir>/testing/suites/integration/setup/after-env/set-environment.ts',
         '<rootDir>/testing/suites/integration/setup/after-env/set-jest.ts',
