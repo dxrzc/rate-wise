@@ -1,14 +1,11 @@
-import { SERVICES_CONFIG_FILE_PATH } from '../global/constants/services-config-file-path.constant';
 import { ServicesConfig } from '../global/types/services.configuration.type';
 import { cloneDatabase } from './helpers/clone-database.helper';
-import { promises as fs } from 'fs';
 
 // Same redis instances for all the tests (auth, cache, etc.)
 // Postgres db is cloned before each test file
 beforeAll(async () => {
     try {
-        const configJson = await fs.readFile(SERVICES_CONFIG_FILE_PATH, 'utf-8');
-        const { postgresUrl, redisUrls, mailpit } = <ServicesConfig>JSON.parse(configJson);
+        const { postgresUrl, redisUrls, mailpit } = <ServicesConfig>JSON.parse(process.env.config!);
 
         // Cloned database for test isolation
         process.env.POSTGRES_URI = await cloneDatabase(postgresUrl);
