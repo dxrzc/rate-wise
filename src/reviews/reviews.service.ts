@@ -136,30 +136,68 @@ export class ReviewService {
         });
     }
 
-    async addVoteTx(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
-        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
-        await manager
+    /**
+     * Increments the upVotes or downVotes count of a review based on the provided action.
+     * This method is intended to be used within a transaction
+     */
+    async incrementVotesTx({
+        reviewId,
+        action,
+        txManager,
+        value = 0,
+    }: {
+        reviewId: string;
+        action: VoteAction;
+        txManager: EntityManager;
+        value?: number;
+    }): Promise<void> {
+        const propPath = action === VoteAction.UP ? 'upVotes' : 'downVotes';
+        await txManager
             .withRepository(this.reviewRepository)
-            .increment({ id: reviewId }, propPath, 1);
+            .increment({ id: reviewId }, propPath, value);
     }
 
-    async deleteVoteTx(reviewId: string, vote: VoteAction, manager: EntityManager): Promise<void> {
-        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
-        await manager
+    /**
+     * Decrements the upVotes or downVotes count of a review based on the provided action.
+     * This method is intended to be used within a transaction
+     */
+    async decrementVotesTx({
+        reviewId,
+        action,
+        txManager,
+        value = 0,
+    }: {
+        reviewId: string;
+        action: VoteAction;
+        txManager: EntityManager;
+        value?: number;
+    }): Promise<void> {
+        const propPath = action === VoteAction.UP ? 'upVotes' : 'downVotes';
+        await txManager
             .withRepository(this.reviewRepository)
-            .decrement({ id: reviewId }, propPath, 1);
+            .decrement({ id: reviewId }, propPath, value);
     }
 
-    async deleteVoteInMultipleReviews(
-        reviewsIds: string[],
-        vote: VoteAction,
-        manager: EntityManager,
-    ): Promise<void> {
+    /**
+     * Decrements the upVotes or downVotes count of multiple reviews based on the provided action.
+     * This method is intended to be used within a transaction
+     */
+    async decrementVotesInTx({
+        reviewsIds,
+        vote,
+        txManager,
+        value = 0,
+    }: {
+        reviewsIds: string[];
+        vote: VoteAction;
+        txManager: EntityManager;
+        value?: number;
+    }): Promise<void> {
         if (reviewsIds.length === 0) return;
         const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
-        await manager
+        await txManager
             .withRepository(this.reviewRepository)
-            .decrement({ id: In(reviewsIds) }, propPath, 1);
+            .decrement({ id: In(reviewsIds) }, propPath, value);
     }
 
     async calculateItemAverageRating(itemId: string): Promise<number> {
