@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
-import { User } from 'src/users/entities/user.entity';
 import { Vote } from './entities/vote.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { VoteAction } from './enum/vote.enum';
@@ -23,16 +22,23 @@ export class VotesService {
     ) {}
 
     /**
-     * All the transactions by the same user will happen sequentially.
-     * This prevents race conditions if a user votes/downvotes/delete-votes multiple times in a short period.
+     * Creates an Advisory Lock for user-review.
+     * Reference: https://www.postgresql.org/docs/9.1/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS
+     * @returns boolean indicating whether the lock was acquired or not.
      */
-    private async lockUserTx(userId: string, manager: EntityManager) {
-        await manager
-            .getRepository(User)
-            .createQueryBuilder('user')
-            .setLock('pessimistic_write')
-            .where('user.id = :id', { id: userId })
-            .getOne();
+    async acquireVoteLock({
+        manager,
+        userId,
+        reviewId,
+    }: {
+        manager: EntityManager;
+        userId: string;
+        reviewId: string;
+    }): Promise<boolean> {
+        const lockQuery = `SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired`;
+        const lockKey = `${userId}-${reviewId}`;
+        const [lockResult] = await manager.query<{ acquired: boolean }[]>(lockQuery, [lockKey]);
+        return lockResult.acquired;
     }
 
     private async deleteVoteAndUpdateReviewTx(
@@ -47,7 +53,12 @@ export class VotesService {
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
         await this.dataSource.transaction(async (manager: EntityManager) => {
             await this.reviewService.existsOrThrowTx(reviewId, manager);
-            await this.lockUserTx(user.id, manager); // one at a time per user
+            const acquired = await this.acquireVoteLock({
+                manager,
+                userId: user.id,
+                reviewId,
+            });
+            if (!acquired) return;
             const previousVote = await manager.withRepository(this.voteRepository).findOne({
                 where: { relatedReview: reviewId, createdBy: user.id },
             });
@@ -70,7 +81,12 @@ export class VotesService {
         await this.reviewService.existsOrThrow(reviewId);
         let deleted = false;
         await this.dataSource.transaction(async (manager: EntityManager) => {
-            await this.lockUserTx(user.id, manager); // one at a time per user
+            const acquired = await this.acquireVoteLock({
+                manager,
+                userId: user.id,
+                reviewId,
+            });
+            if (!acquired) return;
             const previousVote = await manager.withRepository(this.voteRepository).findOne({
                 where: { relatedReview: reviewId, createdBy: user.id },
             });
