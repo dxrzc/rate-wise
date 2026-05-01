@@ -144,12 +144,12 @@ export class ReviewService {
         reviewId,
         action,
         txManager,
-        value = 0,
+        value,
     }: {
         reviewId: string;
         action: VoteAction;
         txManager: EntityManager;
-        value?: number;
+        value: number;
     }): Promise<void> {
         const propPath = action === VoteAction.UP ? 'upVotes' : 'downVotes';
         await txManager
@@ -165,12 +165,12 @@ export class ReviewService {
         reviewId,
         action,
         txManager,
-        value = 0,
+        value,
     }: {
         reviewId: string;
         action: VoteAction;
         txManager: EntityManager;
-        value?: number;
+        value: number;
     }): Promise<void> {
         const propPath = action === VoteAction.UP ? 'upVotes' : 'downVotes';
         await txManager
