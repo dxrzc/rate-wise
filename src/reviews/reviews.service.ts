@@ -184,17 +184,17 @@ export class ReviewService {
      */
     async decrementVotesInTx({
         reviewsIds,
-        vote,
+        action,
         txManager,
         value = 0,
     }: {
         reviewsIds: string[];
-        vote: VoteAction;
+        action: VoteAction;
         txManager: EntityManager;
         value?: number;
     }): Promise<void> {
         if (reviewsIds.length === 0) return;
-        const propPath = vote === VoteAction.UP ? 'upVotes' : 'downVotes';
+        const propPath = action === VoteAction.UP ? 'upVotes' : 'downVotes';
         await txManager
             .withRepository(this.reviewRepository)
             .decrement({ id: In(reviewsIds) }, propPath, value);
