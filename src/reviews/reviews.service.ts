@@ -186,12 +186,12 @@ export class ReviewService {
         reviewsIds,
         action,
         txManager,
-        value = 0,
+        value,
     }: {
         reviewsIds: string[];
         action: VoteAction;
         txManager: EntityManager;
-        value?: number;
+        value: number;
     }): Promise<void> {
         if (reviewsIds.length === 0) return;
         const propPath = action === VoteAction.UP ? 'upVotes' : 'downVotes';

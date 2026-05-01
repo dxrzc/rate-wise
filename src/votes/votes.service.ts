@@ -136,11 +136,13 @@ export class VotesService {
             reviewsIds: upVotes.map((v) => v.relatedReview),
             action: VoteAction.UP,
             txManager,
+            value: 1,
         });
         await this.reviewService.decrementVotesInTx({
             reviewsIds: downVotes.map((v) => v.relatedReview),
             action: VoteAction.DOWN,
             txManager,
+            value: 1,
         });
     }
 }
