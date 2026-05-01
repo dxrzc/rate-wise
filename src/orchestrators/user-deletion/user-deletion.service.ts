@@ -16,7 +16,7 @@ export class UserDeletionService {
     async deleteOne(id: string): Promise<void> {
         await this.dataSource.transaction(async (manager: EntityManager) => {
             const user = await this.userService.findOneByIdOrThrowTx(id, manager);
-            await this.votesService.subtractUserVotesFromReviews(id, manager);
+            await this.votesService.revokeUserVotesOnReviewsTx(id, manager);
             await this.userService.deleteOneTx(user, manager);
         });
         await this.userService.deleteUserFromCache(id);

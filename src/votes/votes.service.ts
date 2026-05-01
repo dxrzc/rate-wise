@@ -125,7 +125,7 @@ export class VotesService {
         });
     }
 
-    async subtractUserVotesFromReviews(userId: string, txManager: EntityManager): Promise<void> {
+    async revokeUserVotesOnReviewsTx(userId: string, txManager: EntityManager): Promise<void> {
         const votes = await txManager.withRepository(this.voteRepository).find({
             where: { createdBy: userId },
             select: ['relatedReview', 'action'],
