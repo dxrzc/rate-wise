@@ -27,52 +27,62 @@ export class VotesService {
      * @returns boolean indicating whether the lock was acquired or not.
      */
     async acquireVoteLock({
-        manager,
+        txManager,
         userId,
         reviewId,
     }: {
-        manager: EntityManager;
+        txManager: EntityManager;
         userId: string;
         reviewId: string;
     }): Promise<boolean> {
         const lockQuery = `SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired`;
         const lockKey = `${userId}-${reviewId}`;
-        const [lockResult] = await manager.query<{ acquired: boolean }[]>(lockQuery, [lockKey]);
+        const [lockResult] = await txManager.query<{ acquired: boolean }[]>(lockQuery, [lockKey]);
         return lockResult.acquired;
     }
 
     private async deleteVoteAndUpdateReviewTx(
         vote: Vote,
         reviewId: string,
-        manager: EntityManager,
+        txManager: EntityManager,
     ) {
-        await manager.withRepository(this.voteRepository).delete({ id: vote.id });
-        await this.reviewService.deleteVoteTx(reviewId, vote.action, manager);
+        await txManager.withRepository(this.voteRepository).delete({ id: vote.id });
+        await this.reviewService.decrementVotesTx({
+            reviewId,
+            action: vote.action,
+            txManager,
+            value: 1,
+        });
     }
 
     async voteReview(reviewId: string, user: AuthenticatedUser, action: VoteAction): Promise<void> {
-        await this.dataSource.transaction(async (manager: EntityManager) => {
-            await this.reviewService.existsOrThrowTx(reviewId, manager);
+        await this.dataSource.transaction(async (txManager: EntityManager) => {
+            await this.reviewService.existsOrThrowTx(reviewId, txManager);
             const acquired = await this.acquireVoteLock({
-                manager,
+                txManager,
                 userId: user.id,
                 reviewId,
             });
             if (!acquired) return;
-            const previousVote = await manager.withRepository(this.voteRepository).findOne({
+            const previousVote = await txManager.withRepository(this.voteRepository).findOne({
                 where: { relatedReview: reviewId, createdBy: user.id },
             });
             if (previousVote) {
                 if (previousVote.action === action) return;
-                await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, manager);
+                await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, txManager);
             }
             // add vote
-            await manager.withRepository(this.voteRepository).save({
+            await txManager.withRepository(this.voteRepository).save({
                 action,
                 createdBy: user.id,
                 relatedReview: reviewId,
             });
-            await this.reviewService.addVoteTx(reviewId, action, manager);
+            await this.reviewService.incrementVotesTx({
+                reviewId,
+                action,
+                txManager,
+                value: 1,
+            });
         });
         this.loggerService.info(`User ${user.id} ${action}voted review ${reviewId}`);
     }
@@ -80,18 +90,18 @@ export class VotesService {
     async deleteVote(reviewId: string, user: AuthenticatedUser): Promise<boolean> {
         await this.reviewService.existsOrThrow(reviewId);
         let deleted = false;
-        await this.dataSource.transaction(async (manager: EntityManager) => {
+        await this.dataSource.transaction(async (txManager: EntityManager) => {
             const acquired = await this.acquireVoteLock({
-                manager,
+                txManager,
                 userId: user.id,
                 reviewId,
             });
             if (!acquired) return;
-            const previousVote = await manager.withRepository(this.voteRepository).findOne({
+            const previousVote = await txManager.withRepository(this.voteRepository).findOne({
                 where: { relatedReview: reviewId, createdBy: user.id },
             });
             if (!previousVote) return;
-            await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, manager);
+            await this.deleteVoteAndUpdateReviewTx(previousVote, reviewId, txManager);
             deleted = true;
         });
         if (deleted) {
@@ -115,22 +125,22 @@ export class VotesService {
         });
     }
 
-    async subtractUserVotesFromReviews(userId: string, manager: EntityManager): Promise<void> {
-        const votes = await manager.withRepository(this.voteRepository).find({
+    async subtractUserVotesFromReviews(userId: string, txManager: EntityManager): Promise<void> {
+        const votes = await txManager.withRepository(this.voteRepository).find({
             where: { createdBy: userId },
             select: ['relatedReview', 'action'],
         });
         const upVotes = votes.filter((v) => v.action === VoteAction.UP);
         const downVotes = votes.filter((v) => v.action === VoteAction.DOWN);
-        await this.reviewService.deleteVoteInMultipleReviews(
-            upVotes.map((v) => v.relatedReview),
-            VoteAction.UP,
-            manager,
-        );
-        await this.reviewService.deleteVoteInMultipleReviews(
-            downVotes.map((v) => v.relatedReview),
-            VoteAction.DOWN,
-            manager,
-        );
+        await this.reviewService.decrementVotesInTx({
+            reviewsIds: upVotes.map((v) => v.relatedReview),
+            action: VoteAction.UP,
+            txManager,
+        });
+        await this.reviewService.decrementVotesInTx({
+            reviewsIds: downVotes.map((v) => v.relatedReview),
+            action: VoteAction.DOWN,
+            txManager,
+        });
     }
 }
