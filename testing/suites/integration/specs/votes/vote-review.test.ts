@@ -345,7 +345,8 @@ describe('Gql - voteReview', () => {
                 .map(() =>
                     testKit.gqlClient
                         .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.UP } }))
-                        .set('Cookie', sessionCookie),
+                        .set('Cookie', sessionCookie)
+                        .expect(success),
                 );
             await Promise.all(votePromises);
             // should exist only 1 vote with UP action
@@ -374,7 +375,8 @@ describe('Gql - voteReview', () => {
                 .map(() =>
                     testKit.gqlClient
                         .send(voteReview({ args: { reviewId: reviewId, vote: inputVotes.DOWN } }))
-                        .set('Cookie', sessionCookie),
+                        .set('Cookie', sessionCookie)
+                        .expect(success),
                 );
             await Promise.all(votePromises);
             // should exist only 1 vote with DOWN action
