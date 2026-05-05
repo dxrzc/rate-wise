@@ -79,8 +79,8 @@ services:
     pull_policy: never
     build:
       context: ..
-      target: development   
-    command: sh -c "npx nest build && npx typeorm -d dist/db/data-source.js migration:run"    
+      target: development    
+    command: sh -c "npx typeorm-ts-node-commonjs migration:run -d ./db/data-source.ts"    
     volumes:
       - ../db:/usr/src/app/db
     depends_on:
@@ -88,3 +88,4 @@ services:
         condition: service_healthy  
     environment:
       POSTGRES_URI: postgresql://dev:secretpassword@postgres:5432/ratewise         
+      NODE_OPTIONS: "--require tsconfig-paths/register"
