@@ -76,6 +76,21 @@ services:
     volumes:
       - mailpit:/data
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - 11434:11434
+
 volumes:
   redisinsight:
     name: rate-wise-redisinsight
@@ -89,3 +104,5 @@ volumes:
     name: rate-wise-postgres
   mailpit:
     name: rate-wise-mailpit
+  ollama_data:
+    name: rate-wise-ollama-data
