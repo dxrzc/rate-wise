@@ -31,4 +31,5 @@ export interface IConfigs {
     readonly ADMIN_PASSWORD: string;
     readonly BREVO_API_KEY: string;
     readonly EMAIL_PROVIDER: EmailProvider;
+    readonly AI_PROVIDER_TOKEN: string;
 }

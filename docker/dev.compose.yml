@@ -13,6 +13,7 @@ services:
       - ${SERVER_PORT:-3000}:3000
     environment:
       SERVER_PORT: ${SERVER_PORT:-3000}
+      AI_PROVIDER_TOKEN: http://ollama:11434/api 
     volumes:
       - ../src:/usr/src/app/src
       - ../logs:/usr/src/app/logs

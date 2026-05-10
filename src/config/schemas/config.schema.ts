@@ -41,4 +41,7 @@ export const envSchema = Joi.object<IConfigs, true>({
     ADMIN_USERNAME: Joi.string().required(),
     ADMIN_EMAIL: Joi.string().email().required(),
     ADMIN_PASSWORD: Joi.string().required(),
+
+    // AI
+    AI_PROVIDER_TOKEN: Joi.string().required(),
 });
