@@ -47,4 +47,8 @@ export class ServerConfigService {
     get emailProvider(): EmailProvider {
         return this.configService.get('EMAIL_PROVIDER');
     }
+
+    get aiProviderToken(): string {
+        return this.configService.get('AI_PROVIDER_TOKEN');
+    }
 }
