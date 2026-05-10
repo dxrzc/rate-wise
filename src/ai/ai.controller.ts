@@ -21,7 +21,6 @@ export class AIController {
             const content = message.parts.map((part) => part.text).join('');
             return { role: message.role, content };
         });
-        console.log(formattedUserMessages);
         const result = this.aiService.getChatStream(formattedUserMessages);
         result.pipeUIMessageStreamToResponse(res);
     }
