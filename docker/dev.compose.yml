@@ -14,6 +14,7 @@ services:
     environment:
       SERVER_PORT: ${SERVER_PORT:-3000}
       AI_PROVIDER_TOKEN: http://ollama:11434/api 
+      AI_PROVIDER: "llama3.2:3b"
       ORIGIN: ${ORIGIN:-http://localhost:5173}
     volumes:
       - ../src:/usr/src/app/src

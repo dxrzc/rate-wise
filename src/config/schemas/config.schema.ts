@@ -45,4 +45,5 @@ export const envSchema = Joi.object<IConfigs, true>({
 
     // AI
     AI_PROVIDER_TOKEN: Joi.string().required(),
+    AI_PROVIDER: Joi.string().required(),
 });
