@@ -41,8 +41,7 @@ async function bootstrap() {
     app.set('trust proxy', serverConfig.trustProxy);
     app.useLogger(SystemLogger.getInstance());
     app.enableShutdownHooks();
-    // Allow cross-origin requests using configured origin (frontend dev server)
-    app.enableCors({ origin: serverConfig.origin, credentials: true });
+    app.enableCors({ origin: serverConfig.origin });
 
     await app.listen(serverConfig.port);
     SystemLogger.getInstance().log(
