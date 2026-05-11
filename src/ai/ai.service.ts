@@ -4,6 +4,7 @@ import { createOllama, OllamaProvider } from 'ollama-ai-provider-v2';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { featureContexts } from './ai.context';
 import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
+import { AIConfigService } from 'src/config/services/ai.config.service';
 
 @Injectable()
 export class AIService {
@@ -33,7 +34,7 @@ export class AIService {
     getChatStream(messages: ModelMessage[]): ReturnType<typeof streamText> {
         const context = this.provideContext(<string>messages[messages.length - 1].content);
         const result = streamText({
-            model: this.provider('llama3.2:3b'),
+            model: this.provider(this.aiConfig.provider),
             messages: messages,
             system: `
             You are a GraphQL API assistant for the RateWise platform.
