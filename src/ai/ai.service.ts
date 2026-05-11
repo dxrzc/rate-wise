@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ModelMessage, streamText } from 'ai';
 import { createOllama, OllamaProvider } from 'ollama-ai-provider-v2';
 import { ServerConfigService } from 'src/config/services/server.config.service';
-import { featureContexts } from './ai.context';
 import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
 import { AIConfigService } from 'src/config/services/ai.config.service';
+import { findRelevantContexts } from './context/find-relevant-contexts';
 
 @Injectable()
 export class AIService {
@@ -23,16 +23,9 @@ export class AIService {
               });
     }
 
-    provideContext(messageContent: string): Record<string, any> {
-        const query = messageContent.toLowerCase();
-        const matched = featureContexts.find((bucket) =>
-            bucket.keywords.some((keyword) => query.includes(keyword)),
-        );
-        return matched ? matched.context : {};
-    }
-
     getChatStream(messages: ModelMessage[]): ReturnType<typeof streamText> {
-        const context = this.provideContext(<string>messages[messages.length - 1].content);
+        const lastMessageContent = messages[messages.length - 1].content;
+        const contexts = findRelevantContexts(<string>lastMessageContent);
         const result = streamText({
             model: this.provider(this.aiConfig.provider),
             messages: messages,
@@ -56,7 +49,7 @@ export class AIService {
               - possible errors
 
             Relevant context:
-            ${JSON.stringify(context)}`,
+            ${contexts}`,
         });
         return result;
     }
