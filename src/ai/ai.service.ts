@@ -3,16 +3,20 @@ import { ModelMessage, streamText } from 'ai';
 import { createOllama, OllamaProvider } from 'ollama-ai-provider-v2';
 import { ServerConfigService } from 'src/config/services/server.config.service';
 import { featureContexts } from './ai.context';
+import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
 
 @Injectable()
 export class AIService {
-    // TODO: claude provider
-    private readonly provider: OllamaProvider;
+    private readonly provider: OllamaProvider | AnthropicProvider;
 
     constructor(private readonly serverConfig: ServerConfigService) {
-        this.provider = createOllama({
-            baseURL: this.serverConfig.aiProviderToken,
-        });
+        this.provider = this.serverConfig.isDevelopment
+            ? createOllama({
+                  baseURL: this.serverConfig.aiProviderToken,
+              })
+            : createAnthropic({
+                  apiKey: this.serverConfig.aiProviderToken,
+              });
     }
 
     provideContext(messageContent: string): Record<string, any> {
@@ -46,7 +50,7 @@ export class AIService {
               - constraints
               - rate limits
               - possible errors
-              
+
             Relevant context:
             ${JSON.stringify(context)}`,
         });
