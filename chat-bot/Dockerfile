@@ -5,6 +5,10 @@ FROM node:${NODE_VERSION} AS base
 WORKDIR /usr/src/app
 EXPOSE 3000
 
+FROM base AS dev-deps
+COPY package*.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci
+
 FROM base AS build
 COPY --from=dev-deps /usr/src/app/node_modules ./node_modules
 COPY package*.json ./
