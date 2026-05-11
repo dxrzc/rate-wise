@@ -1,6 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 import { IConfigs } from '../interface/config.interface';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class AIConfigService {
     constructor(private readonly configService: ConfigService<IConfigs, true>) {}
 
