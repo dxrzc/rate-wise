@@ -9,13 +9,16 @@ import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
 export class AIService {
     private readonly provider: OllamaProvider | AnthropicProvider;
 
-    constructor(private readonly serverConfig: ServerConfigService) {
-        this.provider = this.serverConfig.isDevelopment
-            ? createOllama({
-                  baseURL: this.serverConfig.aiProviderToken,
+    constructor(
+        private readonly aiConfig: AIConfigService,
+        private readonly serverConfig: ServerConfigService,
+    ) {
+        this.provider = this.serverConfig.isProduction
+            ? createAnthropic({
+                  apiKey: this.aiConfig.aiProviderToken,
               })
-            : createAnthropic({
-                  apiKey: this.serverConfig.aiProviderToken,
+            : createOllama({
+                  baseURL: this.aiConfig.aiProviderToken,
               });
     }
 
