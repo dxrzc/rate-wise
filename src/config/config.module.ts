@@ -6,6 +6,7 @@ import { AuthConfigService } from './services/auth.config.service';
 import { DbConfigService } from './services/db.config.service';
 import { AdminConfigService } from './services/admin.config.service';
 import { Global, Module } from '@nestjs/common';
+import { AIConfigService } from './services/ai.config.service';
 
 const services = [
     AuthConfigService,
@@ -13,6 +14,7 @@ const services = [
     ServerConfigService,
     SmtpConfigService,
     AdminConfigService,
+    AIConfigService,
 ];
 
 @Global()
