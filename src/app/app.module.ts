@@ -163,7 +163,10 @@ import { AIModule } from 'src/ai/ai.module';
         AuthModule,
         ScheduleModule.forRoot(),
         SecurityModule,
-        AIModule,
+        ConditionalModule.registerWhen(
+            AIModule,
+            (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.INTEGRATION,
+        ),
     ],
 })
 export class AppModule implements NestModule {
