@@ -4,3 +4,6 @@ import { Environment } from 'src/common/enums/environment.enum';
 config({ path: `${process.cwd()}/.env.defaults` });
 config({ path: `${process.cwd()}/.env.test`, override: true });
 process.env.NODE_ENV = Environment.INTEGRATION;
+process.env.ORIGIN = 'test';
+process.env.AI_PROVIDER_TOKEN = 'test';
+process.env.AI_PROVIDER = 'test';
