@@ -35,10 +35,15 @@ export const envSchema = Joi.object<IConfigs, true>({
         .valid(...Object.values(Environment))
         .required(),
     API_BASE_URL: Joi.string().uri().required(),
+    ORIGIN: Joi.string().required(),
     CACHE_TTL_SECONDS: Joi.number().positive().required(),
     TRUST_PROXY: Joi.number().positive().less(3).default(1),
     // Admin
     ADMIN_USERNAME: Joi.string().required(),
     ADMIN_EMAIL: Joi.string().email().required(),
     ADMIN_PASSWORD: Joi.string().required(),
+
+    // AI
+    AI_PROVIDER_TOKEN: Joi.string().required(),
+    AI_PROVIDER: Joi.string().required(),
 });

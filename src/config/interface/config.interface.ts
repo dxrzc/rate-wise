@@ -19,6 +19,7 @@ export interface IConfigs {
     readonly SMTP_PASS: string;
     readonly EMAIL_SENDER_ADDRESS: string;
     readonly API_BASE_URL: string;
+    readonly ORIGIN: string;
     readonly ACCOUNT_VERIFICATION_TOKEN_EXP: string;
     readonly ACCOUNT_VERIFICATION_TOKEN_SECRET: string;
     readonly ACCOUNT_DELETION_TOKEN_EXP: string;
@@ -31,4 +32,6 @@ export interface IConfigs {
     readonly ADMIN_PASSWORD: string;
     readonly BREVO_API_KEY: string;
     readonly EMAIL_PROVIDER: EmailProvider;
+    readonly AI_PROVIDER_TOKEN: string;
+    readonly AI_PROVIDER: string;
 }
