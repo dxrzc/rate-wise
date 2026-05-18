@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client/react';
 import { SIGN_IN } from '../api/sign-in.mutation';
 import { SignInMutation, SignInMutationVariables } from '@/types/__generated__/graphql';
+import { LoginData } from '../types/loginData.type';
 
 // TODO: validation
 export function useLogin() {
@@ -8,12 +9,8 @@ export function useLogin() {
         SIGN_IN,
     );
 
-    const handleLogin = (e: React.SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const email = <string>formData.get('email');
-        const password = <string>formData.get('password');
-        loginAction({
+    const handleLogin = async ({ email, password }: LoginData): Promise<boolean> => {
+        const response = await loginAction({
             variables: {
                 credentials: {
                     password,
@@ -21,8 +18,8 @@ export function useLogin() {
                 },
             },
         });
-        console.log({ returnData: data });
-        console.error({ error });
+        if (!response.error) return true;
+        return false;
     };
 
     return { handleLogin, data, error };
