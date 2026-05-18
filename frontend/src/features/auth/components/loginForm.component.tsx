@@ -13,10 +13,30 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLogin } from '../hooks/useLogin';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 
 // TODO: add style
 export function LoginForm() {
-    const { handleLogin } = useLogin();
+    const router = useRouter();
+    const { handleLogin, error } = useLogin();
+
+    const onSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get('email') as string;
+        const password = formData.get('password') as string;
+        const isSuccess = await handleLogin({ email, password });
+        if (isSuccess) {
+            router.push('/dashboard');
+        } else {
+            const passwordInput = form.elements.namedItem('password') as HTMLInputElement;
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    };
+
     return (
         <Card className="w-full max-w-sm">
             <CardHeader>
@@ -27,7 +47,7 @@ export function LoginForm() {
                 </CardAction>
             </CardHeader>
             <CardContent>
-                <form id="login-form" onSubmit={handleLogin}>
+                <form id="login-form" onSubmit={onSubmit}>
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
