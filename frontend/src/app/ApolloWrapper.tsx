@@ -11,7 +11,7 @@ import {
 const API_URL = 'http://localhost:3000/graphql';
 
 function makeClient() {
-    const httpLink = new HttpLink({ uri: API_URL });
+    const httpLink = new HttpLink({ uri: API_URL, credentials: 'include' });
     return new ApolloClient({
         cache: new InMemoryCache(),
         link: httpLink,
