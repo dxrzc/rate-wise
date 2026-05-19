@@ -33,6 +33,33 @@ export type SignInInput = {
     password: string;
 };
 
+/** Input data required for user sign-up. */
+export type SignUpInput = {
+    /**
+     *
+     *             The email address for the account.
+     *             - **Must be a valid email format.**
+     *
+     */
+    email: string;
+    /**
+     *
+     *             The password for the account.
+     *             - **Minimum length:** 8 characters.
+     *             - **Maximum length:** 60 characters.
+     *
+     */
+    password: string;
+    /**
+     *
+     *             The username for the account.
+     *             - **Minimum length:** 3 characters.
+     *             - **Maximum length:** 30 characters.
+     *
+     */
+    username: string;
+};
+
 /** Available roles for a user. */
 export type UserRole =
     /** Administrator with full access. */
@@ -61,16 +88,14 @@ export type SignInMutation = {
     };
 };
 
+export type SignUpMutationVariables = Exact<{
+    userData: SignUpInput;
+}>;
+
+export type SignUpMutation = { signUp: { __typename: 'AccountModel'; email: string } };
+
 export type CreateItemMutationVariables = Exact<{
     item_data: CreateItemInput;
 }>;
 
-export type CreateItemMutation = {
-    createItem: {
-        __typename: 'ItemModel';
-        id: string;
-        title: string;
-        category: string;
-        averageRating: number;
-    };
-};
+export type CreateItemMutation = { createItem: { __typename: 'ItemModel'; id: string } };
