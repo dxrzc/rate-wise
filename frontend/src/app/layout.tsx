@@ -8,7 +8,7 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" className={cn('font-sans', geist.variable)}>
-            <body className="bg-background text-foreground antialiased">
+            <body className="antialiased">
                 <ApolloWrapper>{children}</ApolloWrapper>
             </body>
         </html>

@@ -16,7 +16,6 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useLogin } from '../hooks/useLogin.hook';
 
-// TODO: add style
 export function LoginForm() {
     const router = useRouter();
     const { handleLogin, error } = useLogin();
