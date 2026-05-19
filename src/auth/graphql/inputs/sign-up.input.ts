@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsLowercase, IsString, MaxLength, MinLength } from 'class-validator';
 import { AUTH_RULES } from '../../policy/auth.rules';
 import { Transform } from 'class-transformer';
 
@@ -10,6 +10,7 @@ export class SignUpInput {
     @IsString()
     @MinLength(AUTH_RULES.USERNAME.MIN)
     @MaxLength(AUTH_RULES.USERNAME.MAX)
+    @IsLowercase()
     @Transform(({ value }: { value: string }) => value.trim())
     @Field(() => String, {
         description: `
