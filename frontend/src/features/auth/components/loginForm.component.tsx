@@ -47,6 +47,12 @@ export function LoginForm() {
                 </CardAction>
             </CardHeader>
             <CardContent>
+                {error && (
+                    <div className="p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
+                        {'Invalid Credentials'}
+                    </div>
+                )}
+
                 <form id="login-form" onSubmit={onSubmit}>
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-2">
