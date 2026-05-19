@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useLogin } from '../hooks/useLogin.hook';
+import { ErrorAlert } from '@/components/errors/error-alert.component';
+import { getErrorMessage } from '@/utils/get-error-message.util';
 
 export function LoginForm() {
     const router = useRouter();
@@ -30,9 +32,11 @@ export function LoginForm() {
         if (isSuccess) {
             router.push('/dashboard');
         } else {
-            const passwordInput = form.elements.namedItem('password') as HTMLInputElement;
-            passwordInput.value = '';
-            passwordInput.focus();
+            const passwordInput = form.elements.namedItem('password');
+            if (passwordInput && passwordInput instanceof HTMLInputElement) {
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
         }
     };
 
@@ -47,8 +51,8 @@ export function LoginForm() {
             </CardHeader>
             <CardContent>
                 {error && (
-                    <div className="p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
-                        {'Invalid Credentials'}
+                    <div className="mb-6">
+                        <ErrorAlert message={getErrorMessage(error)}></ErrorAlert>
                     </div>
                 )}
 
