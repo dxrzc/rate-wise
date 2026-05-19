@@ -13,6 +13,18 @@ export type AccountStatus =
     /** Account has been suspended by a moderator and has restricted access to platform features. */
     | 'SUSPENDED';
 
+/** Input type for creating a new item */
+export type CreateItemInput = {
+    /** The category of the item. Minimum length: 3, Maximum length: 40. */
+    category: string;
+    /** A detailed description of the item. Minimum length: 5, Maximum length: 500. */
+    description: string;
+    /** Optional tags for the item. Maximum 10 tags, each between 2-20 characters. */
+    tags?: Array<string> | null | undefined;
+    /** The title of the item. Minimum length: 5, Maximum length: 40. */
+    title: string;
+};
+
 /** Input data required for user sign-in. */
 export type SignInInput = {
     /** The email address of the user. */
@@ -46,5 +58,19 @@ export type SignInMutation = {
         email: string;
         roles: Array<UserRole>;
         status: AccountStatus;
+    };
+};
+
+export type CreateItemMutationVariables = Exact<{
+    item_data: CreateItemInput;
+}>;
+
+export type CreateItemMutation = {
+    createItem: {
+        __typename: 'ItemModel';
+        id: string;
+        title: string;
+        category: string;
+        averageRating: number;
     };
 };
