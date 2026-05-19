@@ -32,6 +32,10 @@ export class ServerConfigService {
         return this.configService.get('API_BASE_URL');
     }
 
+    get origin(): string {
+        return this.configService.get('ORIGIN');
+    }
+
     get cacheTtlSeconds(): number {
         return this.configService.get('CACHE_TTL_SECONDS');
     }

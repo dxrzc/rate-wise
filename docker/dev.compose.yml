@@ -6,10 +6,16 @@ services:
       context: ..
       target: development
     image: ratewise:dev
+    depends_on:
+      ollama-puller:
+        condition: service_completed_successfully
     ports:
       - ${SERVER_PORT:-3000}:3000
     environment:
       SERVER_PORT: ${SERVER_PORT:-3000}
+      AI_PROVIDER_TOKEN: http://ollama:11434/api 
+      AI_PROVIDER: "llama3.2:3b"
+      ORIGIN: ${ORIGIN:-http://localhost:5173}
     volumes:
       - ../src:/usr/src/app/src
       - ../logs:/usr/src/app/logs
@@ -76,6 +82,38 @@ services:
     volumes:
       - mailpit:/data
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - 11434:11434
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama-puller:
+    image: ollama/ollama:latest
+    container_name: ollama-puller
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command: ["pull", "llama3.2:3b"]
+
 volumes:
   redisinsight:
     name: rate-wise-redisinsight
@@ -89,3 +127,5 @@ volumes:
     name: rate-wise-postgres
   mailpit:
     name: rate-wise-mailpit
+  ollama_data:
+    name: rate-wise-ollama-data
