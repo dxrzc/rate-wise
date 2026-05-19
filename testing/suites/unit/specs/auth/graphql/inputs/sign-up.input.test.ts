@@ -50,4 +50,16 @@ describe('SignUpInput', () => {
             );
         });
     });
+
+    describe('Username is not full lowercase', () => {
+        test('throw BadRequestException and INVALID_INPUT error message', async () => {
+            const data = {
+                ...userDataGenerator.user,
+                username: `ABC${userDataGenerator.username}XYZ`,
+            };
+            await expect(pipe.transform(data, metadata)).rejects.toThrow(
+                new BadRequestException(COMMON_MESSAGES.INVALID_INPUT),
+            );
+        });
+    });
 });

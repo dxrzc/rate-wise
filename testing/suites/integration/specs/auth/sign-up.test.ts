@@ -227,6 +227,19 @@ describe('GraphQL - signUp', () => {
         });
     });
 
+    describe('Username contains uppercase letter', () => {
+        test('return bad request code and invalid input error message', async () => {
+            const badUsername = `${testKit.userSeed.username}ABC`;
+            const res = await testKit.gqlClient.send(
+                signUp({
+                    args: { ...testKit.userSeed.signUpInput, username: badUsername },
+                    fields: ['id'],
+                }),
+            );
+            expect(res).toFailWith(Code.BAD_REQUEST, COMMON_MESSAGES.INVALID_INPUT);
+        });
+    });
+
     describe('Attempt fetch password in gql', () => {
         test('return graphql validation failed code', async () => {
             const res = await testKit.gqlClient.send(

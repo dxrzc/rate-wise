@@ -10,6 +10,7 @@ Creates a new user account with **PENDING_VERIFICATION** status.
 - **Constraints:**
   - Email must be unique and in valid email format (max 254 characters).
   - Username must be unique, between 3-30 characters.
+  - Username must be lowercase.
   - Password must be between 8-60 characters.
 
 - **Side Effects:**
