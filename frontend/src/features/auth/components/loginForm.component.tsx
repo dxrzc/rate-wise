@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLogin } from '../hooks/useLogin.hook';
 import { ErrorAlert } from '@/components/errors/error-alert.component';
@@ -46,7 +47,9 @@ export function LoginForm() {
                 <CardTitle>Login to your account</CardTitle>
                 <CardDescription>Enter your email below to login to your account</CardDescription>
                 <CardAction>
-                    <Button variant="link">Sign Up</Button>
+                    <Button variant="link" asChild>
+                        <Link href="/register">Sign Up</Link>
+                    </Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
