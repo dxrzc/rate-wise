@@ -1,0 +1,18 @@
+import * as z from 'zod';
+import { REGISTER_POLICY } from '../policy/register.policy';
+
+const usernameMinLength = REGISTER_POLICY.USERNAME.MIN;
+const usernameMaxLength = REGISTER_POLICY.USERNAME.MAX;
+const passwordMinLength = REGISTER_POLICY.PASSWORD.MIN;
+
+export const registerSchema = z.object({
+    username: z
+        .string()
+        .min(usernameMinLength, `Username must be at least ${usernameMinLength}  characters.`)
+        .max(usernameMaxLength, `Username must be at most ${usernameMaxLength} characters.`),
+    email: z.email(),
+    password: z
+        .string()
+        .min(passwordMinLength, `Password must be at least ${passwordMinLength} characters.`)
+        .max(REGISTER_POLICY.PASSWORD.MAX),
+});
