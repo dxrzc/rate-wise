@@ -71,6 +71,10 @@ export type UserRole =
     /** Regular user who can write reviews and rate items. (Default) */
     | 'REVIEWER';
 
+export type RequestAccountVerificationMutationVariables = Exact<{ [key: string]: never }>;
+
+export type RequestAccountVerificationMutation = { requestAccountVerification: boolean };
+
 export type SignInMutationVariables = Exact<{
     credentials: SignInInput;
 }>;
