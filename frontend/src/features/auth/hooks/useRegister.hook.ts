@@ -5,7 +5,7 @@ import { SignUpData } from '../types/signUpData.type';
 import { getErrorMessage } from '@/utils/get-error-message.util';
 
 export function useRegister() {
-    const [registerAction, { data, error }] = useMutation<SignUpMutation, SignUpMutationVariables>(
+    const [registerAction, { data }] = useMutation<SignUpMutation, SignUpMutationVariables>(
         SIGN_UP,
     );
 
@@ -23,8 +23,8 @@ export function useRegister() {
                 },
             },
         });
-        return response.error ? getErrorMessage(error) : null;
+        return response.error ? getErrorMessage(response.error) : null;
     };
 
-    return { handleRegister, data, error };
+    return { handleRegister, data };
 }
