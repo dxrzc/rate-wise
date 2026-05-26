@@ -30,7 +30,7 @@ export function RegisterForm() {
         if (errorMessage) {
             form.setError('root', { message: errorMessage });
         } else {
-            router.push('/dashboard');
+            router.push('/verify-account');
         }
     };
 
