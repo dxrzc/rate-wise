@@ -9,7 +9,11 @@ export const registerSchema = z.object({
     username: z
         .string()
         .min(usernameMinLength, `Username must be at least ${usernameMinLength}  characters.`)
-        .max(usernameMaxLength, `Username must be at most ${usernameMaxLength} characters.`),
+        .max(usernameMaxLength, `Username must be at most ${usernameMaxLength} characters.`)
+        .refine((val) => val === val.toLowerCase(), {
+            message: 'String must be all lowercase',
+        }),
+
     email: z.email(),
     password: z
         .string()
