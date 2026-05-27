@@ -82,7 +82,9 @@ export class CatchEverythingFilter implements ExceptionFilter {
         if (!(exception instanceof GraphQLError)) {
             this.logger.error('Internal server error');
             if (exception instanceof HttpException)
-                SystemLogger.getInstance().error('HttpException thrown in a GraphQL context');
+                SystemLogger.getInstance().error(
+                    `HttpException thrown in a GraphQL context: ${exception.message}`,
+                );
             else this.logAnyException(exception);
         }
     }
