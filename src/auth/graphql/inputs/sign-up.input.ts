@@ -23,6 +23,7 @@ export class SignUpInput {
 
     @IsString()
     @IsEmail()
+    @Transform(({ value }: { value: string }) => value.trim().toLowerCase())
     @Field(() => String, {
         description: `
             The email address for the account.
