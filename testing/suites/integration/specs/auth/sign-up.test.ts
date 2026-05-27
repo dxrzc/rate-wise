@@ -173,6 +173,23 @@ describe('GraphQL - signUp', () => {
                 expect(userDb.username).toBe(name.trim());
             });
         });
+
+        describe('Email contains capital letters', () => {
+            test('email is stored in lowercase in the database', async () => {
+                const email = `${testKit.userSeed.email.toUpperCase()}`;
+                const res = await testKit.gqlClient
+                    .send(
+                        signUp({
+                            args: { ...testKit.userSeed.signUpInput, email },
+                            fields: 'ALL',
+                        }),
+                    )
+                    .expect(success);
+                const responseData = res.body.data.signUp;
+                const userDb = await testKit.userRepos.findOneByOrFail({ id: responseData.id });
+                expect(userDb.email).toBe(email.toLowerCase());
+            });
+        });
     });
 
     describe('Email already exists', () => {
