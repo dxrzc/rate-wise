@@ -25,8 +25,8 @@ export function VerifyAccountForm() {
             <CardHeader>
                 <CardTitle>Verify your account</CardTitle>
                 <CardDescription>
-                    We sent a verification email to your inbox. Please check your email and follow
-                    the instructions.
+                    We will send you an email with a link to verify your account. If you have not
+                    received the email, click the button below to resend it.
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
