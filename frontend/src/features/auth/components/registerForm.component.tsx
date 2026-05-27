@@ -19,6 +19,7 @@ export function RegisterForm() {
         defaultValues: {
             email: '',
             password: '',
+            confirmPassword: '',
             username: '',
         },
     });
@@ -67,6 +68,15 @@ export function RegisterForm() {
                             name={'password'}
                             control={form.control}
                             formTitle="Password"
+                            placeholder="*********"
+                            type="password"
+                            minLength={REGISTER_POLICY.PASSWORD.MIN}
+                            autoComplete="new-password"
+                        />
+                        <FormInput<typeof registerSchema>
+                            name={'confirmPassword'}
+                            control={form.control}
+                            formTitle="Confirm Password"
                             placeholder="*********"
                             type="password"
                             minLength={REGISTER_POLICY.PASSWORD.MIN}
