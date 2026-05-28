@@ -10,6 +10,7 @@ export function createReview({ args, fields }: IOperation<CreateReviewInput, Rev
             argumentName: 'review_data',
             inputType: 'CreateReviewInput',
             modelDataFetched: 'review',
+            operationType: 'mutation',
         },
         {
             args,

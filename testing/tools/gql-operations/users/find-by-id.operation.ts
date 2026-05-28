@@ -9,6 +9,7 @@ export function findUserById({ args, fields }: IOperation<string, UserModel>) {
             argumentName: 'user_id',
             operationType: 'query',
             inputType: 'ID',
+            modelDataFetched: 'account',
         },
         {
             args,
