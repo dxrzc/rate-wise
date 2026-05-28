@@ -6,7 +6,7 @@ export const config = {
 };
 
 export function proxy(request: NextRequest) {
-    const sessionCookie = request.cookies.get('session')?.value;
+    const sessionCookie = request.cookies.get('ssid')?.value;
     if (!sessionCookie) {
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('return_to', request.nextUrl.pathname);
