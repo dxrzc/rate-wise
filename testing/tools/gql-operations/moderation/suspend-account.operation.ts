@@ -7,6 +7,8 @@ export function suspendAccount({ args, fields }: IOperation<string, void>) {
             operationName: 'suspendAccount',
             argumentName: 'user_id',
             inputType: 'ID',
+            modelDataFetched: 'account',
+            operationType: 'mutation',
         },
         {
             args,

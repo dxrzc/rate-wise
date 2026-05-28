@@ -8,6 +8,7 @@ export function signOutAll({ args, fields }: IOperation<ReAuthenticationInput, v
             operationName: 'signOutAll',
             argumentName: 'credentials',
             inputType: 'ReAuthenticationInput',
+            operationType: 'mutation',
         },
         {
             args,

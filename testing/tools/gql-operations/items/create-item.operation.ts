@@ -10,6 +10,7 @@ export function createItem({ args, fields }: IOperation<CreateItemInput, ItemMod
             argumentName: 'item_data',
             inputType: 'CreateItemInput',
             modelDataFetched: 'item',
+            operationType: 'mutation',
         },
         {
             args,
