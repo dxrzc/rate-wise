@@ -9,6 +9,8 @@ export function signUp({ args, fields }: IOperation<SignUpInput, UserModel>) {
             operationName: 'signUp',
             argumentName: 'user_data',
             inputType: 'SignUpInput',
+            modelDataFetched: 'account',
+            operationType: 'mutation',
         },
         {
             args,
