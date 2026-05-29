@@ -9,6 +9,11 @@ import { findUserByIdDocs } from './graphql/docs/findUserById.docs';
 import { findAllUsersDocs } from './graphql/docs/findAllUsers.docs';
 import { meDocs } from './graphql/docs/me.docs';
 import { RequestContext } from 'src/auth/types/request-context.type';
+import { ALL_ROLES, Roles } from 'src/common/decorators/roles.decorator';
+import {
+    ALL_ACCOUNT_STATUSES,
+    RequireAccountStatus,
+} from 'src/common/decorators/min-account-status.decorator';
 
 @Resolver(() => UserModel)
 export class UsersResolver {
@@ -28,7 +33,9 @@ export class UsersResolver {
         return await this.userService.findAll(paginationArgs);
     }
 
+    @Roles(ALL_ROLES)
     @RateLimit(RateLimitTier.RELAXED)
+    @RequireAccountStatus(ALL_ACCOUNT_STATUSES)
     @Query(() => UserModel, meDocs)
     async me(@Context('req') req: RequestContext) {
         return await this.userService.findOneByIdOrThrowCached(req.user.id);
