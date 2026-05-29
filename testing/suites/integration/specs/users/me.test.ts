@@ -7,6 +7,8 @@ import { Code } from 'src/common/enums/code.enum';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { UserModel } from 'src/users/graphql/models/user.model';
 import { AUTH_MESSAGES } from 'src/auth/messages/auth.messages';
+import { AccountStatus } from 'src/users/enums/account-status.enum';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 describe('Gql - me', () => {
     describe('Session cookie not provided', () => {
@@ -180,6 +182,34 @@ describe('Gql - me', () => {
             expect(res.body.errors[0].message).toContain(
                 'Cannot query field "passwordHash" on type "UserModel".',
             );
+        });
+    });
+
+    describe('Account Status Verification', () => {
+        describe.each(Object.values(AccountStatus))('User account status is %s', (status) => {
+            test('user can perform this action', async () => {
+                const { sessionCookie } = await createAccount({ status });
+                const res = await testKit.gqlClient
+                    .set('Cookie', sessionCookie)
+                    .send(me({ fields: ['id'] }))
+                    .expect(success);
+                expect(res.body.data.me.id).toBeDefined();
+            });
+        });
+    });
+
+    describe('User Role Verification', () => {
+        describe.each(Object.values(UserRole))('User roles are: [%s]', (role: UserRole) => {
+            test('user can perform this action', async () => {
+                const { sessionCookie } = await createAccount({
+                    roles: [role],
+                });
+                const res = await testKit.gqlClient
+                    .set('Cookie', sessionCookie)
+                    .send(me({ fields: ['id'] }))
+                    .expect(success);
+                expect(res.body.data.me.id).toBeDefined();
+            });
         });
     });
 });
