@@ -1,4 +1,4 @@
-import { IOperationInfo } from '../interfaces/operation-info.interface';
+import { GqlOperationDetails } from '../types/gql-operation-details.type';
 import { IOperation } from '../interfaces/operation.interface';
 import { accountData, itemData, reviewData } from './models.data';
 
@@ -7,9 +7,9 @@ export function operationFactory(
         operationName,
         inputType,
         argumentName,
-        operationType = 'mutation',
-        modelDataFetched = 'account',
-    }: IOperationInfo,
+        operationType,
+        modelDataFetched,
+    }: GqlOperationDetails,
     { args, fields, append = '' }: IOperation,
 ) {
     let dataFetched: string = '';
@@ -26,7 +26,7 @@ export function operationFactory(
                 dataFetched = reviewData.join();
                 break;
             default:
-                throw new Error('Invalid model');
+                dataFetched = '';
         }
     } else {
         dataFetched = fields ? fields.join() : '';
@@ -34,13 +34,22 @@ export function operationFactory(
 
     dataFetched = dataFetched + `, ${append}`;
 
-    return {
-        query: `
+    const query = inputType
+        ? `
                ${operationType} ($args: ${inputType}!) {
                 ${operationName}(${argumentName}: $args)
                     ${fields ? `{ ${dataFetched} }` : ''}                    
               }
-        `,
+        `
+        : `
+               ${operationType} {
+                ${operationName}
+                    ${fields ? `{ ${dataFetched} }` : ''}                    
+              }
+        `;
+
+    return {
         variables: { args },
+        query,
     };
 }

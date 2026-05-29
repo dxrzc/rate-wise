@@ -2,17 +2,15 @@ import { UserModel } from 'src/users/graphql/models/user.model';
 import { operationFactory } from '../factory/operation.factory';
 import { IOperation } from '../interfaces/operation.interface';
 
-export function findUserById({ args, fields }: IOperation<string, UserModel>) {
+export function me({ fields }: Omit<IOperation<string, UserModel>, 'args'>) {
     return operationFactory(
         {
-            operationName: 'findUserById',
-            argumentName: 'user_id',
+            operationName: 'me',
             operationType: 'query',
-            inputType: 'ID',
             modelDataFetched: 'account',
         },
         {
-            args,
+            args: undefined,
             fields,
         },
     );

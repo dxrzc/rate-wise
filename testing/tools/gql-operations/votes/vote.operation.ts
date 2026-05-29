@@ -7,23 +7,11 @@ export function voteReview({ args, fields }: IOperation<{ vote: string; reviewId
             operationName: 'voteReview',
             argumentName: 'vote_data',
             inputType: 'CreateVoteInput',
+            operationType: 'mutation',
         },
         {
             args,
             fields,
-        },
-    );
-}
-
-export function deleteVote({ args }: IOperation<string, void>) {
-    return operationFactory(
-        {
-            operationName: 'deleteVote',
-            argumentName: 'reviewId',
-            inputType: 'String',
-        },
-        {
-            args,
         },
     );
 }

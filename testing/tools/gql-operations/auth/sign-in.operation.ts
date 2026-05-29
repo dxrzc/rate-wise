@@ -9,6 +9,8 @@ export function signIn({ args, fields }: IOperation<SignInInput, UserModel>) {
             operationName: 'signIn',
             argumentName: 'credentials',
             inputType: 'SignInInput',
+            modelDataFetched: 'account',
+            operationType: 'mutation',
         },
         {
             args,
