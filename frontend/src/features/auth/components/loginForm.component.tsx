@@ -14,13 +14,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLogin } from '../hooks/useLogin.hook';
 import { ErrorAlert } from '@/components/errors/error-alert.component';
 import { getErrorMessage } from '@/utils/get-error-message.util';
 
 export function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { handleLogin, error } = useLogin();
 
     const onSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -31,7 +32,11 @@ export function LoginForm() {
         const password = formData.get('password') as string;
         const isSuccess = await handleLogin({ email, password });
         if (isSuccess) {
-            router.push('/dashboard');
+            const returnTo = searchParams.get('return_to');
+            const isSafeRedirect =
+                returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//');
+            const finalDestination = isSafeRedirect ? returnTo : '/dashboard';
+            router.push(finalDestination);
         } else {
             const passwordInput = form.elements.namedItem('password');
             if (passwordInput && passwordInput instanceof HTMLInputElement) {

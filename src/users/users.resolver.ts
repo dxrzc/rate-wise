@@ -6,6 +6,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { UserPaginationModel } from './graphql/models/pagination.model';
 import { findUserByIdDocs } from './graphql/docs/findUserById.docs';
+import { findUserByUsernameDocs } from './graphql/docs/findUserByUsername.docs';
 import { findAllUsersDocs } from './graphql/docs/findAllUsers.docs';
 import { meDocs } from './graphql/docs/me.docs';
 import { RequestContext } from 'src/auth/types/request-context.type';
@@ -24,6 +25,13 @@ export class UsersResolver {
     @Query(() => UserModel, findUserByIdDocs)
     async findOneById(@Args('user_id', { type: () => ID }) id: string) {
         return await this.userService.findOneByIdOrThrowCached(id);
+    }
+
+    @Public()
+    @RateLimit(RateLimitTier.BALANCED)
+    @Query(() => UserModel, findUserByUsernameDocs)
+    async findOneByUsername(@Args('username', { type: () => String }) username: string) {
+        return await this.userService.findOneByUsernameOrThrow(username);
     }
 
     @Public()

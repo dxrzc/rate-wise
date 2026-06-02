@@ -10,6 +10,7 @@ import {
 // TODO: envs
 const API_URL = 'http://localhost:3000/graphql';
 
+// TODO: redirect to login if not authenticated
 function makeClient() {
     const httpLink = new HttpLink({ uri: API_URL, credentials: 'include' });
     return new ApolloClient({
