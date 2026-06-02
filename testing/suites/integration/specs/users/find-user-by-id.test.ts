@@ -4,6 +4,7 @@ import { createItem } from '@integration/utils/create-item.util';
 import { success } from '@integration/utils/no-errors.util';
 import { testKit } from '@integration/utils/test-kit.util';
 import { findUserById } from '@testing/tools/gql-operations/users/find-by-id.operation';
+import { findUserByUsername } from '@testing/tools/gql-operations/users/find-by-username.operation';
 import { Code } from 'src/common/enums/code.enum';
 import { createUserCacheKey } from 'src/users/cache/create-cache-key';
 import { UserModel } from 'src/users/graphql/models/user.model';
@@ -135,6 +136,20 @@ describe('Gql - findUserById', () => {
                 roles: userInDb?.roles.map((r: string) => r.toUpperCase()),
                 status: userInDb?.status.toUpperCase(),
             });
+        });
+    });
+
+    describe('Cache shared with findUserByUsername', () => {
+        test('findUserById reads cache populated by findUserByUsername', async () => {
+            const { id, username } = await createAccount();
+            const cacheKey = createUserCacheKey(id);
+            await testKit.gqlClient.send(findUserByUsername({ fields: ['id'], args: username }));
+            const userInCache = await testKit.cacheManager.get<UserModel>(cacheKey);
+            expect(userInCache).toBeDefined();
+            const res = await testKit.gqlClient.send(
+                findUserById({ fields: ['id', 'username'], args: id }),
+            );
+            expect(res.body.data.findUserById.username).toBe(username);
         });
     });
 });
