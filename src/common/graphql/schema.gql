@@ -334,6 +334,9 @@ type Query {
 
     """Filter items by tag. Minimum length: 2, Maximum length: 20."""
     tag: String
+
+    """Filter items by title. Minimum length: 5, Maximum length: 40."""
+    title: String
   ): ItemPaginationModel!
 
   "\nRetrieves a user by their unique identifier (UUID).\n\n- **Returns:** User details.\n\n- **Constraints:**\n  - The `user_id` must be a valid UUID.\n  - User must exist in the database.\n\n- **Caching Strategy:**\n  - Results are cached in **Redis** with automatic TTL expiration.\n  - Checks cache first, fetches from PostgreSQL on miss, then caches the result.\n  - Subsequent requests for the same user ID return cached data for improved performance.\n  - Cache is automatically invalidated when user data is modified.\n\n- **Rate Limiting:** 1000 requests per minute per user or IP address.\n\n- **Authentication:** Not required.\n\n- **Roles Required:** None.\n\n- **Account Status Required:** N/A.\n\n- **Performance:**\n  - UUID validation occurs before database query (early rejection of invalid IDs).\n  - Indexed lookup by primary key ensures O(1) database performance.\n  - Redis caching reduces database load for popular users.\n\n- **Additional Notes:**\n  - The cached user object excludes sensitive fields (password).\n  - Use `findAll` for paginated user listing.\n\n- **Possible Errors:**\n  - `NOT_FOUND`: User with the provided ID does not exist or invalid UUID format.\n  - `TOO_MANY_REQUESTS`: Rate limit exceeded.\n    "
