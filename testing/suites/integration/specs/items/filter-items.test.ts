@@ -147,6 +147,52 @@ describe('Gql - filterItems', () => {
         });
     });
 
+    describe("'title' provided", () => {
+        test('return only the items with the provided title', async () => {
+            const title = 'My Item123';
+            const { id: creator1Id } = await createAccount({ status: AccountStatus.ACTIVE });
+            const { id: creator2Id } = await createAccount({ status: AccountStatus.ACTIVE });
+            const item1 = await testKit.itemRepos.save({
+                ...testKit.itemSeed.itemInput,
+                createdBy: creator1Id,
+                title,
+            });
+            const item2 = await testKit.itemRepos.save({
+                ...testKit.itemSeed.itemInput,
+                createdBy: creator2Id,
+                title,
+            });
+            // filter
+            const response = await testKit.gqlClient.expect(success).send({
+                query: `query FilterItems($limit: Int!, $title: String) {
+                          filterItems(limit: $limit, title: $title) {
+                            nodes {
+                              id
+                              title
+                            }
+                            totalCount
+                            hasNextPage
+                          }
+                        }`,
+                variables: {
+                    title,
+                    limit: 5,
+                },
+            });
+            const totalCount = response.body.data.filterItems.totalCount;
+            expect(totalCount).toBe(2);
+            const nodes = response.body.data.filterItems.nodes as Item[];
+            expect(nodes.length).toBe(2);
+            nodes.forEach((node) => {
+                expect(node.title).toBe(title);
+            });
+            const nodesIds = nodes.map((n) => n.id);
+            [item1.id, item2.id].forEach((id) => {
+                expect(nodesIds).toContain(id);
+            });
+        });
+    });
+
     describe('"createdBy" and "category" provided', () => {
         test('return only the items created by the user in the specified category', async () => {
             const category = 'combined-filter-category';

@@ -41,6 +41,7 @@ async function bootstrap() {
     app.set('trust proxy', serverConfig.trustProxy);
     app.useLogger(SystemLogger.getInstance());
     app.enableShutdownHooks();
+    app.enableCors({ origin: serverConfig.origin, credentials: true });
 
     await app.listen(serverConfig.port);
     SystemLogger.getInstance().log(

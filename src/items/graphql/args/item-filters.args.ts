@@ -33,4 +33,14 @@ export class ItemFiltersArgs extends PaginationArgs {
         description: `Filter items by tag. Minimum length: ${ITEM_RULES.TAGS.TAG_MIN_LENGTH}, Maximum length: ${ITEM_RULES.TAGS.TAG_MAX_LENGTH}.`,
     })
     tag?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(ITEM_RULES.TITLE.MIN)
+    @MaxLength(ITEM_RULES.TITLE.MAX)
+    @Field(() => String, {
+        nullable: true,
+        description: `Filter items by title. Minimum length: ${ITEM_RULES.TITLE.MIN}, Maximum length: ${ITEM_RULES.TITLE.MAX}.`,
+    })
+    title?: string;
 }

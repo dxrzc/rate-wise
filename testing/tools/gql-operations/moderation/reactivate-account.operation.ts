@@ -7,6 +7,7 @@ export function reactivateAccount({ args, fields }: IOperation<string, void>) {
             operationName: 'reactivateAccount',
             argumentName: 'user_id',
             inputType: 'ID',
+            operationType: 'mutation',
         },
         {
             args,

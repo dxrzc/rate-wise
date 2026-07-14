@@ -59,6 +59,10 @@ export class ItemsService {
                     if (filters.tag) {
                         qb.andWhere(`:tag = ANY(${sqbAlias}.tags)`, { tag: filters.tag });
                     }
+                    if (filters.title)
+                        qb.andWhere(`${sqbAlias}.title= :title`, {
+                            title: filters.title,
+                        });
                     return qb;
                 },
                 sqbAlias,

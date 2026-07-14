@@ -7,7 +7,7 @@ import { User } from './entities/user.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { HttpLoggerService } from 'src/http-logger/http-logger.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { createUserCacheKey } from './cache/create-cache-key';
+import { createUserCacheKey, createUsernameCacheKey } from './cache/create-cache-key';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { PaginationArgs } from 'src/common/graphql/pagination.args';
 import { IPaginatedType } from 'src/pagination/interfaces/paginated-type.interface';
@@ -31,10 +31,16 @@ export class UsersService {
         throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
     }
 
-    async deleteUserFromCache(id: string): Promise<void> {
+    async deleteUserFromCache(id: string, username?: string): Promise<void> {
         const cacheKey = createUserCacheKey(id);
         const wasCached = await this.cacheManager.del(cacheKey);
         if (wasCached) this.logger.info(`User with id ${id} removed from cache`);
+        if (username) {
+            const usernameKey = createUsernameCacheKey(username);
+            const wasUsernameCached = await this.cacheManager.del(usernameKey);
+            if (wasUsernameCached)
+                this.logger.info(`Username pointer ${username} removed from cache`);
+        }
     }
 
     private validUuidOrThrow(id: string) {
@@ -80,6 +86,26 @@ export class UsersService {
         return userFound;
     }
 
+    async findOneByUsername(username: string): Promise<User | null> {
+        const userFound = await this.userRepository.findOneBy({ username });
+        return userFound;
+    }
+
+    async findOneByUsernameOrThrow(username: string): Promise<User> {
+        const usernameKey = createUsernameCacheKey(username);
+        const userId = await this.cacheManager.get<string>(usernameKey);
+        if (userId) {
+            return this.findOneByIdOrThrowCached(userId);
+        }
+        const userFound = await this.findOneByUsername(username);
+        if (!userFound) {
+            this.logger.error(`User with username ${username} not found`);
+            throw GqlHttpError.NotFound(USER_MESSAGES.NOT_FOUND);
+        }
+        await this.cacheManager.set(usernameKey, userFound.id);
+        return this.findOneByIdOrThrowCached(userFound.id);
+    }
+
     /**
      * - Validates id.
      * - Throws if not found.
@@ -118,7 +144,7 @@ export class UsersService {
         try {
             const saved = await this.userRepository.save(user);
             this.logger.info(`User with id ${user.id} saved to database`);
-            await this.deleteUserFromCache(user.id);
+            await this.deleteUserFromCache(user.id, user.username);
             return saved;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
@@ -135,7 +161,7 @@ export class UsersService {
         try {
             const updated = await this.userRepository.save(userToUpdate);
             this.logger.info(`User with id ${id} updated in database`);
-            await this.deleteUserFromCache(id);
+            await this.deleteUserFromCache(id, userToUpdate.username);
             return updated;
         } catch (error) {
             if (isDuplicatedKeyError(error)) {
