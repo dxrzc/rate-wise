@@ -50,7 +50,7 @@ import {
 import KeyvRedis from '@keyv/redis';
 import Redis from 'ioredis';
 import { SecurityModule } from 'src/security/security.module';
-import { AIModule } from 'src/ai/ai.module';
+// import { AIModule } from 'src/ai/ai.module';
 
 /**
  * NOTE: Non-api modules are configured explictly here using forRootAsync.
@@ -163,10 +163,10 @@ import { AIModule } from 'src/ai/ai.module';
         AuthModule,
         ScheduleModule.forRoot(),
         SecurityModule,
-        ConditionalModule.registerWhen(
-            AIModule,
-            (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.INTEGRATION,
-        ),
+        // ConditionalModule.registerWhen(
+        //     AIModule,
+        //     (env: NodeJS.ProcessEnv) => env.NODE_ENV !== Environment.INTEGRATION,
+        // ),
     ],
 })
 export class AppModule implements NestModule {
