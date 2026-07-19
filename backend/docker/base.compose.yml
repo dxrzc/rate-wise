@@ -80,6 +80,10 @@ services:
     build:
       context: ..
       target: development    
+    # TODO: To eliminate the nested dist/src/ structure (so the build outputs
+    # dist/main.js instead of dist/src/main.js), add "db/**/*" to the "exclude"
+    # array in tsconfig.build.json. Keep it in tsconfig.json for IDE typings.
+    # When that's done, revert the Dockerfile CMD to ["node", "dist/main.js"].
     command: sh -c "npx typeorm-ts-node-commonjs migration:run -d ./db/data-source.ts"    
     volumes:
       - ../db:/usr/src/app/db
