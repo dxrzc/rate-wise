@@ -19,8 +19,7 @@
     "lint": "eslint \"{src,testing}/**/*.ts\" --fix",
     "migration:generate": "docker compose -f docker/dev.compose.yml exec app node scripts/generate-migration.js",
     "dev:migration:run": "docker compose -f docker/base.compose.yml -f docker/dev.compose.yml run --rm migrate",
-    "dev:migration:revert": "docker compose  -f docker/base.compose.yml -f docker/dev.compose.yml run --rm revert-migrate",
-    "prepare": "husky"
+    "dev:migration:revert": "docker compose  -f docker/base.compose.yml -f docker/dev.compose.yml run --rm revert-migrate"    
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.76",
