@@ -35,4 +35,4 @@ FROM base AS production
 COPY --from=prod-deps /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 ENV NODE_ENV=production
-CMD ["node", "dist/src/main.js"] 
+CMD ["node", "dist/main.js"] 
