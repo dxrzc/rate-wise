@@ -1,0 +1,29 @@
+'use client';
+
+import { HttpLink } from '@apollo/client';
+import {
+    ApolloNextAppProvider,
+    ApolloClient,
+    InMemoryCache,
+} from '@apollo/client-integration-nextjs';
+
+// TODO: envs
+const API_URL = 'http://localhost:3000/graphql';
+
+// TODO: redirect to login if not authenticated
+function makeClient() {
+    const httpLink = new HttpLink({ uri: API_URL, credentials: 'include' });
+    return new ApolloClient({
+        cache: new InMemoryCache(),
+        link: httpLink,
+        defaultOptions: {
+            watchQuery: { errorPolicy: 'all' },
+            query: { errorPolicy: 'all' },
+            mutate: { errorPolicy: 'all' },
+        },
+    });
+}
+
+export function ApolloWrapper({ children }: React.PropsWithChildren) {
+    return <ApolloNextAppProvider makeClient={makeClient}>{children}</ApolloNextAppProvider>;
+}
