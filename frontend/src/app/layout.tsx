@@ -1,3 +1,4 @@
+import './globals.css';
 import { ApolloWrapper } from './ApolloWrapper';
 import { Inter, Public_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
