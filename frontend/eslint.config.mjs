@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
         'out/**',
         'build/**',
         'next-env.d.ts',
+        'eslint.config.mjs',
     ]),
     eslint.configs.recommended,
     ...tseslint.configs.recommendedTypeChecked,
