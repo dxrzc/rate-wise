@@ -1,7 +1,10 @@
+// @ts-check
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
 
 const eslintConfig = defineConfig([
     ...nextVitals,
@@ -13,8 +16,19 @@ const eslintConfig = defineConfig([
         'out/**',
         'build/**',
         'next-env.d.ts',
+        'eslint.config.mjs',
     ]),
+    eslint.configs.recommended,
+    ...tseslint.configs.recommendedTypeChecked,
     eslintPluginPrettierRecommended,
+    {
+        languageOptions: {
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
+    },
 ]);
 
 export default eslintConfig;

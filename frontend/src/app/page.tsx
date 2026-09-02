@@ -1,8 +1,3 @@
-export default function Page() {
-    return (
-        <>
-            <h1> Hello World </h1>
-            <p> This is my first page</p>
-        </>
-    );
+export default function Home() {
+    return <h1>Hello World!! </h1>;
 }

@@ -1,7 +1,7 @@
-import { GraphqlErrorResponse } from '@/types/graphql/grapqhl-error.type';
+import { GraphqlErrorResponse } from '@/types/graphql/graphql-error.type';
 
 export function isGraphqlErrorResponse(error: unknown): error is GraphqlErrorResponse {
-    const typedError = error as unknown as GraphqlErrorResponse;
+    const typedError = error as GraphqlErrorResponse;
     return !!(
         error &&
         typedError.errors &&

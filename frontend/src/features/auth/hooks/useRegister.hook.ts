@@ -1,14 +1,10 @@
 import { useMutation } from '@apollo/client/react';
 import { SIGN_UP } from '../api/sign-up.mutation';
-import { SignUpMutation, SignUpMutationVariables } from '@/types/__generated__/graphql';
-import { SignUpData } from '../types/signUpData.type';
 import { getErrorMessage } from '@/utils/get-error-message.util';
+import { SignUpData } from '../types/signUpData.type.ts';
 
 export function useRegister() {
-    const [registerAction, { data }] = useMutation<SignUpMutation, SignUpMutationVariables>(
-        SIGN_UP,
-    );
-
+    const [registerAction, { data }] = useMutation(SIGN_UP);
     const handleRegister = async ({
         username,
         email,
@@ -25,6 +21,5 @@ export function useRegister() {
         });
         return response.error ? getErrorMessage(response.error) : null;
     };
-
     return { handleRegister, data };
 }
